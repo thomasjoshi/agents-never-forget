@@ -1,1 +1,2 @@
 # Agents That Never Forget: Benchmark for Continual Learning Coding Agents
+The real challenge for coding agents lies in adapting to unseen environments and tasks. We systematically evaluate agents on sequentially evolving code environments (e.g., new libraries, tasks, and language pairs). Incorporating ideas from curriculum learning, we first focus on simple bug fixes first, then more complex feature additions leveraging datasets like SWE-Bench or AppWorld
