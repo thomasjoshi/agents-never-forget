@@ -50,11 +50,16 @@ EXP_DIR := $(RESULTS_DIR)/$(EXP_NAME)
 SEED ?= 42  # Reproducibility seed
 
 # Google Cloud configuration
-GCP_ZONE ?= us-central1-a
-GCP_MACHINE_TYPE ?= n1-standard-16
-GCP_GPU_TYPE ?= nvidia-tesla-a100
+# Multiple zones for better availability
+GCP_ZONES ?= us-central1-c us-east4-c us-west4-c europe-west4-a asia-east1-a
+GCP_ZONE ?= us-central1-c  # Default zone (first will be tried first)
+# Machine types to try (will try in this order)
+GCP_MACHINE_TYPES ?= n1-standard-4 n1-standard-8 n1-highmem-8
+# GPU configuration - set GPU_ENABLED=false if you don't have GPU quota
+GPU_ENABLED ?= true
+GCP_GPU_TYPE ?= nvidia-tesla-t4
 GCP_GPU_COUNT ?= 1
-GCP_DISK_SIZE ?= 500GB
+GCP_DISK_SIZE ?= 200GB
 
 # Google Cloud instance name
 GCP_INSTANCE_NAME ?= swe-bench-cl
@@ -351,36 +356,132 @@ generate-test-requirements:
 
 .PHONY: gcp-setup
 gcp-setup:
-	@echo "Setting up Google Cloud environment with A100 GPU..."
-	gcloud compute instances create $(GCP_INSTANCE_NAME) \
-		--zone=$(GCP_ZONE) \
-		--machine-type=$(GCP_MACHINE_TYPE) \
-		--accelerator=type=$(GCP_GPU_TYPE),count=$(GCP_GPU_COUNT) \
-		--boot-disk-size=$(GCP_DISK_SIZE) \
-		--image-family=pytorch-latest-gpu \
-		--image-project=deeplearning-platform-release \
-		--maintenance-policy=TERMINATE \
-		--scopes=https://www.googleapis.com/auth/cloud-platform \
-		--metadata="install-nvidia-driver=True" \
-		--restart-on-failure
-	@echo "✓ Google Cloud instance created with A100 GPU"
+	@if [ "$(GPU_ENABLED)" = "true" ]; then \
+		echo "Setting up Google Cloud environment with $(GCP_GPU_TYPE) GPU..."; \
+		echo "Trying machine types: $(GCP_MACHINE_TYPES)"; \
+		echo "Across zones: $(GCP_ZONES)"; \
+		success=false; \
+		for machine in $(GCP_MACHINE_TYPES); do \
+			echo "\nTrying machine type: $$machine"; \
+			for zone in $(GCP_ZONES); do \
+				echo "  - In zone: $$zone"; \
+				if gcloud compute instances create $(GCP_INSTANCE_NAME) \
+					--zone=$$zone \
+					--machine-type=$$machine \
+					--accelerator=type=$(GCP_GPU_TYPE),count=$(GCP_GPU_COUNT) \
+					--boot-disk-size=$(GCP_DISK_SIZE) \
+					--image-family=pytorch-latest-gpu \
+					--image-project=deeplearning-platform-release \
+					--maintenance-policy=TERMINATE \
+					--scopes=https://www.googleapis.com/auth/cloud-platform \
+					--metadata="install-nvidia-driver=True" \
+					--restart-on-failure; then \
+					echo "\n✓ Success! Created $$machine instance with $(GCP_GPU_TYPE) GPU in zone $$zone"; \
+					echo "INSTANCE_ZONE=$$zone" > .gcp_zone; \
+					echo "MACHINE_TYPE=$$machine" >> .gcp_zone; \
+					echo "HAS_GPU=true" >> .gcp_zone; \
+					success=true; \
+					break 2; \
+				fi; \
+			done; \
+		done; \
+		if [ "$$success" != "true" ]; then \
+			echo "\nWARNING: Failed to create GPU instance. You likely need to request GPU quota."; \
+			echo "See: https://cloud.google.com/compute/quotas#requesting_additional_quota"; \
+			echo "\nAttempting to create CPU-only instance instead..."; \
+			for machine in $(GCP_MACHINE_TYPES); do \
+				for zone in $(GCP_ZONES); do \
+					echo "  - Trying CPU-only $$machine in zone: $$zone"; \
+					if gcloud compute instances create $(GCP_INSTANCE_NAME) \
+						--zone=$$zone \
+						--machine-type=$$machine \
+						--boot-disk-size=$(GCP_DISK_SIZE) \
+						--image-family=pytorch-latest-cpu \
+						--image-project=deeplearning-platform-release \
+						--maintenance-policy=TERMINATE \
+						--scopes=https://www.googleapis.com/auth/cloud-platform \
+						--restart-on-failure; then \
+						echo "\n✓ Created CPU-only $$machine instance in zone $$zone"; \
+						echo "INSTANCE_ZONE=$$zone" > .gcp_zone; \
+						echo "MACHINE_TYPE=$$machine" >> .gcp_zone; \
+						echo "HAS_GPU=false" >> .gcp_zone; \
+						echo "\nNOTE: This is a CPU-only instance. Model training will be slow."; \
+						echo "Request GPU quota at: https://cloud.google.com/compute/quotas#requesting_additional_quota"; \
+						success=true; \
+						break 2; \
+					fi; \
+				done; \
+			done; \
+		fi; \
+	else \
+		echo "Setting up CPU-only Google Cloud environment..."; \
+		success=false; \
+		for machine in $(GCP_MACHINE_TYPES); do \
+			echo "\nTrying machine type: $$machine"; \
+			for zone in $(GCP_ZONES); do \
+				echo "  - In zone: $$zone"; \
+				if gcloud compute instances create $(GCP_INSTANCE_NAME) \
+					--zone=$$zone \
+					--machine-type=$$machine \
+					--boot-disk-size=$(GCP_DISK_SIZE) \
+					--image-family=pytorch-latest-cpu \
+					--image-project=deeplearning-platform-release \
+					--maintenance-policy=TERMINATE \
+					--scopes=https://www.googleapis.com/auth/cloud-platform \
+					--restart-on-failure; then \
+					echo "\n✓ Success! Created CPU-only $$machine instance in zone $$zone"; \
+					echo "INSTANCE_ZONE=$$zone" > .gcp_zone; \
+					echo "MACHINE_TYPE=$$machine" >> .gcp_zone; \
+					echo "HAS_GPU=false" >> .gcp_zone; \
+					success=true; \
+					break 2; \
+				fi; \
+			done; \
+		done; \
+	fi; \
+	if [ "$$success" != "true" ]; then \
+		echo "\nFailed to create instance with any configuration."; \
+		echo "Check your GCP project configuration and quotas."; \
+		exit 1; \
+	fi
 
 .PHONY: gcp-start
 gcp-start:
 	@echo "Starting Google Cloud instance..."
-	gcloud compute instances start $(GCP_INSTANCE_NAME) --zone=$(GCP_ZONE)
+	@if [ -f .gcp_zone ]; then \
+		zone=$$(grep INSTANCE_ZONE .gcp_zone | cut -d'=' -f2); \
+		echo "Using zone: $$zone"; \
+		gcloud compute instances start $(GCP_INSTANCE_NAME) --zone=$$zone; \
+	else \
+		echo "No zone information found. Using default: $(GCP_ZONE)"; \
+		gcloud compute instances start $(GCP_INSTANCE_NAME) --zone=$(GCP_ZONE); \
+	fi
 	@echo "✓ Instance started"
 
 .PHONY: gcp-stop
 gcp-stop:
 	@echo "Stopping Google Cloud instance..."
-	gcloud compute instances stop $(GCP_INSTANCE_NAME) --zone=$(GCP_ZONE)
+	@if [ -f .gcp_zone ]; then \
+		zone=$$(grep INSTANCE_ZONE .gcp_zone | cut -d'=' -f2); \
+		echo "Using zone: $$zone"; \
+		gcloud compute instances stop $(GCP_INSTANCE_NAME) --zone=$$zone; \
+	else \
+		echo "No zone information found. Using default: $(GCP_ZONE)"; \
+		gcloud compute instances stop $(GCP_INSTANCE_NAME) --zone=$(GCP_ZONE); \
+	fi
 	@echo "✓ Instance stopped"
 
 .PHONY: gcp-ssh
 gcp-ssh:
 	@echo "Connecting to Google Cloud instance..."
-	gcloud compute ssh $(GCP_INSTANCE_NAME) --zone=$(GCP_ZONE)
+	@if [ -f .gcp_zone ]; then \
+		zone=$$(grep INSTANCE_ZONE .gcp_zone | cut -d'=' -f2); \
+		echo "Using zone: $$zone"; \
+		gcloud compute ssh $(GCP_INSTANCE_NAME) --zone=$$zone; \
+	else \
+		echo "No zone information found. Using default: $(GCP_ZONE)"; \
+		gcloud compute ssh $(GCP_INSTANCE_NAME) --zone=$(GCP_ZONE); \
+	fi
 
 # ===================================================================
 # EVALUATION TARGETS
