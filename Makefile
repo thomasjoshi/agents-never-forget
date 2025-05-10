@@ -29,12 +29,14 @@ MODEL_CACHE_DIR ?= $(HOME)/.cache/huggingface/models
 MODEL_PRECISION ?= bfloat16  # Options: float32, float16, bfloat16
 MODEL_BITS ?= 16  # Options: 8, 16 (for quantization)
 
-# Development vs. Production configurations
-# Using open models that don't require authentication for development
-DEV_MODEL ?= bigcode/starcoder
-PROD_MODEL ?= meta-llama/CodeLlama-13b-hf
-DEV_MODEL_BITS ?= 8  # Use 8-bit quantization to fit on T4
-PROD_MODEL_BITS ?= 16  # Use higher precision for A100
+# LoRA configuration
+USE_LORA ?= true
+LORA_RANK ?= 16
+LORA_ALPHA ?= 32
+
+# Training configuration
+TRAIN_EPOCHS ?= 3  # Full training epochs
+QUICK_EPOCHS ?= 1  # Quick test run epochs
 
 # Evaluation configuration
 BATCH_SIZE ?= 1
@@ -47,23 +49,15 @@ EXP_NAME ?= swe_bench_cl_$(shell date +%Y%m%d_%H%M%S)
 EXP_DIR := $(RESULTS_DIR)/$(EXP_NAME)
 SEED ?= 42  # Reproducibility seed
 
-# Google Cloud configuration - Default (Production)
+# Google Cloud configuration
 GCP_ZONE ?= us-central1-a
 GCP_MACHINE_TYPE ?= n1-standard-16
 GCP_GPU_TYPE ?= nvidia-tesla-a100
 GCP_GPU_COUNT ?= 1
 GCP_DISK_SIZE ?= 500GB
 
-# Google Cloud configuration - Development
-DEV_GCP_ZONE ?= us-central1-c
-DEV_GCP_MACHINE_TYPE ?= n1-standard-8
-DEV_GCP_GPU_TYPE ?= nvidia-tesla-t4
-DEV_GCP_GPU_COUNT ?= 1
-DEV_GCP_DISK_SIZE ?= 200GB
-
-# Google Cloud instance names
-GCP_INSTANCE_NAME ?= swe-bench-cl-prod
-DEV_GCP_INSTANCE_NAME ?= swe-bench-cl-dev
+# Google Cloud instance name
+GCP_INSTANCE_NAME ?= swe-bench-cl
 
 # Dependency tracking
 DEPS_STAMP := $(VENV_DIR)/.deps_stamp
@@ -91,6 +85,8 @@ help:
 	@echo "  generate-embed       Generate embeddings for the tasks"
 	@echo ""
 	@echo "Evaluation targets:"
+	@echo "  quick-eval           Run quick evaluation (single epoch)"
+	@echo "  full-eval            Run full evaluation (multiple epochs)"
 	@echo "  eval-zero-shot       Run zero-shot evaluation baseline"
 	@echo "  eval-context-aug     Run evaluation with context augmentation"
 	@echo "  eval-memory          Run evaluation with memory mechanism"
@@ -109,27 +105,19 @@ help:
 	@echo "  generate-paper       Generate paper draft from results"
 	@echo "  compile-paper        Compile PDF paper"
 	@echo ""
-	@echo "Model registry targets:"
-	@echo "  register-model       Register model with metadata in model registry"
-	@echo ""
 	@echo "Google Cloud targets:"
-	@echo "  gcp-setup            Set up production GCP environment (A100 GPU)"
-	@echo "  gcp-start            Start production GCP instance"
-	@echo "  gcp-stop             Stop production GCP instance"
-	@echo "  gcp-ssh              SSH into production GCP instance"
-	@echo "  gcp-dev-setup        Set up development GCP environment (T4 GPU)"
-	@echo "  gcp-dev-start        Start development GCP instance"
-	@echo "  gcp-dev-stop         Stop development GCP instance"
-	@echo "  gcp-dev-ssh          SSH into development GCP instance"
+	@echo "  gcp-setup            Set up Google Cloud instance with A100 GPU"
+	@echo "  gcp-start            Start Google Cloud instance"
+	@echo "  gcp-stop             Stop Google Cloud instance"
+	@echo "  gcp-ssh              Connect to Google Cloud instance"
 	@echo ""
-	@echo "Environment targets:"
-	@echo "  dev-eval             Run evaluation in development mode (T4, 8-bit)"
-	@echo "  prod-eval            Run evaluation in production mode (A100, 16-bit)"
+	@echo "Model configuration:"
+	@echo "  register-model       Register model with metadata in model registry"
 	@echo ""
 	@echo "Configuration variables:"
 	@echo "  MODEL=model-name            Set model (default: $(MODEL))"
-	@echo "  DEV_MODEL=model-name        Set development model (default: $(DEV_MODEL))"
-	@echo "  PROD_MODEL=model-name       Set production model (default: $(PROD_MODEL))"
+	@echo "  TRAIN_EPOCHS=n              Set number of training epochs (default: $(TRAIN_EPOCHS))"
+	@echo "  QUICK_EPOCHS=n              Set number of quick evaluation epochs (default: $(QUICK_EPOCHS))"
 	@echo "  BATCH_SIZE=n                Set batch size (default: $(BATCH_SIZE))"
 	@echo "  MAX_SEQ_LEN=n               Set max sequence length (default: $(MAX_SEQ_LEN))"
 	@echo "  NUM_TASKS=n                 Set number of tasks to evaluate (default: $(NUM_TASKS))"
@@ -358,12 +346,12 @@ generate-test-requirements:
 	@echo "✓ Test-requirements.txt generated"
 
 # ===================================================================
-# GOOGLE CLOUD TARGETS - PRODUCTION (A100)
+# GOOGLE CLOUD TARGETS
 # ===================================================================
 
 .PHONY: gcp-setup
 gcp-setup:
-	@echo "Setting up production Google Cloud environment with A100 GPU..."
+	@echo "Setting up Google Cloud environment with A100 GPU..."
 	gcloud compute instances create $(GCP_INSTANCE_NAME) \
 		--zone=$(GCP_ZONE) \
 		--machine-type=$(GCP_MACHINE_TYPE) \
@@ -375,92 +363,58 @@ gcp-setup:
 		--scopes=https://www.googleapis.com/auth/cloud-platform \
 		--metadata="install-nvidia-driver=True" \
 		--restart-on-failure
-	@echo "✓ Production Google Cloud instance created with A100 GPU"
+	@echo "✓ Google Cloud instance created with A100 GPU"
 
 .PHONY: gcp-start
 gcp-start:
-	@echo "Starting production Google Cloud instance..."
+	@echo "Starting Google Cloud instance..."
 	gcloud compute instances start $(GCP_INSTANCE_NAME) --zone=$(GCP_ZONE)
-	@echo "✓ Production instance started"
+	@echo "✓ Instance started"
 
 .PHONY: gcp-stop
 gcp-stop:
-	@echo "Stopping production Google Cloud instance..."
+	@echo "Stopping Google Cloud instance..."
 	gcloud compute instances stop $(GCP_INSTANCE_NAME) --zone=$(GCP_ZONE)
-	@echo "✓ Production instance stopped"
+	@echo "✓ Instance stopped"
 
 .PHONY: gcp-ssh
 gcp-ssh:
-	@echo "Connecting to production Google Cloud instance..."
+	@echo "Connecting to Google Cloud instance..."
 	gcloud compute ssh $(GCP_INSTANCE_NAME) --zone=$(GCP_ZONE)
 
 # ===================================================================
-# GOOGLE CLOUD TARGETS - DEVELOPMENT (T4)
+# EVALUATION TARGETS
 # ===================================================================
 
-.PHONY: gcp-dev-setup
-gcp-dev-setup:
-	@echo "Setting up development Google Cloud environment with T4 GPU..."
-	gcloud compute instances create $(DEV_GCP_INSTANCE_NAME) \
-		--zone=$(DEV_GCP_ZONE) \
-		--machine-type=$(DEV_GCP_MACHINE_TYPE) \
-		--accelerator=type=$(DEV_GCP_GPU_TYPE),count=$(DEV_GCP_GPU_COUNT) \
-		--boot-disk-size=$(DEV_GCP_DISK_SIZE) \
-		--image-family=pytorch-latest-gpu \
-		--image-project=deeplearning-platform-release \
-		--maintenance-policy=TERMINATE \
-		--scopes=https://www.googleapis.com/auth/cloud-platform \
-		--metadata="install-nvidia-driver=True" \
-		--preemptible \
-		--restart-on-failure
-	@echo "✓ Development Google Cloud instance created with T4 GPU"
-
-.PHONY: gcp-dev-start
-gcp-dev-start:
-	@echo "Starting development Google Cloud instance..."
-	gcloud compute instances start $(DEV_GCP_INSTANCE_NAME) --zone=$(DEV_GCP_ZONE)
-	@echo "✓ Development instance started"
-
-.PHONY: gcp-dev-stop
-gcp-dev-stop:
-	@echo "Stopping development Google Cloud instance..."
-	gcloud compute instances stop $(DEV_GCP_INSTANCE_NAME) --zone=$(DEV_GCP_ZONE)
-	@echo "✓ Development instance stopped"
-
-.PHONY: gcp-dev-ssh
-gcp-dev-ssh:
-	@echo "Connecting to development Google Cloud instance..."
-	gcloud compute ssh $(DEV_GCP_INSTANCE_NAME) --zone=$(DEV_GCP_ZONE)
-
-# ===================================================================
-# ENVIRONMENT-SPECIFIC EVALUATION
-# ===================================================================
-
-.PHONY: dev-eval
-dev-eval: deps process-data generate-embed
-	@echo "Running evaluation in DEVELOPMENT mode (T4-optimized, 8-bit quantization)..."
-	@mkdir -p $(EXP_DIR)/dev
-	@echo "ENVIRONMENT=development" > $(EXP_DIR)/env_config.txt
+.PHONY: quick-eval
+quick-eval: deps process-data generate-embed
+	@echo "Running quick evaluation (single epoch)..."
+	@mkdir -p $(EXP_DIR)/quick
+	@echo "ENVIRONMENT=quick" > $(EXP_DIR)/env_config.txt
 	$(MAKE) eval-zero-shot eval-context-aug eval-memory \
-		MODEL=$(DEV_MODEL) \
-		MODEL_BITS=$(DEV_MODEL_BITS) \
+		MODEL=$(MODEL) \
+		EPOCHS=$(QUICK_EPOCHS) \
+		USE_LORA=$(USE_LORA) \
+		LORA_RANK=$(LORA_RANK) \
 		BATCH_SIZE=1 \
 		MAX_SEQ_LEN=2048 \
-		EXP_NAME=$(EXP_NAME)_dev
-	@echo "✓ Development evaluation complete"
+		EXP_NAME=$(EXP_NAME)_quick
+	@echo "✓ Quick evaluation complete"
 
-.PHONY: prod-eval
-prod-eval: deps process-data generate-embed
-	@echo "Running evaluation in PRODUCTION mode (A100-optimized, high precision)..."
-	@mkdir -p $(EXP_DIR)/prod
-	@echo "ENVIRONMENT=production" > $(EXP_DIR)/env_config.txt
+.PHONY: full-eval
+full-eval: deps process-data generate-embed
+	@echo "Running full evaluation ($(TRAIN_EPOCHS) epochs)..."
+	@mkdir -p $(EXP_DIR)/full
+	@echo "ENVIRONMENT=full" > $(EXP_DIR)/env_config.txt
 	$(MAKE) eval-zero-shot eval-context-aug eval-memory \
-		MODEL=$(PROD_MODEL) \
-		MODEL_BITS=$(PROD_MODEL_BITS) \
+		MODEL=$(MODEL) \
+		EPOCHS=$(TRAIN_EPOCHS) \
+		USE_LORA=$(USE_LORA) \
+		LORA_RANK=$(LORA_RANK) \
 		BATCH_SIZE=1 \
 		MAX_SEQ_LEN=4096 \
-		EXP_NAME=$(EXP_NAME)_prod
-	@echo "✓ Production evaluation complete (A100, 16-bit, larger model)"
+		EXP_NAME=$(EXP_NAME)_full
+	@echo "✓ Full evaluation complete ($(TRAIN_EPOCHS) epochs)"
 
 # ===================================================================
 # CLEANUP TARGETS
