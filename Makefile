@@ -57,6 +57,8 @@ GCP_ZONE ?= us-central1-c  # Default zone (first will be tried first)
 GCP_MACHINE_TYPES ?= n1-standard-4 n1-standard-8 n1-highmem-8
 # GPU configuration - set GPU_ENABLED=false if you don't have GPU quota
 GPU_ENABLED ?= true
+# Set CPU_FALLBACK=true to create a CPU instance if GPU creation fails
+CPU_FALLBACK ?= false
 GCP_GPU_TYPE ?= nvidia-tesla-t4
 GCP_GPU_COUNT ?= 1
 GCP_DISK_SIZE ?= 200GB
@@ -388,30 +390,34 @@ gcp-setup:
 		if [ "$$success" != "true" ]; then \
 			echo "\nWARNING: Failed to create GPU instance. You likely need to request GPU quota."; \
 			echo "See: https://cloud.google.com/compute/quotas#requesting_additional_quota"; \
-			echo "\nAttempting to create CPU-only instance instead..."; \
-			for machine in $(GCP_MACHINE_TYPES); do \
-				for zone in $(GCP_ZONES); do \
-					echo "  - Trying CPU-only $$machine in zone: $$zone"; \
-					if gcloud compute instances create $(GCP_INSTANCE_NAME) \
-						--zone=$$zone \
-						--machine-type=$$machine \
-						--boot-disk-size=$(GCP_DISK_SIZE) \
-						--image-family=pytorch-latest-cpu \
-						--image-project=deeplearning-platform-release \
-						--maintenance-policy=TERMINATE \
-						--scopes=https://www.googleapis.com/auth/cloud-platform \
-						--restart-on-failure; then \
-						echo "\n✓ Created CPU-only $$machine instance in zone $$zone"; \
-						echo "INSTANCE_ZONE=$$zone" > .gcp_zone; \
-						echo "MACHINE_TYPE=$$machine" >> .gcp_zone; \
-						echo "HAS_GPU=false" >> .gcp_zone; \
-						echo "\nNOTE: This is a CPU-only instance. Model training will be slow."; \
-						echo "Request GPU quota at: https://cloud.google.com/compute/quotas#requesting_additional_quota"; \
-						success=true; \
-						break 2; \
-					fi; \
+			if [ "$(CPU_FALLBACK)" = "true" ]; then \
+				echo "\nAttempting to create CPU-only instance instead (CPU_FALLBACK=true)..."; \
+				for machine in $(GCP_MACHINE_TYPES); do \
+					for zone in $(GCP_ZONES); do \
+						echo "  - Trying CPU-only $$machine in zone: $$zone"; \
+						if gcloud compute instances create $(GCP_INSTANCE_NAME) \
+							--zone=$$zone \
+							--machine-type=$$machine \
+							--boot-disk-size=$(GCP_DISK_SIZE) \
+							--image-family=pytorch-latest-cpu \
+							--image-project=deeplearning-platform-release \
+							--maintenance-policy=TERMINATE \
+							--scopes=https://www.googleapis.com/auth/cloud-platform \
+							--restart-on-failure; then \
+							echo "\n✓ Created CPU-only $$machine instance in zone $$zone"; \
+							echo "INSTANCE_ZONE=$$zone" > .gcp_zone; \
+							echo "MACHINE_TYPE=$$machine" >> .gcp_zone; \
+							echo "HAS_GPU=false" >> .gcp_zone; \
+							echo "\nNOTE: This is a CPU-only instance. Model training will be slow."; \
+							echo "Request GPU quota at: https://cloud.google.com/compute/quotas#requesting_additional_quota"; \
+							success=true; \
+							break 2; \
+						fi; \
+					done; \
 				done; \
-			done; \
+			else \
+				echo "\nAborting instance creation. Set CPU_FALLBACK=true to attempt creating a CPU-only instance."; \
+			fi; \
 		fi; \
 	else \
 		echo "Setting up CPU-only Google Cloud environment..."; \
