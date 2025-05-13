@@ -1,0 +1,2147 @@
+[
+  {
+    "repo": "django/django",
+    "task_a_id": "django__django-10999",
+    "task_b_id": "django__django-13933",
+    "jaccard": 0.16666666666666666,
+    "cosine": 0.1319581618022089,
+    "files_a": [
+      "django/utils/dateparse.py"
+    ],
+    "files_b": [
+      "django/forms/models.py"
+    ]
+  },
+  {
+    "repo": "django/django",
+    "task_a_id": "django__django-10097",
+    "task_b_id": "django__django-10999",
+    "jaccard": 0.14035087719298245,
+    "cosine": 0.22023354440544993,
+    "files_a": [
+      "django/core/validators.py"
+    ],
+    "files_b": [
+      "django/utils/dateparse.py"
+    ]
+  },
+  {
+    "repo": "django/django",
+    "task_a_id": "django__django-11433",
+    "task_b_id": "django__django-12193",
+    "jaccard": 0.10526315789473684,
+    "cosine": 0.2031695753645167,
+    "files_a": [
+      "django/forms/models.py"
+    ],
+    "files_b": [
+      "django/forms/widgets.py"
+    ]
+  },
+  {
+    "repo": "django/django",
+    "task_a_id": "django__django-11239",
+    "task_b_id": "django__django-13112",
+    "jaccard": 0.10891089108910891,
+    "cosine": 0.13311110996692455,
+    "files_a": [
+      "django/db/backends/postgresql/client.py"
+    ],
+    "files_b": [
+      "django/db/models/fields/related.py"
+    ]
+  },
+  {
+    "repo": "django/django",
+    "task_a_id": "django__django-11179",
+    "task_b_id": "django__django-12308",
+    "jaccard": 0.14814814814814814,
+    "cosine": 0.13624650624088452,
+    "files_a": [
+      "django/db/models/deletion.py"
+    ],
+    "files_b": [
+      "django/contrib/admin/utils.py"
+    ]
+  },
+  {
+    "repo": "django/django",
+    "task_a_id": "django__django-11099",
+    "task_b_id": "django__django-11490",
+    "jaccard": 0.1095890410958904,
+    "cosine": 0.07951194795028561,
+    "files_a": [
+      "django/contrib/auth/validators.py"
+    ],
+    "files_b": [
+      "django/db/models/sql/compiler.py"
+    ]
+  },
+  {
+    "repo": "django/django",
+    "task_a_id": "django__django-10999",
+    "task_b_id": "django__django-12304",
+    "jaccard": 0.1111111111111111,
+    "cosine": 0.15828913515290374,
+    "files_a": [
+      "django/utils/dateparse.py"
+    ],
+    "files_b": [
+      "django/db/models/enums.py"
+    ]
+  },
+  {
+    "repo": "django/django",
+    "task_a_id": "django__django-13363",
+    "task_b_id": "django__django-14315",
+    "jaccard": 0.16455696202531644,
+    "cosine": 0.180943130034915,
+    "files_a": [
+      "django/db/models/functions/datetime.py"
+    ],
+    "files_b": [
+      "django/db/backends/base/client.py",
+      "django/db/backends/postgresql/client.py"
+    ]
+  },
+  {
+    "repo": "django/django",
+    "task_a_id": "django__django-10914",
+    "task_b_id": "django__django-13551",
+    "jaccard": 0.1044776119402985,
+    "cosine": 0.14823157167307804,
+    "files_a": [
+      "django/conf/global_settings.py"
+    ],
+    "files_b": [
+      "django/contrib/auth/tokens.py"
+    ]
+  },
+  {
+    "repo": "django/django",
+    "task_a_id": "django__django-12193",
+    "task_b_id": "django__django-12308",
+    "jaccard": 0.125,
+    "cosine": 0.22736883199448288,
+    "files_a": [
+      "django/forms/widgets.py"
+    ],
+    "files_b": [
+      "django/contrib/admin/utils.py"
+    ]
+  },
+  {
+    "repo": "django/django",
+    "task_a_id": "django__django-10097",
+    "task_b_id": "django__django-11820",
+    "jaccard": 0.13333333333333333,
+    "cosine": 0.12623443509143217,
+    "files_a": [
+      "django/core/validators.py"
+    ],
+    "files_b": [
+      "django/db/models/base.py"
+    ]
+  },
+  {
+    "repo": "django/django",
+    "task_a_id": "django__django-10097",
+    "task_b_id": "django__django-11451",
+    "jaccard": 0.14754098360655737,
+    "cosine": 0.18053483648754576,
+    "files_a": [
+      "django/core/validators.py"
+    ],
+    "files_b": [
+      "django/contrib/auth/backends.py"
+    ]
+  },
+  {
+    "repo": "django/django",
+    "task_a_id": "django__django-10999",
+    "task_b_id": "django__django-11133",
+    "jaccard": 0.10144927536231885,
+    "cosine": 0.15875293904858892,
+    "files_a": [
+      "django/utils/dateparse.py"
+    ],
+    "files_b": [
+      "django/http/response.py"
+    ]
+  },
+  {
+    "repo": "django/django",
+    "task_a_id": "django__django-11179",
+    "task_b_id": "django__django-11603",
+    "jaccard": 0.1568627450980392,
+    "cosine": 0.3039587184583245,
+    "files_a": [
+      "django/db/models/deletion.py"
+    ],
+    "files_b": [
+      "django/db/models/aggregates.py"
+    ]
+  },
+  {
+    "repo": "django/django",
+    "task_a_id": "django__django-11179",
+    "task_b_id": "django__django-14089",
+    "jaccard": 0.18604651162790697,
+    "cosine": 0.27034610144372306,
+    "files_a": [
+      "django/db/models/deletion.py"
+    ],
+    "files_b": [
+      "django/utils/datastructures.py"
+    ]
+  },
+  {
+    "repo": "django/django",
+    "task_a_id": "django__django-13023",
+    "task_b_id": "django__django-13821",
+    "jaccard": 0.15789473684210525,
+    "cosine": 0.1934537286682878,
+    "files_a": [
+      "django/db/models/fields/__init__.py"
+    ],
+    "files_b": [
+      "django/db/backends/sqlite3/base.py"
+    ]
+  },
+  {
+    "repo": "django/django",
+    "task_a_id": "django__django-10097",
+    "task_b_id": "django__django-11119",
+    "jaccard": 0.12280701754385964,
+    "cosine": 0.15089677841703403,
+    "files_a": [
+      "django/core/validators.py"
+    ],
+    "files_b": [
+      "django/template/engine.py"
+    ]
+  },
+  {
+    "repo": "django/django",
+    "task_a_id": "django__django-13417",
+    "task_b_id": "django__django-13933",
+    "jaccard": 0.13846153846153847,
+    "cosine": 0.23097863506646693,
+    "files_a": [
+      "django/db/models/query.py"
+    ],
+    "files_b": [
+      "django/forms/models.py"
+    ]
+  },
+  {
+    "repo": "django/django",
+    "task_a_id": "django__django-11163",
+    "task_b_id": "django__django-11490",
+    "jaccard": 0.14925373134328357,
+    "cosine": 0.17338490830433406,
+    "files_a": [
+      "django/forms/models.py"
+    ],
+    "files_b": [
+      "django/db/models/sql/compiler.py"
+    ]
+  },
+  {
+    "repo": "django/django",
+    "task_a_id": "django__django-12125",
+    "task_b_id": "django__django-14315",
+    "jaccard": 0.15151515151515152,
+    "cosine": 0.2434132718899302,
+    "files_a": [
+      "django/db/migrations/serializer.py"
+    ],
+    "files_b": [
+      "django/db/backends/base/client.py",
+      "django/db/backends/postgresql/client.py"
+    ]
+  },
+  {
+    "repo": "sympy/sympy",
+    "task_a_id": "sympy__sympy-16766",
+    "task_b_id": "sympy__sympy-19954",
+    "jaccard": 0.09345794392523364,
+    "cosine": 0.1192695784598193,
+    "files_a": [
+      "sympy/printing/pycode.py"
+    ],
+    "files_b": [
+      "sympy/combinatorics/perm_groups.py"
+    ]
+  },
+  {
+    "repo": "sympy/sympy",
+    "task_a_id": "sympy__sympy-11618",
+    "task_b_id": "sympy__sympy-13551",
+    "jaccard": 0.1553398058252427,
+    "cosine": 0.2212960964917563,
+    "files_a": [
+      "sympy/geometry/point.py"
+    ],
+    "files_b": [
+      "sympy/concrete/products.py"
+    ]
+  },
+  {
+    "repo": "sympy/sympy",
+    "task_a_id": "sympy__sympy-19346",
+    "task_b_id": "sympy__sympy-19783",
+    "jaccard": 0.0990990990990991,
+    "cosine": 0.3044944953001426,
+    "files_a": [
+      "sympy/printing/repr.py"
+    ],
+    "files_b": [
+      "sympy/physics/quantum/dagger.py",
+      "sympy/physics/quantum/operator.py"
+    ]
+  },
+  {
+    "repo": "sympy/sympy",
+    "task_a_id": "sympy__sympy-17655",
+    "task_b_id": "sympy__sympy-13091",
+    "jaccard": 0.03167420814479638,
+    "cosine": 0.31722064196101013,
+    "files_a": [
+      "sympy/geometry/point.py"
+    ],
+    "files_b": [
+      "sympy/core/basic.py",
+      "sympy/core/exprtools.py",
+      "sympy/core/numbers.py",
+      "sympy/geometry/entity.py",
+      "sympy/physics/optics/medium.py",
+      "sympy/physics/vector/dyadic.py",
+      "sympy/physics/vector/frame.py",
+      "sympy/physics/vector/vector.py",
+      "sympy/polys/agca/modules.py",
+      "sympy/polys/domains/domain.py",
+      "sympy/polys/domains/expressiondomain.py",
+      "sympy/polys/domains/pythonrational.py",
+      "sympy/polys/domains/quotientring.py",
+      "sympy/polys/fields.py",
+      "sympy/polys/monomials.py",
+      "sympy/polys/polyclasses.py",
+      "sympy/polys/polytools.py",
+      "sympy/polys/rings.py",
+      "sympy/polys/rootoftools.py",
+      "sympy/tensor/array/ndim_array.py",
+      "sympy/utilities/enumerative.py"
+    ]
+  },
+  {
+    "repo": "sympy/sympy",
+    "task_a_id": "sympy__sympy-12096",
+    "task_b_id": "sympy__sympy-18189",
+    "jaccard": 0.22413793103448276,
+    "cosine": 0.16137491110944124,
+    "files_a": [
+      "sympy/core/function.py"
+    ],
+    "files_b": [
+      "sympy/solvers/diophantine.py"
+    ]
+  },
+  {
+    "repo": "sympy/sympy",
+    "task_a_id": "sympy__sympy-15809",
+    "task_b_id": "sympy__sympy-17655",
+    "jaccard": 0.140625,
+    "cosine": 0.18251363984738517,
+    "files_a": [
+      "sympy/functions/elementary/miscellaneous.py"
+    ],
+    "files_b": [
+      "sympy/geometry/point.py"
+    ]
+  },
+  {
+    "repo": "sympy/sympy",
+    "task_a_id": "sympy__sympy-23534",
+    "task_b_id": "sympy__sympy-20154",
+    "jaccard": 0.08148148148148149,
+    "cosine": 0.0994969692529089,
+    "files_a": [
+      "sympy/core/symbol.py"
+    ],
+    "files_b": [
+      "sympy/utilities/iterables.py"
+    ]
+  },
+  {
+    "repo": "sympy/sympy",
+    "task_a_id": "sympy__sympy-19637",
+    "task_b_id": "sympy__sympy-23534",
+    "jaccard": 0.24444444444444444,
+    "cosine": 0.2867649240660883,
+    "files_a": [
+      "sympy/core/sympify.py"
+    ],
+    "files_b": [
+      "sympy/core/symbol.py"
+    ]
+  },
+  {
+    "repo": "sympy/sympy",
+    "task_a_id": "sympy__sympy-15345",
+    "task_b_id": "sympy__sympy-19783",
+    "jaccard": 0.10810810810810811,
+    "cosine": 0.2573272548724796,
+    "files_a": [
+      "sympy/printing/mathematica.py"
+    ],
+    "files_b": [
+      "sympy/physics/quantum/dagger.py",
+      "sympy/physics/quantum/operator.py"
+    ]
+  },
+  {
+    "repo": "sympy/sympy",
+    "task_a_id": "sympy__sympy-16450",
+    "task_b_id": "sympy__sympy-19346",
+    "jaccard": 0.14814814814814814,
+    "cosine": 0.11687677643461228,
+    "files_a": [
+      "sympy/simplify/simplify.py"
+    ],
+    "files_b": [
+      "sympy/printing/repr.py"
+    ]
+  },
+  {
+    "repo": "sympy/sympy",
+    "task_a_id": "sympy__sympy-19495",
+    "task_b_id": "sympy__sympy-19783",
+    "jaccard": 0.07035175879396985,
+    "cosine": 0.1363808515479158,
+    "files_a": [
+      "sympy/sets/conditionset.py"
+    ],
+    "files_b": [
+      "sympy/physics/quantum/dagger.py",
+      "sympy/physics/quantum/operator.py"
+    ]
+  },
+  {
+    "repo": "sympy/sympy",
+    "task_a_id": "sympy__sympy-14711",
+    "task_b_id": "sympy__sympy-24562",
+    "jaccard": 0.16923076923076924,
+    "cosine": 0.12873945748686463,
+    "files_a": [
+      "sympy/physics/vector/vector.py"
+    ],
+    "files_b": [
+      "sympy/core/numbers.py"
+    ]
+  },
+  {
+    "repo": "sympy/sympy",
+    "task_a_id": "sympy__sympy-13480",
+    "task_b_id": "sympy__sympy-20428",
+    "jaccard": 0.22,
+    "cosine": 0.21571023001068682,
+    "files_a": [
+      "sympy/functions/elementary/hyperbolic.py"
+    ],
+    "files_b": [
+      "sympy/polys/domains/expressiondomain.py"
+    ]
+  },
+  {
+    "repo": "sympy/sympy",
+    "task_a_id": "sympy__sympy-20916",
+    "task_b_id": "sympy__sympy-18211",
+    "jaccard": 0.12121212121212122,
+    "cosine": 0.1563506661741001,
+    "files_a": [
+      "sympy/printing/conventions.py"
+    ],
+    "files_b": [
+      "sympy/core/relational.py"
+    ]
+  },
+  {
+    "repo": "sympy/sympy",
+    "task_a_id": "sympy__sympy-14711",
+    "task_b_id": "sympy__sympy-17655",
+    "jaccard": 0.17857142857142858,
+    "cosine": 0.21657983713950898,
+    "files_a": [
+      "sympy/physics/vector/vector.py"
+    ],
+    "files_b": [
+      "sympy/geometry/point.py"
+    ]
+  },
+  {
+    "repo": "sympy/sympy",
+    "task_a_id": "sympy__sympy-19954",
+    "task_b_id": "sympy__sympy-13615",
+    "jaccard": 0.11570247933884298,
+    "cosine": 0.13004308930159333,
+    "files_a": [
+      "sympy/combinatorics/perm_groups.py"
+    ],
+    "files_b": [
+      "sympy/sets/sets.py"
+    ]
+  },
+  {
+    "repo": "sympy/sympy",
+    "task_a_id": "sympy__sympy-19637",
+    "task_b_id": "sympy__sympy-13615",
+    "jaccard": 0.14102564102564102,
+    "cosine": 0.16069641815105373,
+    "files_a": [
+      "sympy/core/sympify.py"
+    ],
+    "files_b": [
+      "sympy/sets/sets.py"
+    ]
+  },
+  {
+    "repo": "sympy/sympy",
+    "task_a_id": "sympy__sympy-17139",
+    "task_b_id": "sympy__sympy-13877",
+    "jaccard": 0.06719367588932806,
+    "cosine": 0.19536401707852655,
+    "files_a": [
+      "sympy/simplify/fu.py"
+    ],
+    "files_b": [
+      "sympy/matrices/matrices.py",
+      "sympy/utilities/randtest.py"
+    ]
+  },
+  {
+    "repo": "sympy/sympy",
+    "task_a_id": "sympy__sympy-12481",
+    "task_b_id": "sympy__sympy-16792",
+    "jaccard": 0.12605042016806722,
+    "cosine": 0.10189544958818941,
+    "files_a": [
+      "sympy/combinatorics/permutations.py"
+    ],
+    "files_b": [
+      "sympy/utilities/codegen.py"
+    ]
+  },
+  {
+    "repo": "sympy/sympy",
+    "task_a_id": "sympy__sympy-12419",
+    "task_b_id": "sympy__sympy-13031",
+    "jaccard": 0.09923664122137404,
+    "cosine": 0.23531997305716115,
+    "files_a": [
+      "sympy/matrices/expressions/matexpr.py"
+    ],
+    "files_b": [
+      "sympy/matrices/sparse.py"
+    ]
+  },
+  {
+    "repo": "sphinx-doc/sphinx",
+    "task_a_id": "sphinx-doc__sphinx-9591",
+    "task_b_id": "sphinx-doc__sphinx-11510",
+    "jaccard": 0.05045871559633028,
+    "cosine": 0.14217384298988678,
+    "files_a": [
+      "sphinx/domains/python.py"
+    ],
+    "files_b": [
+      "sphinx/directives/other.py"
+    ]
+  },
+  {
+    "repo": "sphinx-doc/sphinx",
+    "task_a_id": "sphinx-doc__sphinx-7889",
+    "task_b_id": "sphinx-doc__sphinx-7748",
+    "jaccard": 0.052884615384615384,
+    "cosine": 0.3287059084507422,
+    "files_a": [
+      "sphinx/ext/autodoc/mock.py"
+    ],
+    "files_b": [
+      "sphinx/ext/autodoc/__init__.py"
+    ]
+  },
+  {
+    "repo": "sphinx-doc/sphinx",
+    "task_a_id": "sphinx-doc__sphinx-8721",
+    "task_b_id": "sphinx-doc__sphinx-11510",
+    "jaccard": 0.07042253521126761,
+    "cosine": 0.1318289166845178,
+    "files_a": [
+      "sphinx/ext/viewcode.py"
+    ],
+    "files_b": [
+      "sphinx/directives/other.py"
+    ]
+  },
+  {
+    "repo": "sphinx-doc/sphinx",
+    "task_a_id": "sphinx-doc__sphinx-7462",
+    "task_b_id": "sphinx-doc__sphinx-8459",
+    "jaccard": 0.11538461538461539,
+    "cosine": 0.1040783376568811,
+    "files_a": [
+      "sphinx/domains/python.py",
+      "sphinx/pycode/ast.py"
+    ],
+    "files_b": [
+      "sphinx/ext/autodoc/typehints.py"
+    ]
+  },
+  {
+    "repo": "sphinx-doc/sphinx",
+    "task_a_id": "sphinx-doc__sphinx-9698",
+    "task_b_id": "sphinx-doc__sphinx-10466",
+    "jaccard": 0.1527777777777778,
+    "cosine": 0.19099230845184445,
+    "files_a": [
+      "sphinx/domains/python.py"
+    ],
+    "files_b": [
+      "sphinx/builders/gettext.py"
+    ]
+  },
+  {
+    "repo": "sphinx-doc/sphinx",
+    "task_a_id": "sphinx-doc__sphinx-8595",
+    "task_b_id": "sphinx-doc__sphinx-9591",
+    "jaccard": 0.16216216216216217,
+    "cosine": 0.2226383781109002,
+    "files_a": [
+      "sphinx/ext/autodoc/__init__.py"
+    ],
+    "files_b": [
+      "sphinx/domains/python.py"
+    ]
+  },
+  {
+    "repo": "sphinx-doc/sphinx",
+    "task_a_id": "sphinx-doc__sphinx-10466",
+    "task_b_id": "sphinx-doc__sphinx-7590",
+    "jaccard": 0.035897435897435895,
+    "cosine": 0.26120648223220405,
+    "files_a": [
+      "sphinx/builders/gettext.py"
+    ],
+    "files_b": [
+      "sphinx/domains/c.py",
+      "sphinx/domains/cpp.py",
+      "sphinx/util/cfamily.py"
+    ]
+  },
+  {
+    "repo": "sphinx-doc/sphinx",
+    "task_a_id": "sphinx-doc__sphinx-10435",
+    "task_b_id": "sphinx-doc__sphinx-11510",
+    "jaccard": 0.048672566371681415,
+    "cosine": 0.1097672733970306,
+    "files_a": [
+      "sphinx/writers/latex.py"
+    ],
+    "files_b": [
+      "sphinx/directives/other.py"
+    ]
+  },
+  {
+    "repo": "sphinx-doc/sphinx",
+    "task_a_id": "sphinx-doc__sphinx-10435",
+    "task_b_id": "sphinx-doc__sphinx-9602",
+    "jaccard": 0.09016393442622951,
+    "cosine": 0.11447652838022257,
+    "files_a": [
+      "sphinx/writers/latex.py"
+    ],
+    "files_b": [
+      "sphinx/domains/python.py"
+    ]
+  },
+  {
+    "repo": "sphinx-doc/sphinx",
+    "task_a_id": "sphinx-doc__sphinx-8721",
+    "task_b_id": "sphinx-doc__sphinx-8035",
+    "jaccard": 0.08900523560209424,
+    "cosine": 0.09506953905618833,
+    "files_a": [
+      "sphinx/ext/viewcode.py"
+    ],
+    "files_b": [
+      "sphinx/ext/autodoc/__init__.py"
+    ]
+  },
+  {
+    "repo": "sphinx-doc/sphinx",
+    "task_a_id": "sphinx-doc__sphinx-9711",
+    "task_b_id": "sphinx-doc__sphinx-10673",
+    "jaccard": 0.10204081632653061,
+    "cosine": 0.1328380331697526,
+    "files_a": [
+      "sphinx/extension.py"
+    ],
+    "files_b": [
+      "sphinx/directives/other.py",
+      "sphinx/environment/adapters/toctree.py",
+      "sphinx/environment/collectors/toctree.py"
+    ]
+  },
+  {
+    "repo": "sphinx-doc/sphinx",
+    "task_a_id": "sphinx-doc__sphinx-8269",
+    "task_b_id": "sphinx-doc__sphinx-9591",
+    "jaccard": 0.17647058823529413,
+    "cosine": 0.20908737451033138,
+    "files_a": [
+      "sphinx/builders/linkcheck.py"
+    ],
+    "files_b": [
+      "sphinx/domains/python.py"
+    ]
+  },
+  {
+    "repo": "sphinx-doc/sphinx",
+    "task_a_id": "sphinx-doc__sphinx-8035",
+    "task_b_id": "sphinx-doc__sphinx-8120",
+    "jaccard": 0.0916030534351145,
+    "cosine": 0.14720267556894967,
+    "files_a": [
+      "sphinx/ext/autodoc/__init__.py"
+    ],
+    "files_b": [
+      "sphinx/application.py",
+      "sphinx/locale/__init__.py"
+    ]
+  },
+  {
+    "repo": "sphinx-doc/sphinx",
+    "task_a_id": "sphinx-doc__sphinx-7454",
+    "task_b_id": "sphinx-doc__sphinx-10673",
+    "jaccard": 0.057034220532319393,
+    "cosine": 0.19597998008762155,
+    "files_a": [
+      "sphinx/domains/python.py"
+    ],
+    "files_b": [
+      "sphinx/directives/other.py",
+      "sphinx/environment/adapters/toctree.py",
+      "sphinx/environment/collectors/toctree.py"
+    ]
+  },
+  {
+    "repo": "sphinx-doc/sphinx",
+    "task_a_id": "sphinx-doc__sphinx-7454",
+    "task_b_id": "sphinx-doc__sphinx-8459",
+    "jaccard": 0.136986301369863,
+    "cosine": 0.18387771831524963,
+    "files_a": [
+      "sphinx/domains/python.py"
+    ],
+    "files_b": [
+      "sphinx/ext/autodoc/typehints.py"
+    ]
+  },
+  {
+    "repo": "sphinx-doc/sphinx",
+    "task_a_id": "sphinx-doc__sphinx-7748",
+    "task_b_id": "sphinx-doc__sphinx-10614",
+    "jaccard": 0.08888888888888889,
+    "cosine": 0.11913902420134484,
+    "files_a": [
+      "sphinx/ext/autodoc/__init__.py"
+    ],
+    "files_b": [
+      "sphinx/ext/inheritance_diagram.py"
+    ]
+  },
+  {
+    "repo": "sphinx-doc/sphinx",
+    "task_a_id": "sphinx-doc__sphinx-8459",
+    "task_b_id": "sphinx-doc__sphinx-9698",
+    "jaccard": 0.15714285714285714,
+    "cosine": 0.14387030942965,
+    "files_a": [
+      "sphinx/ext/autodoc/typehints.py"
+    ],
+    "files_b": [
+      "sphinx/domains/python.py"
+    ]
+  },
+  {
+    "repo": "sphinx-doc/sphinx",
+    "task_a_id": "sphinx-doc__sphinx-8551",
+    "task_b_id": "sphinx-doc__sphinx-11510",
+    "jaccard": 0.05084745762711865,
+    "cosine": 0.18094993864893366,
+    "files_a": [
+      "sphinx/domains/python.py",
+      "sphinx/util/docfields.py"
+    ],
+    "files_b": [
+      "sphinx/directives/other.py"
+    ]
+  },
+  {
+    "repo": "sphinx-doc/sphinx",
+    "task_a_id": "sphinx-doc__sphinx-8595",
+    "task_b_id": "sphinx-doc__sphinx-9258",
+    "jaccard": 0.136986301369863,
+    "cosine": 0.2002003131713886,
+    "files_a": [
+      "sphinx/ext/autodoc/__init__.py"
+    ],
+    "files_b": [
+      "sphinx/domains/python.py"
+    ]
+  },
+  {
+    "repo": "sphinx-doc/sphinx",
+    "task_a_id": "sphinx-doc__sphinx-7462",
+    "task_b_id": "sphinx-doc__sphinx-8475",
+    "jaccard": 0.0975609756097561,
+    "cosine": 0.12170280325987944,
+    "files_a": [
+      "sphinx/domains/python.py",
+      "sphinx/pycode/ast.py"
+    ],
+    "files_b": [
+      "sphinx/builders/linkcheck.py"
+    ]
+  },
+  {
+    "repo": "matplotlib/matplotlib",
+    "task_a_id": "matplotlib__matplotlib-25122",
+    "task_b_id": "matplotlib__matplotlib-22871",
+    "jaccard": 0.11764705882352941,
+    "cosine": 0.14605545904244055,
+    "files_a": [
+      "lib/matplotlib/mlab.py"
+    ],
+    "files_b": [
+      "lib/matplotlib/dates.py"
+    ]
+  },
+  {
+    "repo": "matplotlib/matplotlib",
+    "task_a_id": "matplotlib__matplotlib-22719",
+    "task_b_id": "matplotlib__matplotlib-26113",
+    "jaccard": 0.11403508771929824,
+    "cosine": 0.20275497316649854,
+    "files_a": [
+      "lib/matplotlib/category.py"
+    ],
+    "files_b": [
+      "lib/matplotlib/axes/_axes.py"
+    ]
+  },
+  {
+    "repo": "matplotlib/matplotlib",
+    "task_a_id": "matplotlib__matplotlib-14623",
+    "task_b_id": "matplotlib__matplotlib-26291",
+    "jaccard": 0.07857142857142857,
+    "cosine": 0.1777870950028418,
+    "files_a": [
+      "lib/matplotlib/axes/_base.py",
+      "lib/matplotlib/ticker.py",
+      "lib/mpl_toolkits/mplot3d/axes3d.py"
+    ],
+    "files_b": [
+      "lib/mpl_toolkits/axes_grid1/inset_locator.py"
+    ]
+  },
+  {
+    "repo": "matplotlib/matplotlib",
+    "task_a_id": "matplotlib__matplotlib-25311",
+    "task_b_id": "matplotlib__matplotlib-22871",
+    "jaccard": 0.12380952380952381,
+    "cosine": 0.1766170324452435,
+    "files_a": [
+      "lib/matplotlib/offsetbox.py"
+    ],
+    "files_b": [
+      "lib/matplotlib/dates.py"
+    ]
+  },
+  {
+    "repo": "matplotlib/matplotlib",
+    "task_a_id": "matplotlib__matplotlib-22871",
+    "task_b_id": "matplotlib__matplotlib-26342",
+    "jaccard": 0.10465116279069768,
+    "cosine": 0.15871586158994017,
+    "files_a": [
+      "lib/matplotlib/dates.py"
+    ],
+    "files_b": [
+      "lib/matplotlib/collections.py"
+    ]
+  },
+  {
+    "repo": "matplotlib/matplotlib",
+    "task_a_id": "matplotlib__matplotlib-26208",
+    "task_b_id": "matplotlib__matplotlib-26291",
+    "jaccard": 0.13793103448275862,
+    "cosine": 0.21840950025670253,
+    "files_a": [
+      "lib/matplotlib/axes/_base.py"
+    ],
+    "files_b": [
+      "lib/mpl_toolkits/axes_grid1/inset_locator.py"
+    ]
+  },
+  {
+    "repo": "matplotlib/matplotlib",
+    "task_a_id": "matplotlib__matplotlib-24149",
+    "task_b_id": "matplotlib__matplotlib-23299",
+    "jaccard": 0.13186813186813187,
+    "cosine": 0.1402724742523306,
+    "files_a": [
+      "lib/matplotlib/axes/_axes.py"
+    ],
+    "files_b": [
+      "lib/matplotlib/__init__.py"
+    ]
+  },
+  {
+    "repo": "matplotlib/matplotlib",
+    "task_a_id": "matplotlib__matplotlib-14623",
+    "task_b_id": "matplotlib__matplotlib-22865",
+    "jaccard": 0.07096774193548387,
+    "cosine": 0.24743938763100695,
+    "files_a": [
+      "lib/matplotlib/axes/_base.py",
+      "lib/matplotlib/ticker.py",
+      "lib/mpl_toolkits/mplot3d/axes3d.py"
+    ],
+    "files_b": [
+      "lib/matplotlib/colorbar.py"
+    ]
+  },
+  {
+    "repo": "matplotlib/matplotlib",
+    "task_a_id": "matplotlib__matplotlib-26208",
+    "task_b_id": "matplotlib__matplotlib-22871",
+    "jaccard": 0.0963855421686747,
+    "cosine": 0.14887169169134123,
+    "files_a": [
+      "lib/matplotlib/axes/_base.py"
+    ],
+    "files_b": [
+      "lib/matplotlib/dates.py"
+    ]
+  },
+  {
+    "repo": "matplotlib/matplotlib",
+    "task_a_id": "matplotlib__matplotlib-24570",
+    "task_b_id": "matplotlib__matplotlib-22871",
+    "jaccard": 0.14444444444444443,
+    "cosine": 0.21335333113640045,
+    "files_a": [
+      "lib/matplotlib/offsetbox.py"
+    ],
+    "files_b": [
+      "lib/matplotlib/dates.py"
+    ]
+  },
+  {
+    "repo": "matplotlib/matplotlib",
+    "task_a_id": "matplotlib__matplotlib-25287",
+    "task_b_id": "matplotlib__matplotlib-26342",
+    "jaccard": 0.1125,
+    "cosine": 0.30559156377141283,
+    "files_a": [
+      "lib/matplotlib/axis.py"
+    ],
+    "files_b": [
+      "lib/matplotlib/collections.py"
+    ]
+  },
+  {
+    "repo": "matplotlib/matplotlib",
+    "task_a_id": "matplotlib__matplotlib-20859",
+    "task_b_id": "matplotlib__matplotlib-26113",
+    "jaccard": 0.12087912087912088,
+    "cosine": 0.18424914939067835,
+    "files_a": [
+      "lib/matplotlib/legend.py"
+    ],
+    "files_b": [
+      "lib/matplotlib/axes/_axes.py"
+    ]
+  },
+  {
+    "repo": "matplotlib/matplotlib",
+    "task_a_id": "matplotlib__matplotlib-24149",
+    "task_b_id": "matplotlib__matplotlib-25960",
+    "jaccard": 0.07216494845360824,
+    "cosine": 0.09540199442016194,
+    "files_a": [
+      "lib/matplotlib/axes/_axes.py"
+    ],
+    "files_b": [
+      "lib/matplotlib/figure.py"
+    ]
+  },
+  {
+    "repo": "matplotlib/matplotlib",
+    "task_a_id": "matplotlib__matplotlib-25122",
+    "task_b_id": "matplotlib__matplotlib-26342",
+    "jaccard": 0.08035714285714286,
+    "cosine": 0.06603852610839075,
+    "files_a": [
+      "lib/matplotlib/mlab.py"
+    ],
+    "files_b": [
+      "lib/matplotlib/collections.py"
+    ]
+  },
+  {
+    "repo": "matplotlib/matplotlib",
+    "task_a_id": "matplotlib__matplotlib-24149",
+    "task_b_id": "matplotlib__matplotlib-23314",
+    "jaccard": 0.15384615384615385,
+    "cosine": 0.1211824509646319,
+    "files_a": [
+      "lib/matplotlib/axes/_axes.py"
+    ],
+    "files_b": [
+      "lib/mpl_toolkits/mplot3d/axes3d.py"
+    ]
+  },
+  {
+    "repo": "matplotlib/matplotlib",
+    "task_a_id": "matplotlib__matplotlib-23299",
+    "task_b_id": "matplotlib__matplotlib-25775",
+    "jaccard": 0.08239700374531835,
+    "cosine": 0.1995100004775297,
+    "files_a": [
+      "lib/matplotlib/__init__.py"
+    ],
+    "files_b": [
+      "lib/matplotlib/backends/backend_agg.py",
+      "lib/matplotlib/backends/backend_cairo.py",
+      "lib/matplotlib/text.py"
+    ]
+  },
+  {
+    "repo": "matplotlib/matplotlib",
+    "task_a_id": "matplotlib__matplotlib-14623",
+    "task_b_id": "matplotlib__matplotlib-25960",
+    "jaccard": 0.10121457489878542,
+    "cosine": 0.3168053576864997,
+    "files_a": [
+      "lib/matplotlib/axes/_base.py",
+      "lib/matplotlib/ticker.py",
+      "lib/mpl_toolkits/mplot3d/axes3d.py"
+    ],
+    "files_b": [
+      "lib/matplotlib/figure.py"
+    ]
+  },
+  {
+    "repo": "matplotlib/matplotlib",
+    "task_a_id": "matplotlib__matplotlib-25311",
+    "task_b_id": "matplotlib__matplotlib-25479",
+    "jaccard": 0.1076923076923077,
+    "cosine": 0.3358973271847496,
+    "files_a": [
+      "lib/matplotlib/offsetbox.py"
+    ],
+    "files_b": [
+      "lib/matplotlib/cm.py",
+      "lib/matplotlib/colors.py"
+    ]
+  },
+  {
+    "repo": "matplotlib/matplotlib",
+    "task_a_id": "matplotlib__matplotlib-24570",
+    "task_b_id": "matplotlib__matplotlib-26291",
+    "jaccard": 0.11428571428571428,
+    "cosine": 0.0987146031175575,
+    "files_a": [
+      "lib/matplotlib/offsetbox.py"
+    ],
+    "files_b": [
+      "lib/mpl_toolkits/axes_grid1/inset_locator.py"
+    ]
+  },
+  {
+    "repo": "matplotlib/matplotlib",
+    "task_a_id": "matplotlib__matplotlib-25479",
+    "task_b_id": "matplotlib__matplotlib-24637",
+    "jaccard": 0.11206896551724138,
+    "cosine": 0.3097870857975628,
+    "files_a": [
+      "lib/matplotlib/cm.py",
+      "lib/matplotlib/colors.py"
+    ],
+    "files_b": [
+      "lib/matplotlib/offsetbox.py"
+    ]
+  },
+  {
+    "repo": "scikit-learn/scikit-learn",
+    "task_a_id": "scikit-learn__scikit-learn-13124",
+    "task_b_id": "scikit-learn__scikit-learn-15100",
+    "jaccard": 0.08955223880597014,
+    "cosine": 0.10381822152648834,
+    "files_a": [
+      "sklearn/model_selection/_split.py"
+    ],
+    "files_b": [
+      "sklearn/feature_extraction/text.py"
+    ]
+  },
+  {
+    "repo": "scikit-learn/scikit-learn",
+    "task_a_id": "scikit-learn__scikit-learn-11578",
+    "task_b_id": "scikit-learn__scikit-learn-14710",
+    "jaccard": 0.12857142857142856,
+    "cosine": 0.11345713992834862,
+    "files_a": [
+      "sklearn/linear_model/logistic.py"
+    ],
+    "files_b": [
+      "sklearn/ensemble/_hist_gradient_boosting/gradient_boosting.py"
+    ]
+  },
+  {
+    "repo": "scikit-learn/scikit-learn",
+    "task_a_id": "scikit-learn__scikit-learn-11578",
+    "task_b_id": "scikit-learn__scikit-learn-25931",
+    "jaccard": 0.11023622047244094,
+    "cosine": 0.106896852827395,
+    "files_a": [
+      "sklearn/linear_model/logistic.py"
+    ],
+    "files_b": [
+      "sklearn/ensemble/_iforest.py"
+    ]
+  },
+  {
+    "repo": "scikit-learn/scikit-learn",
+    "task_a_id": "scikit-learn__scikit-learn-11310",
+    "task_b_id": "scikit-learn__scikit-learn-26194",
+    "jaccard": 0.09016393442622951,
+    "cosine": 0.1878543597736756,
+    "files_a": [
+      "sklearn/model_selection/_search.py"
+    ],
+    "files_b": [
+      "sklearn/metrics/_ranking.py"
+    ]
+  },
+  {
+    "repo": "scikit-learn/scikit-learn",
+    "task_a_id": "scikit-learn__scikit-learn-13328",
+    "task_b_id": "scikit-learn__scikit-learn-13439",
+    "jaccard": 0.15942028985507245,
+    "cosine": 0.2092080191088172,
+    "files_a": [
+      "sklearn/linear_model/huber.py"
+    ],
+    "files_b": [
+      "sklearn/pipeline.py"
+    ]
+  },
+  {
+    "repo": "scikit-learn/scikit-learn",
+    "task_a_id": "scikit-learn__scikit-learn-12973",
+    "task_b_id": "scikit-learn__scikit-learn-15100",
+    "jaccard": 0.09868421052631579,
+    "cosine": 0.09231751133610695,
+    "files_a": [
+      "sklearn/linear_model/least_angle.py"
+    ],
+    "files_b": [
+      "sklearn/feature_extraction/text.py"
+    ]
+  },
+  {
+    "repo": "scikit-learn/scikit-learn",
+    "task_a_id": "scikit-learn__scikit-learn-11310",
+    "task_b_id": "scikit-learn__scikit-learn-11578",
+    "jaccard": 0.11940298507462686,
+    "cosine": 0.13596150468971668,
+    "files_a": [
+      "sklearn/model_selection/_search.py"
+    ],
+    "files_b": [
+      "sklearn/linear_model/logistic.py"
+    ]
+  },
+  {
+    "repo": "scikit-learn/scikit-learn",
+    "task_a_id": "scikit-learn__scikit-learn-12682",
+    "task_b_id": "scikit-learn__scikit-learn-26323",
+    "jaccard": 0.03357314148681055,
+    "cosine": 0.20619182933079028,
+    "files_a": [
+      "examples/decomposition/plot_sparse_coding.py",
+      "sklearn/decomposition/dict_learning.py"
+    ],
+    "files_b": [
+      "sklearn/compose/_column_transformer.py"
+    ]
+  },
+  {
+    "repo": "scikit-learn/scikit-learn",
+    "task_a_id": "scikit-learn__scikit-learn-13439",
+    "task_b_id": "scikit-learn__scikit-learn-14629",
+    "jaccard": 0.13043478260869565,
+    "cosine": 0.30207714317566914,
+    "files_a": [
+      "sklearn/pipeline.py"
+    ],
+    "files_b": [
+      "sklearn/multioutput.py"
+    ]
+  },
+  {
+    "repo": "scikit-learn/scikit-learn",
+    "task_a_id": "scikit-learn__scikit-learn-13779",
+    "task_b_id": "scikit-learn__scikit-learn-12682",
+    "jaccard": 0.03631961259079903,
+    "cosine": 0.1614339349564023,
+    "files_a": [
+      "sklearn/ensemble/voting.py"
+    ],
+    "files_b": [
+      "examples/decomposition/plot_sparse_coding.py",
+      "sklearn/decomposition/dict_learning.py"
+    ]
+  },
+  {
+    "repo": "scikit-learn/scikit-learn",
+    "task_a_id": "scikit-learn__scikit-learn-13328",
+    "task_b_id": "scikit-learn__scikit-learn-14894",
+    "jaccard": 0.1780821917808219,
+    "cosine": 0.19628808512044,
+    "files_a": [
+      "sklearn/linear_model/huber.py"
+    ],
+    "files_b": [
+      "sklearn/svm/base.py"
+    ]
+  },
+  {
+    "repo": "scikit-learn/scikit-learn",
+    "task_a_id": "scikit-learn__scikit-learn-12585",
+    "task_b_id": "scikit-learn__scikit-learn-13328",
+    "jaccard": 0.14492753623188406,
+    "cosine": 0.17054585984753573,
+    "files_a": [
+      "sklearn/base.py"
+    ],
+    "files_b": [
+      "sklearn/linear_model/huber.py"
+    ]
+  },
+  {
+    "repo": "scikit-learn/scikit-learn",
+    "task_a_id": "scikit-learn__scikit-learn-13142",
+    "task_b_id": "scikit-learn__scikit-learn-14629",
+    "jaccard": 0.1144578313253012,
+    "cosine": 0.3356147661694498,
+    "files_a": [
+      "sklearn/mixture/base.py"
+    ],
+    "files_b": [
+      "sklearn/multioutput.py"
+    ]
+  },
+  {
+    "repo": "scikit-learn/scikit-learn",
+    "task_a_id": "scikit-learn__scikit-learn-14710",
+    "task_b_id": "scikit-learn__scikit-learn-25931",
+    "jaccard": 0.08527131782945736,
+    "cosine": 0.407374632452031,
+    "files_a": [
+      "sklearn/ensemble/_hist_gradient_boosting/gradient_boosting.py"
+    ],
+    "files_b": [
+      "sklearn/ensemble/_iforest.py"
+    ]
+  },
+  {
+    "repo": "scikit-learn/scikit-learn",
+    "task_a_id": "scikit-learn__scikit-learn-25747",
+    "task_b_id": "scikit-learn__scikit-learn-25931",
+    "jaccard": 0.08888888888888889,
+    "cosine": 0.07607214170621562,
+    "files_a": [
+      "sklearn/utils/_set_output.py"
+    ],
+    "files_b": [
+      "sklearn/ensemble/_iforest.py"
+    ]
+  },
+  {
+    "repo": "scikit-learn/scikit-learn",
+    "task_a_id": "scikit-learn__scikit-learn-25232",
+    "task_b_id": "scikit-learn__scikit-learn-12682",
+    "jaccard": 0.053784860557768925,
+    "cosine": 0.2775671460320413,
+    "files_a": [
+      "sklearn/impute/_iterative.py"
+    ],
+    "files_b": [
+      "examples/decomposition/plot_sparse_coding.py",
+      "sklearn/decomposition/dict_learning.py"
+    ]
+  },
+  {
+    "repo": "scikit-learn/scikit-learn",
+    "task_a_id": "scikit-learn__scikit-learn-14087",
+    "task_b_id": "scikit-learn__scikit-learn-14710",
+    "jaccard": 0.09278350515463918,
+    "cosine": 0.3888786814197034,
+    "files_a": [
+      "sklearn/linear_model/logistic.py"
+    ],
+    "files_b": [
+      "sklearn/ensemble/_hist_gradient_boosting/gradient_boosting.py"
+    ]
+  },
+  {
+    "repo": "scikit-learn/scikit-learn",
+    "task_a_id": "scikit-learn__scikit-learn-10844",
+    "task_b_id": "scikit-learn__scikit-learn-14894",
+    "jaccard": 0.12790697674418605,
+    "cosine": 0.13393339023622697,
+    "files_a": [
+      "sklearn/metrics/cluster/supervised.py"
+    ],
+    "files_b": [
+      "sklearn/svm/base.py"
+    ]
+  },
+  {
+    "repo": "scikit-learn/scikit-learn",
+    "task_a_id": "scikit-learn__scikit-learn-9288",
+    "task_b_id": "scikit-learn__scikit-learn-15100",
+    "jaccard": 0.125,
+    "cosine": 0.12694948974417677,
+    "files_a": [
+      "sklearn/cluster/k_means_.py"
+    ],
+    "files_b": [
+      "sklearn/feature_extraction/text.py"
+    ]
+  },
+  {
+    "repo": "scikit-learn/scikit-learn",
+    "task_a_id": "scikit-learn__scikit-learn-14496",
+    "task_b_id": "scikit-learn__scikit-learn-14629",
+    "jaccard": 0.10526315789473684,
+    "cosine": 0.13428620789133683,
+    "files_a": [
+      "sklearn/cluster/optics_.py"
+    ],
+    "files_b": [
+      "sklearn/multioutput.py"
+    ]
+  },
+  {
+    "repo": "astropy/astropy",
+    "task_a_id": "astropy__astropy-7671",
+    "task_b_id": "astropy__astropy-13977",
+    "jaccard": 0.060498220640569395,
+    "cosine": 0.075443628117551,
+    "files_a": [
+      "astropy/utils/introspection.py"
+    ],
+    "files_b": [
+      "astropy/units/quantity.py"
+    ]
+  },
+  {
+    "repo": "astropy/astropy",
+    "task_a_id": "astropy__astropy-13579",
+    "task_b_id": "astropy__astropy-14369",
+    "jaccard": 0.043859649122807015,
+    "cosine": 0.05593567063598027,
+    "files_a": [
+      "astropy/wcs/wcsapi/wrappers/sliced_wcs.py"
+    ],
+    "files_b": [
+      "astropy/units/format/cds.py",
+      "astropy/units/format/cds_parsetab.py"
+    ]
+  },
+  {
+    "repo": "astropy/astropy",
+    "task_a_id": "astropy__astropy-13236",
+    "task_b_id": "astropy__astropy-14096",
+    "jaccard": 0.10909090909090909,
+    "cosine": 0.15656194158922127,
+    "files_a": [
+      "astropy/table/table.py"
+    ],
+    "files_b": [
+      "astropy/coordinates/sky_coordinate.py"
+    ]
+  },
+  {
+    "repo": "astropy/astropy",
+    "task_a_id": "astropy__astropy-8707",
+    "task_b_id": "astropy__astropy-14096",
+    "jaccard": 0.05572755417956656,
+    "cosine": 0.0817449848049166,
+    "files_a": [
+      "astropy/io/fits/card.py",
+      "astropy/io/fits/header.py"
+    ],
+    "files_b": [
+      "astropy/coordinates/sky_coordinate.py"
+    ]
+  },
+  {
+    "repo": "astropy/astropy",
+    "task_a_id": "astropy__astropy-7336",
+    "task_b_id": "astropy__astropy-14539",
+    "jaccard": 0.16393442622950818,
+    "cosine": 0.1892670570725998,
+    "files_a": [
+      "astropy/units/decorators.py"
+    ],
+    "files_b": [
+      "astropy/io/fits/diff.py"
+    ]
+  },
+  {
+    "repo": "astropy/astropy",
+    "task_a_id": "astropy__astropy-14995",
+    "task_b_id": "astropy__astropy-13453",
+    "jaccard": 0.09210526315789473,
+    "cosine": 0.14049397217838183,
+    "files_a": [
+      "astropy/nddata/mixins/ndarithmetic.py"
+    ],
+    "files_b": [
+      "astropy/io/ascii/html.py"
+    ]
+  },
+  {
+    "repo": "astropy/astropy",
+    "task_a_id": "astropy__astropy-7336",
+    "task_b_id": "astropy__astropy-14508",
+    "jaccard": 0.13178294573643412,
+    "cosine": 0.12610931187782906,
+    "files_a": [
+      "astropy/units/decorators.py"
+    ],
+    "files_b": [
+      "astropy/io/fits/card.py"
+    ]
+  },
+  {
+    "repo": "astropy/astropy",
+    "task_a_id": "astropy__astropy-14995",
+    "task_b_id": "astropy__astropy-8872",
+    "jaccard": 0.1310344827586207,
+    "cosine": 0.1343388067733547,
+    "files_a": [
+      "astropy/nddata/mixins/ndarithmetic.py"
+    ],
+    "files_b": [
+      "astropy/units/quantity.py"
+    ]
+  },
+  {
+    "repo": "astropy/astropy",
+    "task_a_id": "astropy__astropy-13977",
+    "task_b_id": "astropy__astropy-13579",
+    "jaccard": 0.051181102362204724,
+    "cosine": 0.056715973846229666,
+    "files_a": [
+      "astropy/units/quantity.py"
+    ],
+    "files_b": [
+      "astropy/wcs/wcsapi/wrappers/sliced_wcs.py"
+    ]
+  },
+  {
+    "repo": "astropy/astropy",
+    "task_a_id": "astropy__astropy-12907",
+    "task_b_id": "astropy__astropy-14365",
+    "jaccard": 0.1527777777777778,
+    "cosine": 0.08951788242885164,
+    "files_a": [
+      "astropy/modeling/separable.py"
+    ],
+    "files_b": [
+      "astropy/io/ascii/qdp.py"
+    ]
+  },
+  {
+    "repo": "astropy/astropy",
+    "task_a_id": "astropy__astropy-12907",
+    "task_b_id": "astropy__astropy-13033",
+    "jaccard": 0.13253012048192772,
+    "cosine": 0.07355356235494748,
+    "files_a": [
+      "astropy/modeling/separable.py"
+    ],
+    "files_b": [
+      "astropy/timeseries/core.py"
+    ]
+  },
+  {
+    "repo": "astropy/astropy",
+    "task_a_id": "astropy__astropy-13977",
+    "task_b_id": "astropy__astropy-14369",
+    "jaccard": 0.0488997555012225,
+    "cosine": 0.0455596528741303,
+    "files_a": [
+      "astropy/units/quantity.py"
+    ],
+    "files_b": [
+      "astropy/units/format/cds.py",
+      "astropy/units/format/cds_parsetab.py"
+    ]
+  },
+  {
+    "repo": "astropy/astropy",
+    "task_a_id": "astropy__astropy-12907",
+    "task_b_id": "astropy__astropy-14369",
+    "jaccard": 0.04090909090909091,
+    "cosine": 0.06340459041224443,
+    "files_a": [
+      "astropy/modeling/separable.py"
+    ],
+    "files_b": [
+      "astropy/units/format/cds.py",
+      "astropy/units/format/cds_parsetab.py"
+    ]
+  },
+  {
+    "repo": "astropy/astropy",
+    "task_a_id": "astropy__astropy-7671",
+    "task_b_id": "astropy__astropy-13579",
+    "jaccard": 0.10309278350515463,
+    "cosine": 0.08598651824803422,
+    "files_a": [
+      "astropy/utils/introspection.py"
+    ],
+    "files_b": [
+      "astropy/wcs/wcsapi/wrappers/sliced_wcs.py"
+    ]
+  },
+  {
+    "repo": "astropy/astropy",
+    "task_a_id": "astropy__astropy-7671",
+    "task_b_id": "astropy__astropy-14096",
+    "jaccard": 0.08928571428571429,
+    "cosine": 0.11080805862938471,
+    "files_a": [
+      "astropy/utils/introspection.py"
+    ],
+    "files_b": [
+      "astropy/coordinates/sky_coordinate.py"
+    ]
+  },
+  {
+    "repo": "astropy/astropy",
+    "task_a_id": "astropy__astropy-7606",
+    "task_b_id": "astropy__astropy-13398",
+    "jaccard": 0.03826955074875208,
+    "cosine": 0.12321995408010358,
+    "files_a": [
+      "astropy/units/core.py"
+    ],
+    "files_b": [
+      "astropy/coordinates/builtin_frames/__init__.py",
+      "astropy/coordinates/builtin_frames/intermediate_rotation_transforms.py",
+      "astropy/coordinates/builtin_frames/itrs.py",
+      "astropy/coordinates/builtin_frames/itrs_observed_transforms.py"
+    ]
+  },
+  {
+    "repo": "astropy/astropy",
+    "task_a_id": "astropy__astropy-14309",
+    "task_b_id": "astropy__astropy-14598",
+    "jaccard": 0.10576923076923077,
+    "cosine": 0.21256974685599622,
+    "files_a": [
+      "astropy/io/fits/connect.py"
+    ],
+    "files_b": [
+      "astropy/io/fits/card.py"
+    ]
+  },
+  {
+    "repo": "astropy/astropy",
+    "task_a_id": "astropy__astropy-8872",
+    "task_b_id": "astropy__astropy-14365",
+    "jaccard": 0.125,
+    "cosine": 0.11825030720857313,
+    "files_a": [
+      "astropy/units/quantity.py"
+    ],
+    "files_b": [
+      "astropy/io/ascii/qdp.py"
+    ]
+  },
+  {
+    "repo": "astropy/astropy",
+    "task_a_id": "astropy__astropy-8872",
+    "task_b_id": "astropy__astropy-13236",
+    "jaccard": 0.12025316455696203,
+    "cosine": 0.18255297127338777,
+    "files_a": [
+      "astropy/units/quantity.py"
+    ],
+    "files_b": [
+      "astropy/table/table.py"
+    ]
+  },
+  {
+    "repo": "astropy/astropy",
+    "task_a_id": "astropy__astropy-7336",
+    "task_b_id": "astropy__astropy-7606",
+    "jaccard": 0.17045454545454544,
+    "cosine": 0.1729920696500019,
+    "files_a": [
+      "astropy/units/decorators.py"
+    ],
+    "files_b": [
+      "astropy/units/core.py"
+    ]
+  },
+  {
+    "repo": "pydata/xarray",
+    "task_a_id": "pydata__xarray-6938",
+    "task_b_id": "pydata__xarray-7229",
+    "jaccard": 0.09885931558935361,
+    "cosine": 0.09814112649698425,
+    "files_a": [
+      "xarray/core/dataset.py",
+      "xarray/core/variable.py"
+    ],
+    "files_b": [
+      "xarray/core/computation.py"
+    ]
+  },
+  {
+    "repo": "pydata/xarray",
+    "task_a_id": "pydata__xarray-4075",
+    "task_b_id": "pydata__xarray-6599",
+    "jaccard": 0.13541666666666666,
+    "cosine": 0.15969408091853707,
+    "files_a": [
+      "xarray/core/weighted.py"
+    ],
+    "files_b": [
+      "xarray/core/computation.py"
+    ]
+  },
+  {
+    "repo": "pydata/xarray",
+    "task_a_id": "pydata__xarray-4094",
+    "task_b_id": "pydata__xarray-3677",
+    "jaccard": 0.15254237288135594,
+    "cosine": 0.37491785861018007,
+    "files_a": [
+      "xarray/core/dataarray.py"
+    ],
+    "files_b": [
+      "xarray/core/dataset.py"
+    ]
+  },
+  {
+    "repo": "pydata/xarray",
+    "task_a_id": "pydata__xarray-4356",
+    "task_b_id": "pydata__xarray-4629",
+    "jaccard": 0.14634146341463414,
+    "cosine": 0.21184693232929633,
+    "files_a": [
+      "xarray/core/nanops.py"
+    ],
+    "files_b": [
+      "xarray/core/merge.py"
+    ]
+  },
+  {
+    "repo": "pydata/xarray",
+    "task_a_id": "pydata__xarray-4695",
+    "task_b_id": "pydata__xarray-6938",
+    "jaccard": 0.08196721311475409,
+    "cosine": 0.37486524363974943,
+    "files_a": [
+      "xarray/core/dataarray.py"
+    ],
+    "files_b": [
+      "xarray/core/dataset.py",
+      "xarray/core/variable.py"
+    ]
+  },
+  {
+    "repo": "pydata/xarray",
+    "task_a_id": "pydata__xarray-4356",
+    "task_b_id": "pydata__xarray-6461",
+    "jaccard": 0.1588785046728972,
+    "cosine": 0.2049985047617007,
+    "files_a": [
+      "xarray/core/nanops.py"
+    ],
+    "files_b": [
+      "xarray/core/computation.py"
+    ]
+  },
+  {
+    "repo": "pydata/xarray",
+    "task_a_id": "pydata__xarray-7233",
+    "task_b_id": "pydata__xarray-6992",
+    "jaccard": 0.05136986301369863,
+    "cosine": 0.2012921207335976,
+    "files_a": [
+      "xarray/core/rolling.py"
+    ],
+    "files_b": [
+      "xarray/core/dataset.py",
+      "xarray/core/indexes.py"
+    ]
+  },
+  {
+    "repo": "pydata/xarray",
+    "task_a_id": "pydata__xarray-6599",
+    "task_b_id": "pydata__xarray-6721",
+    "jaccard": 0.13513513513513514,
+    "cosine": 0.2831856854168997,
+    "files_a": [
+      "xarray/core/computation.py"
+    ],
+    "files_b": [
+      "xarray/core/common.py"
+    ]
+  },
+  {
+    "repo": "pydata/xarray",
+    "task_a_id": "pydata__xarray-3095",
+    "task_b_id": "pydata__xarray-6599",
+    "jaccard": 0.06477732793522267,
+    "cosine": 0.23516386152277752,
+    "files_a": [
+      "xarray/core/indexing.py",
+      "xarray/core/variable.py"
+    ],
+    "files_b": [
+      "xarray/core/computation.py"
+    ]
+  },
+  {
+    "repo": "pydata/xarray",
+    "task_a_id": "pydata__xarray-4687",
+    "task_b_id": "pydata__xarray-7233",
+    "jaccard": 0.08,
+    "cosine": 0.11769486975808367,
+    "files_a": [
+      "xarray/core/computation.py"
+    ],
+    "files_b": [
+      "xarray/core/rolling.py"
+    ]
+  },
+  {
+    "repo": "pydata/xarray",
+    "task_a_id": "pydata__xarray-4075",
+    "task_b_id": "pydata__xarray-7229",
+    "jaccard": 0.0893854748603352,
+    "cosine": 0.08543957247978767,
+    "files_a": [
+      "xarray/core/weighted.py"
+    ],
+    "files_b": [
+      "xarray/core/computation.py"
+    ]
+  },
+  {
+    "repo": "pydata/xarray",
+    "task_a_id": "pydata__xarray-2905",
+    "task_b_id": "pydata__xarray-7229",
+    "jaccard": 0.075,
+    "cosine": 0.10204105500232698,
+    "files_a": [
+      "xarray/core/variable.py"
+    ],
+    "files_b": [
+      "xarray/core/computation.py"
+    ]
+  },
+  {
+    "repo": "pydata/xarray",
+    "task_a_id": "pydata__xarray-2905",
+    "task_b_id": "pydata__xarray-6744",
+    "jaccard": 0.102803738317757,
+    "cosine": 0.10818946841274284,
+    "files_a": [
+      "xarray/core/variable.py"
+    ],
+    "files_b": [
+      "xarray/core/rolling.py"
+    ]
+  },
+  {
+    "repo": "pydata/xarray",
+    "task_a_id": "pydata__xarray-3151",
+    "task_b_id": "pydata__xarray-4966",
+    "jaccard": 0.12903225806451613,
+    "cosine": 0.09800994720708625,
+    "files_a": [
+      "xarray/core/combine.py"
+    ],
+    "files_b": [
+      "xarray/coding/variables.py"
+    ]
+  },
+  {
+    "repo": "pydata/xarray",
+    "task_a_id": "pydata__xarray-3305",
+    "task_b_id": "pydata__xarray-7229",
+    "jaccard": 0.12307692307692308,
+    "cosine": 0.3513800095778295,
+    "files_a": [
+      "xarray/core/dataset.py",
+      "xarray/core/variable.py"
+    ],
+    "files_b": [
+      "xarray/core/computation.py"
+    ]
+  },
+  {
+    "repo": "pydata/xarray",
+    "task_a_id": "pydata__xarray-4629",
+    "task_b_id": "pydata__xarray-4687",
+    "jaccard": 0.0851063829787234,
+    "cosine": 0.16274102839055385,
+    "files_a": [
+      "xarray/core/merge.py"
+    ],
+    "files_b": [
+      "xarray/core/computation.py"
+    ]
+  },
+  {
+    "repo": "pydata/xarray",
+    "task_a_id": "pydata__xarray-3677",
+    "task_b_id": "pydata__xarray-6599",
+    "jaccard": 0.11428571428571428,
+    "cosine": 0.37089159697345714,
+    "files_a": [
+      "xarray/core/dataset.py"
+    ],
+    "files_b": [
+      "xarray/core/computation.py"
+    ]
+  },
+  {
+    "repo": "pydata/xarray",
+    "task_a_id": "pydata__xarray-4075",
+    "task_b_id": "pydata__xarray-4629",
+    "jaccard": 0.13414634146341464,
+    "cosine": 0.14168597918106748,
+    "files_a": [
+      "xarray/core/weighted.py"
+    ],
+    "files_b": [
+      "xarray/core/merge.py"
+    ]
+  },
+  {
+    "repo": "pydata/xarray",
+    "task_a_id": "pydata__xarray-6721",
+    "task_b_id": "pydata__xarray-7233",
+    "jaccard": 0.14925373134328357,
+    "cosine": 0.19586189742400673,
+    "files_a": [
+      "xarray/core/common.py"
+    ],
+    "files_b": [
+      "xarray/core/rolling.py"
+    ]
+  },
+  {
+    "repo": "pydata/xarray",
+    "task_a_id": "pydata__xarray-4094",
+    "task_b_id": "pydata__xarray-4687",
+    "jaccard": 0.08163265306122448,
+    "cosine": 0.19924708875712963,
+    "files_a": [
+      "xarray/core/dataarray.py"
+    ],
+    "files_b": [
+      "xarray/core/computation.py"
+    ]
+  },
+  {
+    "repo": "pytest-dev/pytest",
+    "task_a_id": "pytest-dev__pytest-7324",
+    "task_b_id": "pytest-dev__pytest-8399",
+    "jaccard": 0.10457516339869281,
+    "cosine": 0.26306021498165527,
+    "files_a": [
+      "src/_pytest/mark/expression.py"
+    ],
+    "files_b": [
+      "src/_pytest/python.py",
+      "src/_pytest/unittest.py"
+    ]
+  },
+  {
+    "repo": "pytest-dev/pytest",
+    "task_a_id": "pytest-dev__pytest-7432",
+    "task_b_id": "pytest-dev__pytest-7236",
+    "jaccard": 0.09302325581395349,
+    "cosine": 0.17524722742538448,
+    "files_a": [
+      "src/_pytest/skipping.py"
+    ],
+    "files_b": [
+      "src/_pytest/unittest.py"
+    ]
+  },
+  {
+    "repo": "pytest-dev/pytest",
+    "task_a_id": "pytest-dev__pytest-7521",
+    "task_b_id": "pytest-dev__pytest-6197",
+    "jaccard": 0.10569105691056911,
+    "cosine": 0.2237659002513537,
+    "files_a": [
+      "src/_pytest/capture.py"
+    ],
+    "files_b": [
+      "src/_pytest/python.py"
+    ]
+  },
+  {
+    "repo": "pytest-dev/pytest",
+    "task_a_id": "pytest-dev__pytest-5809",
+    "task_b_id": "pytest-dev__pytest-7571",
+    "jaccard": 0.075,
+    "cosine": 0.09944704962345348,
+    "files_a": [
+      "src/_pytest/pastebin.py"
+    ],
+    "files_b": [
+      "src/_pytest/logging.py"
+    ]
+  },
+  {
+    "repo": "pytest-dev/pytest",
+    "task_a_id": "pytest-dev__pytest-7432",
+    "task_b_id": "pytest-dev__pytest-10356",
+    "jaccard": 0.08441558441558442,
+    "cosine": 0.15982504790706398,
+    "files_a": [
+      "src/_pytest/skipping.py"
+    ],
+    "files_b": [
+      "src/_pytest/mark/structures.py"
+    ]
+  },
+  {
+    "repo": "pytest-dev/pytest",
+    "task_a_id": "pytest-dev__pytest-5631",
+    "task_b_id": "pytest-dev__pytest-7324",
+    "jaccard": 0.11029411764705882,
+    "cosine": 0.1580621748277924,
+    "files_a": [
+      "src/_pytest/compat.py"
+    ],
+    "files_b": [
+      "src/_pytest/mark/expression.py"
+    ]
+  },
+  {
+    "repo": "pytest-dev/pytest",
+    "task_a_id": "pytest-dev__pytest-6202",
+    "task_b_id": "pytest-dev__pytest-5840",
+    "jaccard": 0.056338028169014086,
+    "cosine": 0.3029555465668725,
+    "files_a": [
+      "src/_pytest/python.py"
+    ],
+    "files_b": [
+      "src/_pytest/config/__init__.py",
+      "src/_pytest/pathlib.py"
+    ]
+  },
+  {
+    "repo": "pytest-dev/pytest",
+    "task_a_id": "pytest-dev__pytest-5631",
+    "task_b_id": "pytest-dev__pytest-5787",
+    "jaccard": 0.0627177700348432,
+    "cosine": 0.14439512443190028,
+    "files_a": [
+      "src/_pytest/compat.py"
+    ],
+    "files_b": [
+      "src/_pytest/reports.py"
+    ]
+  },
+  {
+    "repo": "pytest-dev/pytest",
+    "task_a_id": "pytest-dev__pytest-5262",
+    "task_b_id": "pytest-dev__pytest-5809",
+    "jaccard": 0.10294117647058823,
+    "cosine": 0.19975426415443936,
+    "files_a": [
+      "src/_pytest/capture.py"
+    ],
+    "files_b": [
+      "src/_pytest/pastebin.py"
+    ]
+  },
+  {
+    "repo": "pytest-dev/pytest",
+    "task_a_id": "pytest-dev__pytest-7432",
+    "task_b_id": "pytest-dev__pytest-5840",
+    "jaccard": 0.06511627906976744,
+    "cosine": 0.1894889901181016,
+    "files_a": [
+      "src/_pytest/skipping.py"
+    ],
+    "files_b": [
+      "src/_pytest/config/__init__.py",
+      "src/_pytest/pathlib.py"
+    ]
+  },
+  {
+    "repo": "pytest-dev/pytest",
+    "task_a_id": "pytest-dev__pytest-7236",
+    "task_b_id": "pytest-dev__pytest-7324",
+    "jaccard": 0.11538461538461539,
+    "cosine": 0.2817178749207092,
+    "files_a": [
+      "src/_pytest/unittest.py"
+    ],
+    "files_b": [
+      "src/_pytest/mark/expression.py"
+    ]
+  },
+  {
+    "repo": "pytest-dev/pytest",
+    "task_a_id": "pytest-dev__pytest-6202",
+    "task_b_id": "pytest-dev__pytest-10051",
+    "jaccard": 0.10526315789473684,
+    "cosine": 0.24480764393255294,
+    "files_a": [
+      "src/_pytest/python.py"
+    ],
+    "files_b": [
+      "src/_pytest/logging.py"
+    ]
+  },
+  {
+    "repo": "pytest-dev/pytest",
+    "task_a_id": "pytest-dev__pytest-7236",
+    "task_b_id": "pytest-dev__pytest-7490",
+    "jaccard": 0.12903225806451613,
+    "cosine": 0.15155031902263677,
+    "files_a": [
+      "src/_pytest/unittest.py"
+    ],
+    "files_b": [
+      "src/_pytest/skipping.py"
+    ]
+  },
+  {
+    "repo": "pytest-dev/pytest",
+    "task_a_id": "pytest-dev__pytest-5809",
+    "task_b_id": "pytest-dev__pytest-7490",
+    "jaccard": 0.09803921568627451,
+    "cosine": 0.06888292131332477,
+    "files_a": [
+      "src/_pytest/pastebin.py"
+    ],
+    "files_b": [
+      "src/_pytest/skipping.py"
+    ]
+  },
+  {
+    "repo": "pytest-dev/pytest",
+    "task_a_id": "pytest-dev__pytest-6197",
+    "task_b_id": "pytest-dev__pytest-10356",
+    "jaccard": 0.1152073732718894,
+    "cosine": 0.24704140104067435,
+    "files_a": [
+      "src/_pytest/python.py"
+    ],
+    "files_b": [
+      "src/_pytest/mark/structures.py"
+    ]
+  },
+  {
+    "repo": "pytest-dev/pytest",
+    "task_a_id": "pytest-dev__pytest-7521",
+    "task_b_id": "pytest-dev__pytest-7982",
+    "jaccard": 0.17307692307692307,
+    "cosine": 0.2541458540455895,
+    "files_a": [
+      "src/_pytest/capture.py"
+    ],
+    "files_b": [
+      "src/_pytest/pathlib.py"
+    ]
+  },
+  {
+    "repo": "pytest-dev/pytest",
+    "task_a_id": "pytest-dev__pytest-10051",
+    "task_b_id": "pytest-dev__pytest-5787",
+    "jaccard": 0.05863192182410423,
+    "cosine": 0.14288086062150146,
+    "files_a": [
+      "src/_pytest/logging.py"
+    ],
+    "files_b": [
+      "src/_pytest/reports.py"
+    ]
+  },
+  {
+    "repo": "pytest-dev/pytest",
+    "task_a_id": "pytest-dev__pytest-7205",
+    "task_b_id": "pytest-dev__pytest-7982",
+    "jaccard": 0.15789473684210525,
+    "cosine": 0.20404176364238308,
+    "files_a": [
+      "src/_pytest/setuponly.py"
+    ],
+    "files_b": [
+      "src/_pytest/pathlib.py"
+    ]
+  },
+  {
+    "repo": "pytest-dev/pytest",
+    "task_a_id": "pytest-dev__pytest-6202",
+    "task_b_id": "pytest-dev__pytest-5631",
+    "jaccard": 0.13333333333333333,
+    "cosine": 0.18948030307913893,
+    "files_a": [
+      "src/_pytest/python.py"
+    ],
+    "files_b": [
+      "src/_pytest/compat.py"
+    ]
+  },
+  {
+    "repo": "pytest-dev/pytest",
+    "task_a_id": "pytest-dev__pytest-7982",
+    "task_b_id": "pytest-dev__pytest-8399",
+    "jaccard": 0.10309278350515463,
+    "cosine": 0.1338578298821471,
+    "files_a": [
+      "src/_pytest/pathlib.py"
+    ],
+    "files_b": [
+      "src/_pytest/python.py",
+      "src/_pytest/unittest.py"
+    ]
+  }
+]

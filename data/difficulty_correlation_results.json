@@ -1,0 +1,3532 @@
+{
+  "pairs": [
+    {
+      "task_a_id": "pydata__xarray-4075",
+      "task_b_id": "pydata__xarray-3677",
+      "repo": "pydata/xarray",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.12048192771084337,
+      "cosine": 0.2036793757122795,
+      "files_a": [
+        "xarray/core/weighted.py"
+      ],
+      "files_b": [
+        "xarray/core/dataset.py"
+      ]
+    },
+    {
+      "task_a_id": "sympy__sympy-12481",
+      "task_b_id": "sympy__sympy-19346",
+      "repo": "sympy/sympy",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.15384615384615385,
+      "cosine": 0.11042980379519605,
+      "files_a": [
+        "sympy/combinatorics/permutations.py"
+      ],
+      "files_b": [
+        "sympy/printing/repr.py"
+      ]
+    },
+    {
+      "task_a_id": "matplotlib__matplotlib-24149",
+      "task_b_id": "matplotlib__matplotlib-14623",
+      "repo": "matplotlib/matplotlib",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.0728476821192053,
+      "cosine": 0.10234443971537323,
+      "files_a": [
+        "lib/matplotlib/axes/_axes.py"
+      ],
+      "files_b": [
+        "lib/matplotlib/axes/_base.py",
+        "lib/matplotlib/ticker.py",
+        "lib/mpl_toolkits/mplot3d/axes3d.py"
+      ]
+    },
+    {
+      "task_a_id": "sympy__sympy-13480",
+      "task_b_id": "sympy__sympy-15349",
+      "repo": "sympy/sympy",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.17307692307692307,
+      "cosine": 0.20653702633163773,
+      "files_a": [
+        "sympy/functions/elementary/hyperbolic.py"
+      ],
+      "files_b": [
+        "sympy/algebras/quaternion.py"
+      ]
+    },
+    {
+      "task_a_id": "sphinx-doc__sphinx-7889",
+      "task_b_id": "sphinx-doc__sphinx-7757",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.10869565217391304,
+      "cosine": 0.03271810026234489,
+      "files_a": [
+        "sphinx/ext/autodoc/mock.py"
+      ],
+      "files_b": [
+        "sphinx/util/inspect.py"
+      ]
+    },
+    {
+      "task_a_id": "scikit-learn__scikit-learn-11310",
+      "task_b_id": "scikit-learn__scikit-learn-10908",
+      "repo": "scikit-learn/scikit-learn",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.08208955223880597,
+      "cosine": 0.19912017565376078,
+      "files_a": [
+        "sklearn/model_selection/_search.py"
+      ],
+      "files_b": [
+        "sklearn/feature_extraction/text.py"
+      ]
+    },
+    {
+      "task_a_id": "sphinx-doc__sphinx-7454",
+      "task_b_id": "sphinx-doc__sphinx-7748",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.06018518518518518,
+      "cosine": 0.11092156196412728,
+      "files_a": [
+        "sphinx/domains/python.py"
+      ],
+      "files_b": [
+        "sphinx/ext/autodoc/__init__.py"
+      ]
+    },
+    {
+      "task_a_id": "sympy__sympy-13372",
+      "task_b_id": "sympy__sympy-13974",
+      "repo": "sympy/sympy",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.0782122905027933,
+      "cosine": 0.06950176195333976,
+      "files_a": [
+        "sympy/core/evalf.py"
+      ],
+      "files_b": [
+        "sympy/physics/quantum/tensorproduct.py"
+      ]
+    },
+    {
+      "task_a_id": "pydata__xarray-6461",
+      "task_b_id": "pydata__xarray-3095",
+      "repo": "pydata/xarray",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.09055118110236221,
+      "cosine": 0.12272684164881978,
+      "files_a": [
+        "xarray/core/computation.py"
+      ],
+      "files_b": [
+        "xarray/core/indexing.py",
+        "xarray/core/variable.py"
+      ]
+    },
+    {
+      "task_a_id": "sympy__sympy-12096",
+      "task_b_id": "sympy__sympy-18698",
+      "repo": "sympy/sympy",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.12745098039215685,
+      "cosine": 0.1433638009716135,
+      "files_a": [
+        "sympy/core/function.py"
+      ],
+      "files_b": [
+        "sympy/polys/polytools.py"
+      ]
+    },
+    {
+      "task_a_id": "scikit-learn__scikit-learn-13135",
+      "task_b_id": "scikit-learn__scikit-learn-10297",
+      "repo": "scikit-learn/scikit-learn",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.0718232044198895,
+      "cosine": 0.07099499316570336,
+      "files_a": [
+        "sklearn/preprocessing/_discretization.py"
+      ],
+      "files_b": [
+        "sklearn/linear_model/ridge.py"
+      ]
+    },
+    {
+      "task_a_id": "sympy__sympy-13480",
+      "task_b_id": "sympy__sympy-13757",
+      "repo": "sympy/sympy",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.14035087719298245,
+      "cosine": 0.1936508610675883,
+      "files_a": [
+        "sympy/functions/elementary/hyperbolic.py"
+      ],
+      "files_b": [
+        "sympy/polys/polytools.py"
+      ]
+    },
+    {
+      "task_a_id": "sphinx-doc__sphinx-7889",
+      "task_b_id": "sphinx-doc__sphinx-8721",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.14516129032258066,
+      "cosine": 0.1769873518197274,
+      "files_a": [
+        "sphinx/ext/autodoc/mock.py"
+      ],
+      "files_b": [
+        "sphinx/ext/viewcode.py"
+      ]
+    },
+    {
+      "task_a_id": "pydata__xarray-4356",
+      "task_b_id": "pydata__xarray-7229",
+      "repo": "pydata/xarray",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.12643678160919541,
+      "cosine": 0.1942657643399809,
+      "files_a": [
+        "xarray/core/nanops.py"
+      ],
+      "files_b": [
+        "xarray/core/computation.py"
+      ]
+    },
+    {
+      "task_a_id": "sympy__sympy-13372",
+      "task_b_id": "sympy__sympy-13480",
+      "repo": "sympy/sympy",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.18333333333333332,
+      "cosine": 0.13519064782315454,
+      "files_a": [
+        "sympy/core/evalf.py"
+      ],
+      "files_b": [
+        "sympy/functions/elementary/hyperbolic.py"
+      ]
+    },
+    {
+      "task_a_id": "pydata__xarray-4075",
+      "task_b_id": "pydata__xarray-7229",
+      "repo": "pydata/xarray",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.0893854748603352,
+      "cosine": 0.08543957247978767,
+      "files_a": [
+        "xarray/core/weighted.py"
+      ],
+      "files_b": [
+        "xarray/core/computation.py"
+      ]
+    },
+    {
+      "task_a_id": "matplotlib__matplotlib-20676",
+      "task_b_id": "matplotlib__matplotlib-25332",
+      "repo": "matplotlib/matplotlib",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.11494252873563218,
+      "cosine": 0.4004465184854882,
+      "files_a": [
+        "lib/matplotlib/widgets.py"
+      ],
+      "files_b": [
+        "lib/matplotlib/cbook.py"
+      ]
+    },
+    {
+      "task_a_id": "astropy__astropy-7166",
+      "task_b_id": "astropy__astropy-13033",
+      "repo": "astropy/astropy",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.1,
+      "cosine": 0.09111295275151227,
+      "files_a": [
+        "astropy/utils/misc.py"
+      ],
+      "files_b": [
+        "astropy/timeseries/core.py"
+      ]
+    },
+    {
+      "task_a_id": "pydata__xarray-4966",
+      "task_b_id": "pydata__xarray-7229",
+      "repo": "pydata/xarray",
+      "difficulty_a": 2,
+      "difficulty_b": 2,
+      "difficulty_diff": 0,
+      "difficulty_avg": 2.0,
+      "jaccard": 0.07602339181286549,
+      "cosine": 0.1935647700769381,
+      "files_a": [
+        "xarray/coding/variables.py"
+      ],
+      "files_b": [
+        "xarray/core/computation.py"
+      ]
+    },
+    {
+      "task_a_id": "sympy__sympy-13372",
+      "task_b_id": "sympy__sympy-13647",
+      "repo": "sympy/sympy",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.125,
+      "cosine": 0.09495268222599816,
+      "files_a": [
+        "sympy/core/evalf.py"
+      ],
+      "files_b": [
+        "sympy/matrices/common.py"
+      ]
+    },
+    {
+      "task_a_id": "django__django-9296",
+      "task_b_id": "django__django-13410",
+      "repo": "django/django",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.16071428571428573,
+      "cosine": 0.1741077639527192,
+      "files_a": [
+        "django/core/paginator.py"
+      ],
+      "files_b": [
+        "django/core/files/locks.py"
+      ]
+    },
+    {
+      "task_a_id": "scikit-learn__scikit-learn-11310",
+      "task_b_id": "scikit-learn__scikit-learn-26194",
+      "repo": "scikit-learn/scikit-learn",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.09016393442622951,
+      "cosine": 0.1878543597736756,
+      "files_a": [
+        "sklearn/model_selection/_search.py"
+      ],
+      "files_b": [
+        "sklearn/metrics/_ranking.py"
+      ]
+    },
+    {
+      "task_a_id": "sympy__sympy-13372",
+      "task_b_id": "sympy__sympy-13031",
+      "repo": "sympy/sympy",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.11827956989247312,
+      "cosine": 0.0684469310815262,
+      "files_a": [
+        "sympy/core/evalf.py"
+      ],
+      "files_b": [
+        "sympy/matrices/sparse.py"
+      ]
+    },
+    {
+      "task_a_id": "astropy__astropy-14309",
+      "task_b_id": "astropy__astropy-7606",
+      "repo": "astropy/astropy",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.16304347826086957,
+      "cosine": 0.12676493789839385,
+      "files_a": [
+        "astropy/io/fits/connect.py"
+      ],
+      "files_b": [
+        "astropy/units/core.py"
+      ]
+    },
+    {
+      "task_a_id": "pydata__xarray-3677",
+      "task_b_id": "pydata__xarray-4966",
+      "repo": "pydata/xarray",
+      "difficulty_a": 2,
+      "difficulty_b": 2,
+      "difficulty_diff": 0,
+      "difficulty_avg": 2.0,
+      "jaccard": 0.1232876712328767,
+      "cosine": 0.16131007806743447,
+      "files_a": [
+        "xarray/core/dataset.py"
+      ],
+      "files_b": [
+        "xarray/coding/variables.py"
+      ]
+    },
+    {
+      "task_a_id": "matplotlib__matplotlib-20676",
+      "task_b_id": "matplotlib__matplotlib-24870",
+      "repo": "matplotlib/matplotlib",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.0825242718446602,
+      "cosine": 0.3391777065812681,
+      "files_a": [
+        "lib/matplotlib/widgets.py"
+      ],
+      "files_b": [
+        "lib/matplotlib/contour.py",
+        "lib/matplotlib/tri/_tricontour.py"
+      ]
+    },
+    {
+      "task_a_id": "sympy__sympy-12481",
+      "task_b_id": "sympy__sympy-19495",
+      "repo": "sympy/sympy",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.10112359550561797,
+      "cosine": 0.09761818545923187,
+      "files_a": [
+        "sympy/combinatorics/permutations.py"
+      ],
+      "files_b": [
+        "sympy/sets/conditionset.py"
+      ]
+    },
+    {
+      "task_a_id": "astropy__astropy-13033",
+      "task_b_id": "astropy__astropy-13579",
+      "repo": "astropy/astropy",
+      "difficulty_a": 2,
+      "difficulty_b": 3,
+      "difficulty_diff": 1,
+      "difficulty_avg": 2.5,
+      "jaccard": 0.11956521739130435,
+      "cosine": 0.2174733812233357,
+      "files_a": [
+        "astropy/timeseries/core.py"
+      ],
+      "files_b": [
+        "astropy/wcs/wcsapi/wrappers/sliced_wcs.py"
+      ]
+    },
+    {
+      "task_a_id": "sympy__sympy-13480",
+      "task_b_id": "sympy__sympy-15345",
+      "repo": "sympy/sympy",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.16,
+      "cosine": 0.13038745488133863,
+      "files_a": [
+        "sympy/functions/elementary/hyperbolic.py"
+      ],
+      "files_b": [
+        "sympy/printing/mathematica.py"
+      ]
+    },
+    {
+      "task_a_id": "scikit-learn__scikit-learn-12585",
+      "task_b_id": "scikit-learn__scikit-learn-14141",
+      "repo": "scikit-learn/scikit-learn",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.15384615384615385,
+      "cosine": 0.2124603420380194,
+      "files_a": [
+        "sklearn/base.py"
+      ],
+      "files_b": [
+        "sklearn/utils/_show_versions.py"
+      ]
+    },
+    {
+      "task_a_id": "sphinx-doc__sphinx-7889",
+      "task_b_id": "sphinx-doc__sphinx-7590",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty_a": 1,
+      "difficulty_b": 4,
+      "difficulty_diff": 3,
+      "difficulty_avg": 2.5,
+      "jaccard": 0.02894736842105263,
+      "cosine": 0.47045726385325265,
+      "files_a": [
+        "sphinx/ext/autodoc/mock.py"
+      ],
+      "files_b": [
+        "sphinx/domains/c.py",
+        "sphinx/domains/cpp.py",
+        "sphinx/util/cfamily.py"
+      ]
+    },
+    {
+      "task_a_id": "astropy__astropy-14995",
+      "task_b_id": "astropy__astropy-13033",
+      "repo": "astropy/astropy",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.14150943396226415,
+      "cosine": 0.21445716554603944,
+      "files_a": [
+        "astropy/nddata/mixins/ndarithmetic.py"
+      ],
+      "files_b": [
+        "astropy/timeseries/core.py"
+      ]
+    },
+    {
+      "task_a_id": "scikit-learn__scikit-learn-13328",
+      "task_b_id": "scikit-learn__scikit-learn-14894",
+      "repo": "scikit-learn/scikit-learn",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.1780821917808219,
+      "cosine": 0.19628808512044,
+      "files_a": [
+        "sklearn/linear_model/huber.py"
+      ],
+      "files_b": [
+        "sklearn/svm/base.py"
+      ]
+    },
+    {
+      "task_a_id": "matplotlib__matplotlib-24149",
+      "task_b_id": "matplotlib__matplotlib-24570",
+      "repo": "matplotlib/matplotlib",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.09876543209876543,
+      "cosine": 0.10238228542467155,
+      "files_a": [
+        "lib/matplotlib/axes/_axes.py"
+      ],
+      "files_b": [
+        "lib/matplotlib/offsetbox.py"
+      ]
+    },
+    {
+      "task_a_id": "sympy__sympy-12096",
+      "task_b_id": "sympy__sympy-15345",
+      "repo": "sympy/sympy",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.12987012987012986,
+      "cosine": 0.21323539341936587,
+      "files_a": [
+        "sympy/core/function.py"
+      ],
+      "files_b": [
+        "sympy/printing/mathematica.py"
+      ]
+    },
+    {
+      "task_a_id": "sphinx-doc__sphinx-7454",
+      "task_b_id": "sphinx-doc__sphinx-8035",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.07179487179487179,
+      "cosine": 0.07540290057084346,
+      "files_a": [
+        "sphinx/domains/python.py"
+      ],
+      "files_b": [
+        "sphinx/ext/autodoc/__init__.py"
+      ]
+    },
+    {
+      "task_a_id": "pydata__xarray-3677",
+      "task_b_id": "pydata__xarray-6599",
+      "repo": "pydata/xarray",
+      "difficulty_a": 2,
+      "difficulty_b": 2,
+      "difficulty_diff": 0,
+      "difficulty_avg": 2.0,
+      "jaccard": 0.11428571428571428,
+      "cosine": 0.37089159697345714,
+      "files_a": [
+        "xarray/core/dataset.py"
+      ],
+      "files_b": [
+        "xarray/core/computation.py"
+      ]
+    },
+    {
+      "task_a_id": "astropy__astropy-14995",
+      "task_b_id": "astropy__astropy-14598",
+      "repo": "astropy/astropy",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.10344827586206896,
+      "cosine": 0.08439220274307199,
+      "files_a": [
+        "astropy/nddata/mixins/ndarithmetic.py"
+      ],
+      "files_b": [
+        "astropy/io/fits/card.py"
+      ]
+    },
+    {
+      "task_a_id": "django__django-10880",
+      "task_b_id": "django__django-11820",
+      "repo": "django/django",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.1388888888888889,
+      "cosine": 0.20233378138605895,
+      "files_a": [
+        "django/db/models/aggregates.py"
+      ],
+      "files_b": [
+        "django/db/models/base.py"
+      ]
+    },
+    {
+      "task_a_id": "scikit-learn__scikit-learn-13142",
+      "task_b_id": "scikit-learn__scikit-learn-14629",
+      "repo": "scikit-learn/scikit-learn",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.1144578313253012,
+      "cosine": 0.3356147661694498,
+      "files_a": [
+        "sklearn/mixture/base.py"
+      ],
+      "files_b": [
+        "sklearn/multioutput.py"
+      ]
+    },
+    {
+      "task_a_id": "matplotlib__matplotlib-24149",
+      "task_b_id": "matplotlib__matplotlib-21568",
+      "repo": "matplotlib/matplotlib",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.11363636363636363,
+      "cosine": 0.11337634233563297,
+      "files_a": [
+        "lib/matplotlib/axes/_axes.py"
+      ],
+      "files_b": [
+        "lib/matplotlib/dates.py"
+      ]
+    },
+    {
+      "task_a_id": "sphinx-doc__sphinx-7889",
+      "task_b_id": "sphinx-doc__sphinx-10435",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.1267605633802817,
+      "cosine": 0.21497640829116585,
+      "files_a": [
+        "sphinx/ext/autodoc/mock.py"
+      ],
+      "files_b": [
+        "sphinx/writers/latex.py"
+      ]
+    },
+    {
+      "task_a_id": "matplotlib__matplotlib-24177",
+      "task_b_id": "matplotlib__matplotlib-22865",
+      "repo": "matplotlib/matplotlib",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.10638297872340426,
+      "cosine": 0.15327194357411741,
+      "files_a": [
+        "lib/matplotlib/axes/_base.py"
+      ],
+      "files_b": [
+        "lib/matplotlib/colorbar.py"
+      ]
+    },
+    {
+      "task_a_id": "sphinx-doc__sphinx-7910",
+      "task_b_id": "sphinx-doc__sphinx-10323",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.11538461538461539,
+      "cosine": 0.13401904040250692,
+      "files_a": [
+        "sphinx/ext/napoleon/__init__.py"
+      ],
+      "files_b": [
+        "sphinx/directives/code.py"
+      ]
+    },
+    {
+      "task_a_id": "django__django-9296",
+      "task_b_id": "django__django-14089",
+      "repo": "django/django",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.1836734693877551,
+      "cosine": 0.40634766473672534,
+      "files_a": [
+        "django/core/paginator.py"
+      ],
+      "files_b": [
+        "django/utils/datastructures.py"
+      ]
+    },
+    {
+      "task_a_id": "matplotlib__matplotlib-20859",
+      "task_b_id": "matplotlib__matplotlib-23314",
+      "repo": "matplotlib/matplotlib",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.1038961038961039,
+      "cosine": 0.1776186605805532,
+      "files_a": [
+        "lib/matplotlib/legend.py"
+      ],
+      "files_b": [
+        "lib/mpl_toolkits/mplot3d/axes3d.py"
+      ]
+    },
+    {
+      "task_a_id": "django__django-10097",
+      "task_b_id": "django__django-13512",
+      "repo": "django/django",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.07368421052631578,
+      "cosine": 0.1912629776305719,
+      "files_a": [
+        "django/core/validators.py"
+      ],
+      "files_b": [
+        "django/contrib/admin/utils.py",
+        "django/forms/fields.py"
+      ]
+    },
+    {
+      "task_a_id": "astropy__astropy-13033",
+      "task_b_id": "astropy__astropy-14365",
+      "repo": "astropy/astropy",
+      "difficulty_a": 2,
+      "difficulty_b": 2,
+      "difficulty_diff": 0,
+      "difficulty_avg": 2.0,
+      "jaccard": 0.14423076923076922,
+      "cosine": 0.0963881423104109,
+      "files_a": [
+        "astropy/timeseries/core.py"
+      ],
+      "files_b": [
+        "astropy/io/ascii/qdp.py"
+      ]
+    },
+    {
+      "task_a_id": "astropy__astropy-13977",
+      "task_b_id": "astropy__astropy-13579",
+      "repo": "astropy/astropy",
+      "difficulty_a": 2,
+      "difficulty_b": 3,
+      "difficulty_diff": 1,
+      "difficulty_avg": 2.5,
+      "jaccard": 0.051181102362204724,
+      "cosine": 0.056715973846229666,
+      "files_a": [
+        "astropy/units/quantity.py"
+      ],
+      "files_b": [
+        "astropy/wcs/wcsapi/wrappers/sliced_wcs.py"
+      ]
+    },
+    {
+      "task_a_id": "django__django-10880",
+      "task_b_id": "django__django-10999",
+      "repo": "django/django",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.14814814814814814,
+      "cosine": 0.1399159104249455,
+      "files_a": [
+        "django/db/models/aggregates.py"
+      ],
+      "files_b": [
+        "django/utils/dateparse.py"
+      ]
+    },
+    {
+      "task_a_id": "matplotlib__matplotlib-22719",
+      "task_b_id": "matplotlib__matplotlib-25960",
+      "repo": "matplotlib/matplotlib",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.1095890410958904,
+      "cosine": 0.28809136771446175,
+      "files_a": [
+        "lib/matplotlib/category.py"
+      ],
+      "files_b": [
+        "lib/matplotlib/figure.py"
+      ]
+    },
+    {
+      "task_a_id": "scikit-learn__scikit-learn-13439",
+      "task_b_id": "scikit-learn__scikit-learn-25973",
+      "repo": "scikit-learn/scikit-learn",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.10126582278481013,
+      "cosine": 0.256450896427368,
+      "files_a": [
+        "sklearn/pipeline.py"
+      ],
+      "files_b": [
+        "sklearn/feature_selection/_sequential.py"
+      ]
+    },
+    {
+      "task_a_id": "pytest-dev__pytest-7205",
+      "task_b_id": "pytest-dev__pytest-7432",
+      "repo": "pytest-dev/pytest",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.15789473684210525,
+      "cosine": 0.252138560956756,
+      "files_a": [
+        "src/_pytest/setuponly.py"
+      ],
+      "files_b": [
+        "src/_pytest/skipping.py"
+      ]
+    },
+    {
+      "task_a_id": "scikit-learn__scikit-learn-13142",
+      "task_b_id": "scikit-learn__scikit-learn-25232",
+      "repo": "scikit-learn/scikit-learn",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.09230769230769231,
+      "cosine": 0.27298892320867807,
+      "files_a": [
+        "sklearn/mixture/base.py"
+      ],
+      "files_b": [
+        "sklearn/impute/_iterative.py"
+      ]
+    },
+    {
+      "task_a_id": "pydata__xarray-2905",
+      "task_b_id": "pydata__xarray-6744",
+      "repo": "pydata/xarray",
+      "difficulty_a": 2,
+      "difficulty_b": 2,
+      "difficulty_diff": 0,
+      "difficulty_avg": 2.0,
+      "jaccard": 0.102803738317757,
+      "cosine": 0.10818946841274284,
+      "files_a": [
+        "xarray/core/variable.py"
+      ],
+      "files_b": [
+        "xarray/core/rolling.py"
+      ]
+    },
+    {
+      "task_a_id": "django__django-10999",
+      "task_b_id": "django__django-11555",
+      "repo": "django/django",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.12727272727272726,
+      "cosine": 0.15879497439886858,
+      "files_a": [
+        "django/utils/dateparse.py"
+      ],
+      "files_b": [
+        "django/db/models/sql/compiler.py"
+      ]
+    },
+    {
+      "task_a_id": "pydata__xarray-4966",
+      "task_b_id": "pydata__xarray-6599",
+      "repo": "pydata/xarray",
+      "difficulty_a": 2,
+      "difficulty_b": 2,
+      "difficulty_diff": 0,
+      "difficulty_avg": 2.0,
+      "jaccard": 0.12643678160919541,
+      "cosine": 0.23360532547054905,
+      "files_a": [
+        "xarray/coding/variables.py"
+      ],
+      "files_b": [
+        "xarray/core/computation.py"
+      ]
+    },
+    {
+      "task_a_id": "matplotlib__matplotlib-24149",
+      "task_b_id": "matplotlib__matplotlib-25122",
+      "repo": "matplotlib/matplotlib",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.11290322580645161,
+      "cosine": 0.08587660987919131,
+      "files_a": [
+        "lib/matplotlib/axes/_axes.py"
+      ],
+      "files_b": [
+        "lib/matplotlib/mlab.py"
+      ]
+    },
+    {
+      "task_a_id": "sphinx-doc__sphinx-7462",
+      "task_b_id": "sphinx-doc__sphinx-8621",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.10526315789473684,
+      "cosine": 0.10350913695893565,
+      "files_a": [
+        "sphinx/domains/python.py",
+        "sphinx/pycode/ast.py"
+      ],
+      "files_b": [
+        "sphinx/builders/html/transforms.py"
+      ]
+    },
+    {
+      "task_a_id": "sphinx-doc__sphinx-7440",
+      "task_b_id": "sphinx-doc__sphinx-11510",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty_a": 1,
+      "difficulty_b": 3,
+      "difficulty_diff": 2,
+      "difficulty_avg": 2.0,
+      "jaccard": 0.05128205128205128,
+      "cosine": 0.08688860298064756,
+      "files_a": [
+        "sphinx/domains/std.py"
+      ],
+      "files_b": [
+        "sphinx/directives/other.py"
+      ]
+    },
+    {
+      "task_a_id": "pydata__xarray-4629",
+      "task_b_id": "pydata__xarray-6992",
+      "repo": "pydata/xarray",
+      "difficulty_a": 1,
+      "difficulty_b": 4,
+      "difficulty_diff": 3,
+      "difficulty_avg": 2.5,
+      "jaccard": 0.053003533568904596,
+      "cosine": 0.12839333333092312,
+      "files_a": [
+        "xarray/core/merge.py"
+      ],
+      "files_b": [
+        "xarray/core/dataset.py",
+        "xarray/core/indexes.py"
+      ]
+    },
+    {
+      "task_a_id": "sphinx-doc__sphinx-7889",
+      "task_b_id": "sphinx-doc__sphinx-9711",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.08256880733944955,
+      "cosine": 0.06757817674455771,
+      "files_a": [
+        "sphinx/ext/autodoc/mock.py"
+      ],
+      "files_b": [
+        "sphinx/extension.py"
+      ]
+    },
+    {
+      "task_a_id": "pydata__xarray-4629",
+      "task_b_id": "pydata__xarray-7233",
+      "repo": "pydata/xarray",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.2033898305084746,
+      "cosine": 0.2149266627707644,
+      "files_a": [
+        "xarray/core/merge.py"
+      ],
+      "files_b": [
+        "xarray/core/rolling.py"
+      ]
+    },
+    {
+      "task_a_id": "scikit-learn__scikit-learn-12585",
+      "task_b_id": "scikit-learn__scikit-learn-25931",
+      "repo": "scikit-learn/scikit-learn",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.07518796992481203,
+      "cosine": 0.07375546327883055,
+      "files_a": [
+        "sklearn/base.py"
+      ],
+      "files_b": [
+        "sklearn/ensemble/_iforest.py"
+      ]
+    },
+    {
+      "task_a_id": "scikit-learn__scikit-learn-13496",
+      "task_b_id": "scikit-learn__scikit-learn-26194",
+      "repo": "scikit-learn/scikit-learn",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.0776255707762557,
+      "cosine": 0.1602330944415496,
+      "files_a": [
+        "sklearn/ensemble/iforest.py"
+      ],
+      "files_b": [
+        "sklearn/metrics/_ranking.py"
+      ]
+    },
+    {
+      "task_a_id": "sympy__sympy-12096",
+      "task_b_id": "sympy__sympy-20916",
+      "repo": "sympy/sympy",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.11688311688311688,
+      "cosine": 0.13707746603004994,
+      "files_a": [
+        "sympy/core/function.py"
+      ],
+      "files_b": [
+        "sympy/printing/conventions.py"
+      ]
+    },
+    {
+      "task_a_id": "django__django-10097",
+      "task_b_id": "django__django-11964",
+      "repo": "django/django",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.10126582278481013,
+      "cosine": 0.18523452245732047,
+      "files_a": [
+        "django/core/validators.py"
+      ],
+      "files_b": [
+        "django/db/models/enums.py"
+      ]
+    },
+    {
+      "task_a_id": "astropy__astropy-7166",
+      "task_b_id": "astropy__astropy-14365",
+      "repo": "astropy/astropy",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.1282051282051282,
+      "cosine": 0.14255191489100671,
+      "files_a": [
+        "astropy/utils/misc.py"
+      ],
+      "files_b": [
+        "astropy/io/ascii/qdp.py"
+      ]
+    },
+    {
+      "task_a_id": "astropy__astropy-14309",
+      "task_b_id": "astropy__astropy-8872",
+      "repo": "astropy/astropy",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.09420289855072464,
+      "cosine": 0.08468659045812696,
+      "files_a": [
+        "astropy/io/fits/connect.py"
+      ],
+      "files_b": [
+        "astropy/units/quantity.py"
+      ]
+    },
+    {
+      "task_a_id": "scikit-learn__scikit-learn-13496",
+      "task_b_id": "scikit-learn__scikit-learn-13124",
+      "repo": "scikit-learn/scikit-learn",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.1111111111111111,
+      "cosine": 0.2822136016086678,
+      "files_a": [
+        "sklearn/ensemble/iforest.py"
+      ],
+      "files_b": [
+        "sklearn/model_selection/_split.py"
+      ]
+    },
+    {
+      "task_a_id": "sphinx-doc__sphinx-7440",
+      "task_b_id": "sphinx-doc__sphinx-7889",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.09876543209876543,
+      "cosine": 0.062018978996238795,
+      "files_a": [
+        "sphinx/domains/std.py"
+      ],
+      "files_b": [
+        "sphinx/ext/autodoc/mock.py"
+      ]
+    },
+    {
+      "task_a_id": "matplotlib__matplotlib-23476",
+      "task_b_id": "matplotlib__matplotlib-24627",
+      "repo": "matplotlib/matplotlib",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.1388888888888889,
+      "cosine": 0.2354162652919884,
+      "files_a": [
+        "lib/matplotlib/figure.py"
+      ],
+      "files_b": [
+        "lib/matplotlib/axes/_base.py"
+      ]
+    },
+    {
+      "task_a_id": "scikit-learn__scikit-learn-11310",
+      "task_b_id": "scikit-learn__scikit-learn-10297",
+      "repo": "scikit-learn/scikit-learn",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.09282700421940929,
+      "cosine": 0.29831143189443493,
+      "files_a": [
+        "sklearn/model_selection/_search.py"
+      ],
+      "files_b": [
+        "sklearn/linear_model/ridge.py"
+      ]
+    },
+    {
+      "task_a_id": "pydata__xarray-3305",
+      "task_b_id": "pydata__xarray-6744",
+      "repo": "pydata/xarray",
+      "difficulty_a": 2,
+      "difficulty_b": 2,
+      "difficulty_diff": 0,
+      "difficulty_avg": 2.0,
+      "jaccard": 0.0625,
+      "cosine": 0.20157144462963025,
+      "files_a": [
+        "xarray/core/dataset.py",
+        "xarray/core/variable.py"
+      ],
+      "files_b": [
+        "xarray/core/rolling.py"
+      ]
+    },
+    {
+      "task_a_id": "sphinx-doc__sphinx-7910",
+      "task_b_id": "sphinx-doc__sphinx-9230",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.14102564102564102,
+      "cosine": 0.24237190393024777,
+      "files_a": [
+        "sphinx/ext/napoleon/__init__.py"
+      ],
+      "files_b": [
+        "sphinx/util/docfields.py"
+      ]
+    },
+    {
+      "task_a_id": "matplotlib__matplotlib-23476",
+      "task_b_id": "matplotlib__matplotlib-26291",
+      "repo": "matplotlib/matplotlib",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.14285714285714285,
+      "cosine": 0.20950093964522798,
+      "files_a": [
+        "lib/matplotlib/figure.py"
+      ],
+      "files_b": [
+        "lib/mpl_toolkits/axes_grid1/inset_locator.py"
+      ]
+    },
+    {
+      "task_a_id": "django__django-10097",
+      "task_b_id": "django__django-11179",
+      "repo": "django/django",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.11864406779661017,
+      "cosine": 0.1543053840034127,
+      "files_a": [
+        "django/core/validators.py"
+      ],
+      "files_b": [
+        "django/db/models/deletion.py"
+      ]
+    },
+    {
+      "task_a_id": "astropy__astropy-8707",
+      "task_b_id": "astropy__astropy-13033",
+      "repo": "astropy/astropy",
+      "difficulty_a": 2,
+      "difficulty_b": 2,
+      "difficulty_diff": 0,
+      "difficulty_avg": 2.0,
+      "jaccard": 0.0696969696969697,
+      "cosine": 0.09629803540373194,
+      "files_a": [
+        "astropy/io/fits/card.py",
+        "astropy/io/fits/header.py"
+      ],
+      "files_b": [
+        "astropy/timeseries/core.py"
+      ]
+    },
+    {
+      "task_a_id": "matplotlib__matplotlib-20676",
+      "task_b_id": "matplotlib__matplotlib-26466",
+      "repo": "matplotlib/matplotlib",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.11450381679389313,
+      "cosine": 0.4872076577787424,
+      "files_a": [
+        "lib/matplotlib/widgets.py"
+      ],
+      "files_b": [
+        "lib/matplotlib/text.py"
+      ]
+    },
+    {
+      "task_a_id": "scikit-learn__scikit-learn-13135",
+      "task_b_id": "scikit-learn__scikit-learn-13496",
+      "repo": "scikit-learn/scikit-learn",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.059322033898305086,
+      "cosine": 0.11795122091032713,
+      "files_a": [
+        "sklearn/preprocessing/_discretization.py"
+      ],
+      "files_b": [
+        "sklearn/ensemble/iforest.py"
+      ]
+    },
+    {
+      "task_a_id": "sympy__sympy-13480",
+      "task_b_id": "sympy__sympy-24562",
+      "repo": "sympy/sympy",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.2,
+      "cosine": 0.21000818259114512,
+      "files_a": [
+        "sympy/functions/elementary/hyperbolic.py"
+      ],
+      "files_b": [
+        "sympy/core/numbers.py"
+      ]
+    },
+    {
+      "task_a_id": "sphinx-doc__sphinx-7454",
+      "task_b_id": "sphinx-doc__sphinx-7910",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.12195121951219512,
+      "cosine": 0.19828881124760994,
+      "files_a": [
+        "sphinx/domains/python.py"
+      ],
+      "files_b": [
+        "sphinx/ext/napoleon/__init__.py"
+      ]
+    },
+    {
+      "task_a_id": "matplotlib__matplotlib-13989",
+      "task_b_id": "matplotlib__matplotlib-25311",
+      "repo": "matplotlib/matplotlib",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.1686746987951807,
+      "cosine": 0.16459085945465302,
+      "files_a": [
+        "lib/matplotlib/axes/_axes.py"
+      ],
+      "files_b": [
+        "lib/matplotlib/offsetbox.py"
+      ]
+    },
+    {
+      "task_a_id": "sphinx-doc__sphinx-8269",
+      "task_b_id": "sphinx-doc__sphinx-9281",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.11827956989247312,
+      "cosine": 0.10354705196245176,
+      "files_a": [
+        "sphinx/builders/linkcheck.py"
+      ],
+      "files_b": [
+        "sphinx/util/inspect.py"
+      ]
+    },
+    {
+      "task_a_id": "pydata__xarray-4695",
+      "task_b_id": "pydata__xarray-6992",
+      "repo": "pydata/xarray",
+      "difficulty_a": 2,
+      "difficulty_b": 4,
+      "difficulty_diff": 2,
+      "difficulty_avg": 3.0,
+      "jaccard": 0.04745762711864407,
+      "cosine": 0.17591165944844384,
+      "files_a": [
+        "xarray/core/dataarray.py"
+      ],
+      "files_b": [
+        "xarray/core/dataset.py",
+        "xarray/core/indexes.py"
+      ]
+    },
+    {
+      "task_a_id": "sympy__sympy-13480",
+      "task_b_id": "sympy__sympy-13798",
+      "repo": "sympy/sympy",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.1506849315068493,
+      "cosine": 0.07415045001356532,
+      "files_a": [
+        "sympy/functions/elementary/hyperbolic.py"
+      ],
+      "files_b": [
+        "sympy/printing/latex.py"
+      ]
+    },
+    {
+      "task_a_id": "pytest-dev__pytest-8399",
+      "task_b_id": "pytest-dev__pytest-10356",
+      "repo": "pytest-dev/pytest",
+      "difficulty_a": 2,
+      "difficulty_b": 3,
+      "difficulty_diff": 1,
+      "difficulty_avg": 2.5,
+      "jaccard": 0.09375,
+      "cosine": 0.2100044472614872,
+      "files_a": [
+        "src/_pytest/python.py",
+        "src/_pytest/unittest.py"
+      ],
+      "files_b": [
+        "src/_pytest/mark/structures.py"
+      ]
+    },
+    {
+      "task_a_id": "pytest-dev__pytest-7521",
+      "task_b_id": "pytest-dev__pytest-5787",
+      "repo": "pytest-dev/pytest",
+      "difficulty_a": 1,
+      "difficulty_b": 3,
+      "difficulty_diff": 2,
+      "difficulty_avg": 2.0,
+      "jaccard": 0.041353383458646614,
+      "cosine": 0.11089126364356225,
+      "files_a": [
+        "src/_pytest/capture.py"
+      ],
+      "files_b": [
+        "src/_pytest/reports.py"
+      ]
+    },
+    {
+      "task_a_id": "sphinx-doc__sphinx-7910",
+      "task_b_id": "sphinx-doc__sphinx-10673",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.054945054945054944,
+      "cosine": 0.15194778448216764,
+      "files_a": [
+        "sphinx/ext/napoleon/__init__.py"
+      ],
+      "files_b": [
+        "sphinx/directives/other.py",
+        "sphinx/environment/adapters/toctree.py",
+        "sphinx/environment/collectors/toctree.py"
+      ]
+    },
+    {
+      "task_a_id": "pytest-dev__pytest-5262",
+      "task_b_id": "pytest-dev__pytest-8399",
+      "repo": "pytest-dev/pytest",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.09473684210526316,
+      "cosine": 0.35867886287724793,
+      "files_a": [
+        "src/_pytest/capture.py"
+      ],
+      "files_b": [
+        "src/_pytest/python.py",
+        "src/_pytest/unittest.py"
+      ]
+    },
+    {
+      "task_a_id": "django__django-10914",
+      "task_b_id": "django__django-13821",
+      "repo": "django/django",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.08,
+      "cosine": 0.10409946687315232,
+      "files_a": [
+        "django/conf/global_settings.py"
+      ],
+      "files_b": [
+        "django/db/backends/sqlite3/base.py"
+      ]
+    },
+    {
+      "task_a_id": "pydata__xarray-3151",
+      "task_b_id": "pydata__xarray-4966",
+      "repo": "pydata/xarray",
+      "difficulty_a": 2,
+      "difficulty_b": 2,
+      "difficulty_diff": 0,
+      "difficulty_avg": 2.0,
+      "jaccard": 0.12903225806451613,
+      "cosine": 0.09800994720708625,
+      "files_a": [
+        "xarray/core/combine.py"
+      ],
+      "files_b": [
+        "xarray/coding/variables.py"
+      ]
+    },
+    {
+      "task_a_id": "sympy__sympy-13480",
+      "task_b_id": "sympy__sympy-19346",
+      "repo": "sympy/sympy",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.16216216216216217,
+      "cosine": 0.1439025403389792,
+      "files_a": [
+        "sympy/functions/elementary/hyperbolic.py"
+      ],
+      "files_b": [
+        "sympy/printing/repr.py"
+      ]
+    },
+    {
+      "task_a_id": "sphinx-doc__sphinx-7910",
+      "task_b_id": "sphinx-doc__sphinx-8459",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.17721518987341772,
+      "cosine": 0.30497199844889755,
+      "files_a": [
+        "sphinx/ext/napoleon/__init__.py"
+      ],
+      "files_b": [
+        "sphinx/ext/autodoc/typehints.py"
+      ]
+    },
+    {
+      "task_a_id": "pytest-dev__pytest-7205",
+      "task_b_id": "pytest-dev__pytest-10051",
+      "repo": "pytest-dev/pytest",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.08823529411764706,
+      "cosine": 0.13897451216277268,
+      "files_a": [
+        "src/_pytest/setuponly.py"
+      ],
+      "files_b": [
+        "src/_pytest/logging.py"
+      ]
+    },
+    {
+      "task_a_id": "sphinx-doc__sphinx-7440",
+      "task_b_id": "sphinx-doc__sphinx-7462",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.09090909090909091,
+      "cosine": 0.12144267683214834,
+      "files_a": [
+        "sphinx/domains/std.py"
+      ],
+      "files_b": [
+        "sphinx/domains/python.py",
+        "sphinx/pycode/ast.py"
+      ]
+    },
+    {
+      "task_a_id": "pydata__xarray-3095",
+      "task_b_id": "pydata__xarray-4966",
+      "repo": "pydata/xarray",
+      "difficulty_a": 2,
+      "difficulty_b": 2,
+      "difficulty_diff": 0,
+      "difficulty_avg": 2.0,
+      "jaccard": 0.05533596837944664,
+      "cosine": 0.2000018091732444,
+      "files_a": [
+        "xarray/core/indexing.py",
+        "xarray/core/variable.py"
+      ],
+      "files_b": [
+        "xarray/coding/variables.py"
+      ]
+    },
+    {
+      "task_a_id": "django__django-10880",
+      "task_b_id": "django__django-13551",
+      "repo": "django/django",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.10236220472440945,
+      "cosine": 0.12694270311108127,
+      "files_a": [
+        "django/db/models/aggregates.py"
+      ],
+      "files_b": [
+        "django/contrib/auth/tokens.py"
+      ]
+    },
+    {
+      "task_a_id": "sphinx-doc__sphinx-7440",
+      "task_b_id": "sphinx-doc__sphinx-7757",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.10256410256410256,
+      "cosine": 0.0396724902009726,
+      "files_a": [
+        "sphinx/domains/std.py"
+      ],
+      "files_b": [
+        "sphinx/util/inspect.py"
+      ]
+    },
+    {
+      "task_a_id": "sphinx-doc__sphinx-7454",
+      "task_b_id": "sphinx-doc__sphinx-9229",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty_a": 1,
+      "difficulty_b": 3,
+      "difficulty_diff": 2,
+      "difficulty_avg": 2.0,
+      "jaccard": 0.11016949152542373,
+      "cosine": 0.1527369444287163,
+      "files_a": [
+        "sphinx/domains/python.py"
+      ],
+      "files_b": [
+        "sphinx/ext/autodoc/__init__.py"
+      ]
+    },
+    {
+      "task_a_id": "scikit-learn__scikit-learn-11310",
+      "task_b_id": "scikit-learn__scikit-learn-25931",
+      "repo": "scikit-learn/scikit-learn",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.09895833333333333,
+      "cosine": 0.3435442394028963,
+      "files_a": [
+        "sklearn/model_selection/_search.py"
+      ],
+      "files_b": [
+        "sklearn/ensemble/_iforest.py"
+      ]
+    },
+    {
+      "task_a_id": "astropy__astropy-8707",
+      "task_b_id": "astropy__astropy-13453",
+      "repo": "astropy/astropy",
+      "difficulty_a": 2,
+      "difficulty_b": 2,
+      "difficulty_diff": 0,
+      "difficulty_avg": 2.0,
+      "jaccard": 0.03278688524590164,
+      "cosine": 0.14735153786305707,
+      "files_a": [
+        "astropy/io/fits/card.py",
+        "astropy/io/fits/header.py"
+      ],
+      "files_b": [
+        "astropy/io/ascii/html.py"
+      ]
+    },
+    {
+      "task_a_id": "matplotlib__matplotlib-23476",
+      "task_b_id": "matplotlib__matplotlib-25311",
+      "repo": "matplotlib/matplotlib",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.11494252873563218,
+      "cosine": 0.20761645031572384,
+      "files_a": [
+        "lib/matplotlib/figure.py"
+      ],
+      "files_b": [
+        "lib/matplotlib/offsetbox.py"
+      ]
+    },
+    {
+      "task_a_id": "scikit-learn__scikit-learn-13142",
+      "task_b_id": "scikit-learn__scikit-learn-10297",
+      "repo": "scikit-learn/scikit-learn",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.08333333333333333,
+      "cosine": 0.14639190938219732,
+      "files_a": [
+        "sklearn/mixture/base.py"
+      ],
+      "files_b": [
+        "sklearn/linear_model/ridge.py"
+      ]
+    },
+    {
+      "task_a_id": "matplotlib__matplotlib-24177",
+      "task_b_id": "matplotlib__matplotlib-22871",
+      "repo": "matplotlib/matplotlib",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.14,
+      "cosine": 0.20208078251147277,
+      "files_a": [
+        "lib/matplotlib/axes/_base.py"
+      ],
+      "files_b": [
+        "lib/matplotlib/dates.py"
+      ]
+    },
+    {
+      "task_a_id": "scikit-learn__scikit-learn-12585",
+      "task_b_id": "scikit-learn__scikit-learn-11578",
+      "repo": "scikit-learn/scikit-learn",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.1388888888888889,
+      "cosine": 0.14531238893076598,
+      "files_a": [
+        "sklearn/base.py"
+      ],
+      "files_b": [
+        "sklearn/linear_model/logistic.py"
+      ]
+    },
+    {
+      "task_a_id": "sympy__sympy-14711",
+      "task_b_id": "sympy__sympy-15345",
+      "repo": "sympy/sympy",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.14864864864864866,
+      "cosine": 0.16013450883284894,
+      "files_a": [
+        "sympy/physics/vector/vector.py"
+      ],
+      "files_b": [
+        "sympy/printing/mathematica.py"
+      ]
+    },
+    {
+      "task_a_id": "sphinx-doc__sphinx-8269",
+      "task_b_id": "sphinx-doc__sphinx-8595",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.16666666666666666,
+      "cosine": 0.22611375352473928,
+      "files_a": [
+        "sphinx/builders/linkcheck.py"
+      ],
+      "files_b": [
+        "sphinx/ext/autodoc/__init__.py"
+      ]
+    },
+    {
+      "task_a_id": "sympy__sympy-13480",
+      "task_b_id": "sympy__sympy-16886",
+      "repo": "sympy/sympy",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.11940298507462686,
+      "cosine": 0.17640264044658768,
+      "files_a": [
+        "sympy/functions/elementary/hyperbolic.py"
+      ],
+      "files_b": [
+        "sympy/crypto/crypto.py"
+      ]
+    },
+    {
+      "task_a_id": "matplotlib__matplotlib-22719",
+      "task_b_id": "matplotlib__matplotlib-23299",
+      "repo": "matplotlib/matplotlib",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.13114754098360656,
+      "cosine": 0.1767048640765581,
+      "files_a": [
+        "lib/matplotlib/category.py"
+      ],
+      "files_b": [
+        "lib/matplotlib/__init__.py"
+      ]
+    },
+    {
+      "task_a_id": "scikit-learn__scikit-learn-13496",
+      "task_b_id": "scikit-learn__scikit-learn-13779",
+      "repo": "scikit-learn/scikit-learn",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.061946902654867256,
+      "cosine": 0.2089307959543757,
+      "files_a": [
+        "sklearn/ensemble/iforest.py"
+      ],
+      "files_b": [
+        "sklearn/ensemble/voting.py"
+      ]
+    },
+    {
+      "task_a_id": "astropy__astropy-14995",
+      "task_b_id": "astropy__astropy-7671",
+      "repo": "astropy/astropy",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.10619469026548672,
+      "cosine": 0.08752122894370053,
+      "files_a": [
+        "astropy/nddata/mixins/ndarithmetic.py"
+      ],
+      "files_b": [
+        "astropy/utils/introspection.py"
+      ]
+    },
+    {
+      "task_a_id": "sphinx-doc__sphinx-7910",
+      "task_b_id": "sphinx-doc__sphinx-11510",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty_a": 1,
+      "difficulty_b": 3,
+      "difficulty_diff": 2,
+      "difficulty_avg": 2.0,
+      "jaccard": 0.06696428571428571,
+      "cosine": 0.2147672055497006,
+      "files_a": [
+        "sphinx/ext/napoleon/__init__.py"
+      ],
+      "files_b": [
+        "sphinx/directives/other.py"
+      ]
+    },
+    {
+      "task_a_id": "astropy__astropy-12907",
+      "task_b_id": "astropy__astropy-14508",
+      "repo": "astropy/astropy",
+      "difficulty_a": 2,
+      "difficulty_b": 2,
+      "difficulty_diff": 0,
+      "difficulty_avg": 2.0,
+      "jaccard": 0.088,
+      "cosine": 0.051537867053921785,
+      "files_a": [
+        "astropy/modeling/separable.py"
+      ],
+      "files_b": [
+        "astropy/io/fits/card.py"
+      ]
+    },
+    {
+      "task_a_id": "matplotlib__matplotlib-20676",
+      "task_b_id": "matplotlib__matplotlib-24970",
+      "repo": "matplotlib/matplotlib",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.11290322580645161,
+      "cosine": 0.21386987674805516,
+      "files_a": [
+        "lib/matplotlib/widgets.py"
+      ],
+      "files_b": [
+        "lib/matplotlib/colors.py"
+      ]
+    },
+    {
+      "task_a_id": "astropy__astropy-7671",
+      "task_b_id": "astropy__astropy-14508",
+      "repo": "astropy/astropy",
+      "difficulty_a": 2,
+      "difficulty_b": 2,
+      "difficulty_diff": 0,
+      "difficulty_avg": 2.0,
+      "jaccard": 0.09316770186335403,
+      "cosine": 0.08500095164179045,
+      "files_a": [
+        "astropy/utils/introspection.py"
+      ],
+      "files_b": [
+        "astropy/io/fits/card.py"
+      ]
+    },
+    {
+      "task_a_id": "matplotlib__matplotlib-22719",
+      "task_b_id": "matplotlib__matplotlib-20488",
+      "repo": "matplotlib/matplotlib",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.12213740458015267,
+      "cosine": 0.27371321572233764,
+      "files_a": [
+        "lib/matplotlib/category.py"
+      ],
+      "files_b": [
+        "lib/matplotlib/image.py"
+      ]
+    },
+    {
+      "task_a_id": "pydata__xarray-4075",
+      "task_b_id": "pydata__xarray-6599",
+      "repo": "pydata/xarray",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.13541666666666666,
+      "cosine": 0.15969408091853707,
+      "files_a": [
+        "xarray/core/weighted.py"
+      ],
+      "files_b": [
+        "xarray/core/computation.py"
+      ]
+    },
+    {
+      "task_a_id": "pytest-dev__pytest-7205",
+      "task_b_id": "pytest-dev__pytest-5631",
+      "repo": "pytest-dev/pytest",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.10975609756097561,
+      "cosine": 0.15069655933596116,
+      "files_a": [
+        "src/_pytest/setuponly.py"
+      ],
+      "files_b": [
+        "src/_pytest/compat.py"
+      ]
+    },
+    {
+      "task_a_id": "sphinx-doc__sphinx-7910",
+      "task_b_id": "sphinx-doc__sphinx-8638",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.11428571428571428,
+      "cosine": 0.20940488108479116,
+      "files_a": [
+        "sphinx/ext/napoleon/__init__.py"
+      ],
+      "files_b": [
+        "sphinx/domains/python.py"
+      ]
+    },
+    {
+      "task_a_id": "scikit-learn__scikit-learn-11310",
+      "task_b_id": "scikit-learn__scikit-learn-9288",
+      "repo": "scikit-learn/scikit-learn",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.10256410256410256,
+      "cosine": 0.1430679753416465,
+      "files_a": [
+        "sklearn/model_selection/_search.py"
+      ],
+      "files_b": [
+        "sklearn/cluster/k_means_.py"
+      ]
+    },
+    {
+      "task_a_id": "pydata__xarray-6938",
+      "task_b_id": "pydata__xarray-7233",
+      "repo": "pydata/xarray",
+      "difficulty_a": 2,
+      "difficulty_b": 2,
+      "difficulty_diff": 0,
+      "difficulty_avg": 2.0,
+      "jaccard": 0.08287292817679558,
+      "cosine": 0.30823775909414314,
+      "files_a": [
+        "xarray/core/dataset.py",
+        "xarray/core/variable.py"
+      ],
+      "files_b": [
+        "xarray/core/rolling.py"
+      ]
+    },
+    {
+      "task_a_id": "django__django-10880",
+      "task_b_id": "django__django-11099",
+      "repo": "django/django",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.140625,
+      "cosine": 0.0861878859084016,
+      "files_a": [
+        "django/db/models/aggregates.py"
+      ],
+      "files_b": [
+        "django/contrib/auth/validators.py"
+      ]
+    },
+    {
+      "task_a_id": "matplotlib__matplotlib-24149",
+      "task_b_id": "matplotlib__matplotlib-20826",
+      "repo": "matplotlib/matplotlib",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.11627906976744186,
+      "cosine": 0.16651863858673538,
+      "files_a": [
+        "lib/matplotlib/axes/_axes.py"
+      ],
+      "files_b": [
+        "lib/matplotlib/axis.py"
+      ]
+    },
+    {
+      "task_a_id": "sympy__sympy-12096",
+      "task_b_id": "sympy__sympy-18189",
+      "repo": "sympy/sympy",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.22413793103448276,
+      "cosine": 0.16137491110944124,
+      "files_a": [
+        "sympy/core/function.py"
+      ],
+      "files_b": [
+        "sympy/solvers/diophantine.py"
+      ]
+    },
+    {
+      "task_a_id": "pydata__xarray-4629",
+      "task_b_id": "pydata__xarray-6938",
+      "repo": "pydata/xarray",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.08092485549132948,
+      "cosine": 0.14834613148160777,
+      "files_a": [
+        "xarray/core/merge.py"
+      ],
+      "files_b": [
+        "xarray/core/dataset.py",
+        "xarray/core/variable.py"
+      ]
+    },
+    {
+      "task_a_id": "django__django-10880",
+      "task_b_id": "django__django-13512",
+      "repo": "django/django",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.11235955056179775,
+      "cosine": 0.2309995102713273,
+      "files_a": [
+        "django/db/models/aggregates.py"
+      ],
+      "files_b": [
+        "django/contrib/admin/utils.py",
+        "django/forms/fields.py"
+      ]
+    },
+    {
+      "task_a_id": "pytest-dev__pytest-7982",
+      "task_b_id": "pytest-dev__pytest-8399",
+      "repo": "pytest-dev/pytest",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.10309278350515463,
+      "cosine": 0.1338578298821471,
+      "files_a": [
+        "src/_pytest/pathlib.py"
+      ],
+      "files_b": [
+        "src/_pytest/python.py",
+        "src/_pytest/unittest.py"
+      ]
+    },
+    {
+      "task_a_id": "astropy__astropy-13236",
+      "task_b_id": "astropy__astropy-13398",
+      "repo": "astropy/astropy",
+      "difficulty_a": 2,
+      "difficulty_b": 3,
+      "difficulty_diff": 1,
+      "difficulty_avg": 2.5,
+      "jaccard": 0.037953795379537955,
+      "cosine": 0.12307690741599042,
+      "files_a": [
+        "astropy/table/table.py"
+      ],
+      "files_b": [
+        "astropy/coordinates/builtin_frames/__init__.py",
+        "astropy/coordinates/builtin_frames/intermediate_rotation_transforms.py",
+        "astropy/coordinates/builtin_frames/itrs.py",
+        "astropy/coordinates/builtin_frames/itrs_observed_transforms.py"
+      ]
+    },
+    {
+      "task_a_id": "scikit-learn__scikit-learn-11310",
+      "task_b_id": "scikit-learn__scikit-learn-13439",
+      "repo": "scikit-learn/scikit-learn",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.10071942446043165,
+      "cosine": 0.2527539608028816,
+      "files_a": [
+        "sklearn/model_selection/_search.py"
+      ],
+      "files_b": [
+        "sklearn/pipeline.py"
+      ]
+    },
+    {
+      "task_a_id": "sympy__sympy-12096",
+      "task_b_id": "sympy__sympy-15875",
+      "repo": "sympy/sympy",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.20408163265306123,
+      "cosine": 0.3763187450126544,
+      "files_a": [
+        "sympy/core/function.py"
+      ],
+      "files_b": [
+        "sympy/core/add.py"
+      ]
+    },
+    {
+      "task_a_id": "pytest-dev__pytest-7205",
+      "task_b_id": "pytest-dev__pytest-7324",
+      "repo": "pytest-dev/pytest",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.07563025210084033,
+      "cosine": 0.13126444283311228,
+      "files_a": [
+        "src/_pytest/setuponly.py"
+      ],
+      "files_b": [
+        "src/_pytest/mark/expression.py"
+      ]
+    },
+    {
+      "task_a_id": "sympy__sympy-13372",
+      "task_b_id": "sympy__sympy-22714",
+      "repo": "sympy/sympy",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.11688311688311688,
+      "cosine": 0.20354739305071118,
+      "files_a": [
+        "sympy/core/evalf.py"
+      ],
+      "files_b": [
+        "sympy/geometry/point.py"
+      ]
+    },
+    {
+      "task_a_id": "matplotlib__matplotlib-22719",
+      "task_b_id": "matplotlib__matplotlib-25122",
+      "repo": "matplotlib/matplotlib",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.10897435897435898,
+      "cosine": 0.09139623175854045,
+      "files_a": [
+        "lib/matplotlib/category.py"
+      ],
+      "files_b": [
+        "lib/matplotlib/mlab.py"
+      ]
+    },
+    {
+      "task_a_id": "astropy__astropy-12907",
+      "task_b_id": "astropy__astropy-14096",
+      "repo": "astropy/astropy",
+      "difficulty_a": 2,
+      "difficulty_b": 2,
+      "difficulty_diff": 0,
+      "difficulty_avg": 2.0,
+      "jaccard": 0.1232876712328767,
+      "cosine": 0.10480722021138607,
+      "files_a": [
+        "astropy/modeling/separable.py"
+      ],
+      "files_b": [
+        "astropy/coordinates/sky_coordinate.py"
+      ]
+    },
+    {
+      "task_a_id": "sympy__sympy-13480",
+      "task_b_id": "sympy__sympy-18211",
+      "repo": "sympy/sympy",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.18666666666666668,
+      "cosine": 0.15329368881442534,
+      "files_a": [
+        "sympy/functions/elementary/hyperbolic.py"
+      ],
+      "files_b": [
+        "sympy/core/relational.py"
+      ]
+    },
+    {
+      "task_a_id": "sphinx-doc__sphinx-7454",
+      "task_b_id": "sphinx-doc__sphinx-8056",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.1206896551724138,
+      "cosine": 0.1269823309040456,
+      "files_a": [
+        "sphinx/domains/python.py"
+      ],
+      "files_b": [
+        "sphinx/ext/napoleon/docstring.py"
+      ]
+    },
+    {
+      "task_a_id": "pydata__xarray-4356",
+      "task_b_id": "pydata__xarray-2905",
+      "repo": "pydata/xarray",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.12087912087912088,
+      "cosine": 0.16432114000879444,
+      "files_a": [
+        "xarray/core/nanops.py"
+      ],
+      "files_b": [
+        "xarray/core/variable.py"
+      ]
+    },
+    {
+      "task_a_id": "pytest-dev__pytest-5840",
+      "task_b_id": "pytest-dev__pytest-5787",
+      "repo": "pytest-dev/pytest",
+      "difficulty_a": 2,
+      "difficulty_b": 3,
+      "difficulty_diff": 1,
+      "difficulty_avg": 2.5,
+      "jaccard": 0.0774818401937046,
+      "cosine": 0.17152719398169552,
+      "files_a": [
+        "src/_pytest/config/__init__.py",
+        "src/_pytest/pathlib.py"
+      ],
+      "files_b": [
+        "src/_pytest/reports.py"
+      ]
+    },
+    {
+      "task_a_id": "scikit-learn__scikit-learn-13439",
+      "task_b_id": "scikit-learn__scikit-learn-12973",
+      "repo": "scikit-learn/scikit-learn",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.1076923076923077,
+      "cosine": 0.28821880818466633,
+      "files_a": [
+        "sklearn/pipeline.py"
+      ],
+      "files_b": [
+        "sklearn/linear_model/least_angle.py"
+      ]
+    },
+    {
+      "task_a_id": "sphinx-doc__sphinx-7462",
+      "task_b_id": "sphinx-doc__sphinx-10449",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.11971830985915492,
+      "cosine": 0.18318903565964675,
+      "files_a": [
+        "sphinx/domains/python.py",
+        "sphinx/pycode/ast.py"
+      ],
+      "files_b": [
+        "sphinx/ext/autodoc/typehints.py"
+      ]
+    },
+    {
+      "task_a_id": "scikit-learn__scikit-learn-13496",
+      "task_b_id": "scikit-learn__scikit-learn-12973",
+      "repo": "scikit-learn/scikit-learn",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.08383233532934131,
+      "cosine": 0.20669573354113055,
+      "files_a": [
+        "sklearn/ensemble/iforest.py"
+      ],
+      "files_b": [
+        "sklearn/linear_model/least_angle.py"
+      ]
+    },
+    {
+      "task_a_id": "astropy__astropy-7166",
+      "task_b_id": "astropy__astropy-7606",
+      "repo": "astropy/astropy",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.11811023622047244,
+      "cosine": 0.0838549098850537,
+      "files_a": [
+        "astropy/utils/misc.py"
+      ],
+      "files_b": [
+        "astropy/units/core.py"
+      ]
+    },
+    {
+      "task_a_id": "scikit-learn__scikit-learn-12585",
+      "task_b_id": "scikit-learn__scikit-learn-12682",
+      "repo": "scikit-learn/scikit-learn",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.03614457831325301,
+      "cosine": 0.041357512065415616,
+      "files_a": [
+        "sklearn/base.py"
+      ],
+      "files_b": [
+        "examples/decomposition/plot_sparse_coding.py",
+        "sklearn/decomposition/dict_learning.py"
+      ]
+    },
+    {
+      "task_a_id": "django__django-10914",
+      "task_b_id": "django__django-14089",
+      "repo": "django/django",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.10344827586206896,
+      "cosine": 0.11359853895893882,
+      "files_a": [
+        "django/conf/global_settings.py"
+      ],
+      "files_b": [
+        "django/utils/datastructures.py"
+      ]
+    },
+    {
+      "task_a_id": "pydata__xarray-4687",
+      "task_b_id": "pydata__xarray-7233",
+      "repo": "pydata/xarray",
+      "difficulty_a": 2,
+      "difficulty_b": 2,
+      "difficulty_diff": 0,
+      "difficulty_avg": 2.0,
+      "jaccard": 0.08,
+      "cosine": 0.11769486975808367,
+      "files_a": [
+        "xarray/core/computation.py"
+      ],
+      "files_b": [
+        "xarray/core/rolling.py"
+      ]
+    },
+    {
+      "task_a_id": "pytest-dev__pytest-7236",
+      "task_b_id": "pytest-dev__pytest-10051",
+      "repo": "pytest-dev/pytest",
+      "difficulty_a": 2,
+      "difficulty_b": 2,
+      "difficulty_diff": 0,
+      "difficulty_avg": 2.0,
+      "jaccard": 0.10059171597633136,
+      "cosine": 0.4004905666370504,
+      "files_a": [
+        "src/_pytest/unittest.py"
+      ],
+      "files_b": [
+        "src/_pytest/logging.py"
+      ]
+    },
+    {
+      "task_a_id": "pydata__xarray-4629",
+      "task_b_id": "pydata__xarray-6744",
+      "repo": "pydata/xarray",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.12244897959183673,
+      "cosine": 0.0989151899551475,
+      "files_a": [
+        "xarray/core/merge.py"
+      ],
+      "files_b": [
+        "xarray/core/rolling.py"
+      ]
+    },
+    {
+      "task_a_id": "pydata__xarray-4629",
+      "task_b_id": "pydata__xarray-3095",
+      "repo": "pydata/xarray",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.05555555555555555,
+      "cosine": 0.10435935156173376,
+      "files_a": [
+        "xarray/core/merge.py"
+      ],
+      "files_b": [
+        "xarray/core/indexing.py",
+        "xarray/core/variable.py"
+      ]
+    },
+    {
+      "task_a_id": "django__django-9296",
+      "task_b_id": "django__django-13933",
+      "repo": "django/django",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.12698412698412698,
+      "cosine": 0.26390207565912094,
+      "files_a": [
+        "django/core/paginator.py"
+      ],
+      "files_b": [
+        "django/forms/models.py"
+      ]
+    },
+    {
+      "task_a_id": "pydata__xarray-4075",
+      "task_b_id": "pydata__xarray-4695",
+      "repo": "pydata/xarray",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.16853932584269662,
+      "cosine": 0.2285828302450968,
+      "files_a": [
+        "xarray/core/weighted.py"
+      ],
+      "files_b": [
+        "xarray/core/dataarray.py"
+      ]
+    },
+    {
+      "task_a_id": "sympy__sympy-12481",
+      "task_b_id": "sympy__sympy-15017",
+      "repo": "sympy/sympy",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.14285714285714285,
+      "cosine": 0.11591721932135977,
+      "files_a": [
+        "sympy/combinatorics/permutations.py"
+      ],
+      "files_b": [
+        "sympy/tensor/array/dense_ndim_array.py"
+      ]
+    },
+    {
+      "task_a_id": "matplotlib__matplotlib-13989",
+      "task_b_id": "matplotlib__matplotlib-24637",
+      "repo": "matplotlib/matplotlib",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.17142857142857143,
+      "cosine": 0.18188032494061818,
+      "files_a": [
+        "lib/matplotlib/axes/_axes.py"
+      ],
+      "files_b": [
+        "lib/matplotlib/offsetbox.py"
+      ]
+    },
+    {
+      "task_a_id": "pydata__xarray-6461",
+      "task_b_id": "pydata__xarray-3151",
+      "repo": "pydata/xarray",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.13861386138613863,
+      "cosine": 0.13204356360583117,
+      "files_a": [
+        "xarray/core/computation.py"
+      ],
+      "files_b": [
+        "xarray/core/combine.py"
+      ]
+    },
+    {
+      "task_a_id": "django__django-10914",
+      "task_b_id": "django__django-13807",
+      "repo": "django/django",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.08,
+      "cosine": 0.06672879153239923,
+      "files_a": [
+        "django/conf/global_settings.py"
+      ],
+      "files_b": [
+        "django/db/backends/sqlite3/base.py"
+      ]
+    },
+    {
+      "task_a_id": "astropy__astropy-14309",
+      "task_b_id": "astropy__astropy-13398",
+      "repo": "astropy/astropy",
+      "difficulty_a": 1,
+      "difficulty_b": 3,
+      "difficulty_diff": 2,
+      "difficulty_avg": 2.0,
+      "jaccard": 0.022033898305084745,
+      "cosine": 0.08919410856277973,
+      "files_a": [
+        "astropy/io/fits/connect.py"
+      ],
+      "files_b": [
+        "astropy/coordinates/builtin_frames/__init__.py",
+        "astropy/coordinates/builtin_frames/intermediate_rotation_transforms.py",
+        "astropy/coordinates/builtin_frames/itrs.py",
+        "astropy/coordinates/builtin_frames/itrs_observed_transforms.py"
+      ]
+    },
+    {
+      "task_a_id": "scikit-learn__scikit-learn-11310",
+      "task_b_id": "scikit-learn__scikit-learn-13779",
+      "repo": "scikit-learn/scikit-learn",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.0948905109489051,
+      "cosine": 0.19662299339443015,
+      "files_a": [
+        "sklearn/model_selection/_search.py"
+      ],
+      "files_b": [
+        "sklearn/ensemble/voting.py"
+      ]
+    },
+    {
+      "task_a_id": "matplotlib__matplotlib-20859",
+      "task_b_id": "matplotlib__matplotlib-25287",
+      "repo": "matplotlib/matplotlib",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.11538461538461539,
+      "cosine": 0.1933447539617885,
+      "files_a": [
+        "lib/matplotlib/legend.py"
+      ],
+      "files_b": [
+        "lib/matplotlib/axis.py"
+      ]
+    },
+    {
+      "task_a_id": "pytest-dev__pytest-7324",
+      "task_b_id": "pytest-dev__pytest-10356",
+      "repo": "pytest-dev/pytest",
+      "difficulty_a": 2,
+      "difficulty_b": 3,
+      "difficulty_diff": 1,
+      "difficulty_avg": 2.5,
+      "jaccard": 0.10628019323671498,
+      "cosine": 0.18602967305402313,
+      "files_a": [
+        "src/_pytest/mark/expression.py"
+      ],
+      "files_b": [
+        "src/_pytest/mark/structures.py"
+      ]
+    },
+    {
+      "task_a_id": "matplotlib__matplotlib-24177",
+      "task_b_id": "matplotlib__matplotlib-25775",
+      "repo": "matplotlib/matplotlib",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.055350553505535055,
+      "cosine": 0.17719748801724547,
+      "files_a": [
+        "lib/matplotlib/axes/_base.py"
+      ],
+      "files_b": [
+        "lib/matplotlib/backends/backend_agg.py",
+        "lib/matplotlib/backends/backend_cairo.py",
+        "lib/matplotlib/text.py"
+      ]
+    },
+    {
+      "task_a_id": "astropy__astropy-14995",
+      "task_b_id": "astropy__astropy-14369",
+      "repo": "astropy/astropy",
+      "difficulty_a": 1,
+      "difficulty_b": 3,
+      "difficulty_diff": 2,
+      "difficulty_avg": 2.0,
+      "jaccard": 0.04918032786885246,
+      "cosine": 0.06172932945339554,
+      "files_a": [
+        "astropy/nddata/mixins/ndarithmetic.py"
+      ],
+      "files_b": [
+        "astropy/units/format/cds.py",
+        "astropy/units/format/cds_parsetab.py"
+      ]
+    },
+    {
+      "task_a_id": "matplotlib__matplotlib-23476",
+      "task_b_id": "matplotlib__matplotlib-23412",
+      "repo": "matplotlib/matplotlib",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.13333333333333333,
+      "cosine": 0.2389288772830283,
+      "files_a": [
+        "lib/matplotlib/figure.py"
+      ],
+      "files_b": [
+        "lib/matplotlib/patches.py"
+      ]
+    },
+    {
+      "task_a_id": "pydata__xarray-4695",
+      "task_b_id": "pydata__xarray-6599",
+      "repo": "pydata/xarray",
+      "difficulty_a": 2,
+      "difficulty_b": 2,
+      "difficulty_diff": 0,
+      "difficulty_avg": 2.0,
+      "jaccard": 0.15584415584415584,
+      "cosine": 0.27866323087724965,
+      "files_a": [
+        "xarray/core/dataarray.py"
+      ],
+      "files_b": [
+        "xarray/core/computation.py"
+      ]
+    },
+    {
+      "task_a_id": "pytest-dev__pytest-7205",
+      "task_b_id": "pytest-dev__pytest-7236",
+      "repo": "pytest-dev/pytest",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.06716417910447761,
+      "cosine": 0.13737246537965428,
+      "files_a": [
+        "src/_pytest/setuponly.py"
+      ],
+      "files_b": [
+        "src/_pytest/unittest.py"
+      ]
+    },
+    {
+      "task_a_id": "sympy__sympy-12481",
+      "task_b_id": "sympy__sympy-18211",
+      "repo": "sympy/sympy",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.14893617021276595,
+      "cosine": 0.11515567616682168,
+      "files_a": [
+        "sympy/combinatorics/permutations.py"
+      ],
+      "files_b": [
+        "sympy/core/relational.py"
+      ]
+    },
+    {
+      "task_a_id": "astropy__astropy-13977",
+      "task_b_id": "astropy__astropy-14598",
+      "repo": "astropy/astropy",
+      "difficulty_a": 2,
+      "difficulty_b": 2,
+      "difficulty_diff": 0,
+      "difficulty_avg": 2.0,
+      "jaccard": 0.0673758865248227,
+      "cosine": 0.08478575419001261,
+      "files_a": [
+        "astropy/units/quantity.py"
+      ],
+      "files_b": [
+        "astropy/io/fits/card.py"
+      ]
+    },
+    {
+      "task_a_id": "scikit-learn__scikit-learn-11310",
+      "task_b_id": "scikit-learn__scikit-learn-15100",
+      "repo": "scikit-learn/scikit-learn",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.1069182389937107,
+      "cosine": 0.12184339356408264,
+      "files_a": [
+        "sklearn/model_selection/_search.py"
+      ],
+      "files_b": [
+        "sklearn/feature_extraction/text.py"
+      ]
+    },
+    {
+      "task_a_id": "django__django-9296",
+      "task_b_id": "django__django-13112",
+      "repo": "django/django",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.136986301369863,
+      "cosine": 0.24938325325836697,
+      "files_a": [
+        "django/core/paginator.py"
+      ],
+      "files_b": [
+        "django/db/models/fields/related.py"
+      ]
+    },
+    {
+      "task_a_id": "django__django-10097",
+      "task_b_id": "django__django-11490",
+      "repo": "django/django",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.11267605633802817,
+      "cosine": 0.1166241650563488,
+      "files_a": [
+        "django/core/validators.py"
+      ],
+      "files_b": [
+        "django/db/models/sql/compiler.py"
+      ]
+    },
+    {
+      "task_a_id": "sympy__sympy-13480",
+      "task_b_id": "sympy__sympy-19040",
+      "repo": "sympy/sympy",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.18181818181818182,
+      "cosine": 0.22110527354998868,
+      "files_a": [
+        "sympy/functions/elementary/hyperbolic.py"
+      ],
+      "files_b": [
+        "sympy/polys/factortools.py"
+      ]
+    },
+    {
+      "task_a_id": "scikit-learn__scikit-learn-13135",
+      "task_b_id": "scikit-learn__scikit-learn-11578",
+      "repo": "scikit-learn/scikit-learn",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.11842105263157894,
+      "cosine": 0.14678029220129374,
+      "files_a": [
+        "sklearn/preprocessing/_discretization.py"
+      ],
+      "files_b": [
+        "sklearn/linear_model/logistic.py"
+      ]
+    },
+    {
+      "task_a_id": "astropy__astropy-7166",
+      "task_b_id": "astropy__astropy-14369",
+      "repo": "astropy/astropy",
+      "difficulty_a": 1,
+      "difficulty_b": 3,
+      "difficulty_diff": 2,
+      "difficulty_avg": 2.0,
+      "jaccard": 0.057034220532319393,
+      "cosine": 0.07335669598622287,
+      "files_a": [
+        "astropy/utils/misc.py"
+      ],
+      "files_b": [
+        "astropy/units/format/cds.py",
+        "astropy/units/format/cds_parsetab.py"
+      ]
+    },
+    {
+      "task_a_id": "pydata__xarray-4356",
+      "task_b_id": "pydata__xarray-3151",
+      "repo": "pydata/xarray",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.14705882352941177,
+      "cosine": 0.15770247932726666,
+      "files_a": [
+        "xarray/core/nanops.py"
+      ],
+      "files_b": [
+        "xarray/core/combine.py"
+      ]
+    },
+    {
+      "task_a_id": "scikit-learn__scikit-learn-13328",
+      "task_b_id": "scikit-learn__scikit-learn-14629",
+      "repo": "scikit-learn/scikit-learn",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.1450381679389313,
+      "cosine": 0.23503187049151308,
+      "files_a": [
+        "sklearn/linear_model/huber.py"
+      ],
+      "files_b": [
+        "sklearn/multioutput.py"
+      ]
+    },
+    {
+      "task_a_id": "astropy__astropy-7336",
+      "task_b_id": "astropy__astropy-12907",
+      "repo": "astropy/astropy",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.19298245614035087,
+      "cosine": 0.11661457166698981,
+      "files_a": [
+        "astropy/units/decorators.py"
+      ],
+      "files_b": [
+        "astropy/modeling/separable.py"
+      ]
+    },
+    {
+      "task_a_id": "scikit-learn__scikit-learn-13496",
+      "task_b_id": "scikit-learn__scikit-learn-14141",
+      "repo": "scikit-learn/scikit-learn",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.07692307692307693,
+      "cosine": 0.14724988036793418,
+      "files_a": [
+        "sklearn/ensemble/iforest.py"
+      ],
+      "files_b": [
+        "sklearn/utils/_show_versions.py"
+      ]
+    },
+    {
+      "task_a_id": "pydata__xarray-3677",
+      "task_b_id": "pydata__xarray-7393",
+      "repo": "pydata/xarray",
+      "difficulty_a": 2,
+      "difficulty_b": 2,
+      "difficulty_diff": 0,
+      "difficulty_avg": 2.0,
+      "jaccard": 0.15517241379310345,
+      "cosine": 0.2450344257219458,
+      "files_a": [
+        "xarray/core/dataset.py"
+      ],
+      "files_b": [
+        "xarray/core/indexing.py"
+      ]
+    },
+    {
+      "task_a_id": "matplotlib__matplotlib-23476",
+      "task_b_id": "matplotlib__matplotlib-21568",
+      "repo": "matplotlib/matplotlib",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.10975609756097561,
+      "cosine": 0.14487052265323072,
+      "files_a": [
+        "lib/matplotlib/figure.py"
+      ],
+      "files_b": [
+        "lib/matplotlib/dates.py"
+      ]
+    },
+    {
+      "task_a_id": "sympy__sympy-12096",
+      "task_b_id": "sympy__sympy-19495",
+      "repo": "sympy/sympy",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.07272727272727272,
+      "cosine": 0.14799953731874227,
+      "files_a": [
+        "sympy/core/function.py"
+      ],
+      "files_b": [
+        "sympy/sets/conditionset.py"
+      ]
+    },
+    {
+      "task_a_id": "scikit-learn__scikit-learn-12585",
+      "task_b_id": "scikit-learn__scikit-learn-14983",
+      "repo": "scikit-learn/scikit-learn",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.10638297872340426,
+      "cosine": 0.13121451827671946,
+      "files_a": [
+        "sklearn/base.py"
+      ],
+      "files_b": [
+        "sklearn/model_selection/_split.py"
+      ]
+    },
+    {
+      "task_a_id": "pydata__xarray-4356",
+      "task_b_id": "pydata__xarray-6599",
+      "repo": "pydata/xarray",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.1111111111111111,
+      "cosine": 0.22170206754292712,
+      "files_a": [
+        "xarray/core/nanops.py"
+      ],
+      "files_b": [
+        "xarray/core/computation.py"
+      ]
+    },
+    {
+      "task_a_id": "astropy__astropy-13236",
+      "task_b_id": "astropy__astropy-14369",
+      "repo": "astropy/astropy",
+      "difficulty_a": 2,
+      "difficulty_b": 3,
+      "difficulty_diff": 1,
+      "difficulty_avg": 2.5,
+      "jaccard": 0.04669260700389105,
+      "cosine": 0.06552783675300204,
+      "files_a": [
+        "astropy/table/table.py"
+      ],
+      "files_b": [
+        "astropy/units/format/cds.py",
+        "astropy/units/format/cds_parsetab.py"
+      ]
+    },
+    {
+      "task_a_id": "sympy__sympy-14711",
+      "task_b_id": "sympy__sympy-16886",
+      "repo": "sympy/sympy",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.10606060606060606,
+      "cosine": 0.13812249854933123,
+      "files_a": [
+        "sympy/physics/vector/vector.py"
+      ],
+      "files_b": [
+        "sympy/crypto/crypto.py"
+      ]
+    },
+    {
+      "task_a_id": "django__django-9296",
+      "task_b_id": "django__django-11555",
+      "repo": "django/django",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.16666666666666666,
+      "cosine": 0.19607151297362607,
+      "files_a": [
+        "django/core/paginator.py"
+      ],
+      "files_b": [
+        "django/db/models/sql/compiler.py"
+      ]
+    },
+    {
+      "task_a_id": "django__django-10097",
+      "task_b_id": "django__django-13821",
+      "repo": "django/django",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.11764705882352941,
+      "cosine": 0.1633356751000508,
+      "files_a": [
+        "django/core/validators.py"
+      ],
+      "files_b": [
+        "django/db/backends/sqlite3/base.py"
+      ]
+    },
+    {
+      "task_a_id": "pydata__xarray-7229",
+      "task_b_id": "pydata__xarray-7393",
+      "repo": "pydata/xarray",
+      "difficulty_a": 2,
+      "difficulty_b": 2,
+      "difficulty_diff": 0,
+      "difficulty_avg": 2.0,
+      "jaccard": 0.11920529801324503,
+      "cosine": 0.11368824454115659,
+      "files_a": [
+        "xarray/core/computation.py"
+      ],
+      "files_b": [
+        "xarray/core/indexing.py"
+      ]
+    },
+    {
+      "task_a_id": "scikit-learn__scikit-learn-12585",
+      "task_b_id": "scikit-learn__scikit-learn-9288",
+      "repo": "scikit-learn/scikit-learn",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.10526315789473684,
+      "cosine": 0.12040266677877429,
+      "files_a": [
+        "sklearn/base.py"
+      ],
+      "files_b": [
+        "sklearn/cluster/k_means_.py"
+      ]
+    },
+    {
+      "task_a_id": "sphinx-doc__sphinx-7462",
+      "task_b_id": "sphinx-doc__sphinx-7985",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.12781954887218044,
+      "cosine": 0.15932937206417075,
+      "files_a": [
+        "sphinx/domains/python.py",
+        "sphinx/pycode/ast.py"
+      ],
+      "files_b": [
+        "sphinx/builders/linkcheck.py"
+      ]
+    },
+    {
+      "task_a_id": "pydata__xarray-4695",
+      "task_b_id": "pydata__xarray-7393",
+      "repo": "pydata/xarray",
+      "difficulty_a": 2,
+      "difficulty_b": 2,
+      "difficulty_diff": 0,
+      "difficulty_avg": 2.0,
+      "jaccard": 0.21875,
+      "cosine": 0.33410326013898894,
+      "files_a": [
+        "xarray/core/dataarray.py"
+      ],
+      "files_b": [
+        "xarray/core/indexing.py"
+      ]
+    },
+    {
+      "task_a_id": "astropy__astropy-14995",
+      "task_b_id": "astropy__astropy-13236",
+      "repo": "astropy/astropy",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.11607142857142858,
+      "cosine": 0.12559871199393402,
+      "files_a": [
+        "astropy/nddata/mixins/ndarithmetic.py"
+      ],
+      "files_b": [
+        "astropy/table/table.py"
+      ]
+    },
+    {
+      "task_a_id": "matplotlib__matplotlib-22719",
+      "task_b_id": "matplotlib__matplotlib-14623",
+      "repo": "matplotlib/matplotlib",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.10674157303370786,
+      "cosine": 0.182985151938648,
+      "files_a": [
+        "lib/matplotlib/category.py"
+      ],
+      "files_b": [
+        "lib/matplotlib/axes/_base.py",
+        "lib/matplotlib/ticker.py",
+        "lib/mpl_toolkits/mplot3d/axes3d.py"
+      ]
+    },
+    {
+      "task_a_id": "pytest-dev__pytest-5840",
+      "task_b_id": "pytest-dev__pytest-10356",
+      "repo": "pytest-dev/pytest",
+      "difficulty_a": 2,
+      "difficulty_b": 3,
+      "difficulty_diff": 1,
+      "difficulty_avg": 2.5,
+      "jaccard": 0.10299003322259136,
+      "cosine": 0.14432207580228631,
+      "files_a": [
+        "src/_pytest/config/__init__.py",
+        "src/_pytest/pathlib.py"
+      ],
+      "files_b": [
+        "src/_pytest/mark/structures.py"
+      ]
+    },
+    {
+      "task_a_id": "pytest-dev__pytest-10051",
+      "task_b_id": "pytest-dev__pytest-10356",
+      "repo": "pytest-dev/pytest",
+      "difficulty_a": 2,
+      "difficulty_b": 3,
+      "difficulty_diff": 1,
+      "difficulty_avg": 2.5,
+      "jaccard": 0.1099476439790576,
+      "cosine": 0.14431770302010904,
+      "files_a": [
+        "src/_pytest/logging.py"
+      ],
+      "files_b": [
+        "src/_pytest/mark/structures.py"
+      ]
+    },
+    {
+      "task_a_id": "django__django-10880",
+      "task_b_id": "django__django-11951",
+      "repo": "django/django",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.1518987341772152,
+      "cosine": 0.2920929814438238,
+      "files_a": [
+        "django/db/models/aggregates.py"
+      ],
+      "files_b": [
+        "django/db/models/query.py"
+      ]
+    },
+    {
+      "task_a_id": "astropy__astropy-7166",
+      "task_b_id": "astropy__astropy-8872",
+      "repo": "astropy/astropy",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.12048192771084337,
+      "cosine": 0.14753685618056975,
+      "files_a": [
+        "astropy/utils/misc.py"
+      ],
+      "files_b": [
+        "astropy/units/quantity.py"
+      ]
+    },
+    {
+      "task_a_id": "sympy__sympy-12096",
+      "task_b_id": "sympy__sympy-18763",
+      "repo": "sympy/sympy",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.2,
+      "cosine": 0.27252234162571004,
+      "files_a": [
+        "sympy/core/function.py"
+      ],
+      "files_b": [
+        "sympy/printing/latex.py"
+      ]
+    },
+    {
+      "task_a_id": "sphinx-doc__sphinx-7889",
+      "task_b_id": "sphinx-doc__sphinx-9698",
+      "repo": "sphinx-doc/sphinx",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.16666666666666666,
+      "cosine": 0.29638755754239754,
+      "files_a": [
+        "sphinx/ext/autodoc/mock.py"
+      ],
+      "files_b": [
+        "sphinx/domains/python.py"
+      ]
+    },
+    {
+      "task_a_id": "django__django-9296",
+      "task_b_id": "django__django-11163",
+      "repo": "django/django",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.14516129032258066,
+      "cosine": 0.12961754418734317,
+      "files_a": [
+        "django/core/paginator.py"
+      ],
+      "files_b": [
+        "django/forms/models.py"
+      ]
+    },
+    {
+      "task_a_id": "django__django-10097",
+      "task_b_id": "django__django-12209",
+      "repo": "django/django",
+      "difficulty_a": 1,
+      "difficulty_b": 1,
+      "difficulty_diff": 0,
+      "difficulty_avg": 1.0,
+      "jaccard": 0.11940298507462686,
+      "cosine": 0.1548114297711135,
+      "files_a": [
+        "django/core/validators.py"
+      ],
+      "files_b": [
+        "django/db/models/base.py"
+      ]
+    },
+    {
+      "task_a_id": "scikit-learn__scikit-learn-13496",
+      "task_b_id": "scikit-learn__scikit-learn-12682",
+      "repo": "scikit-learn/scikit-learn",
+      "difficulty_a": 1,
+      "difficulty_b": 2,
+      "difficulty_diff": 1,
+      "difficulty_avg": 1.5,
+      "jaccard": 0.06605922551252848,
+      "cosine": 0.2600771615943897,
+      "files_a": [
+        "sklearn/ensemble/iforest.py"
+      ],
+      "files_b": [
+        "examples/decomposition/plot_sparse_coding.py",
+        "sklearn/decomposition/dict_learning.py"
+      ]
+    }
+  ],
+  "correlation": {
+    "pearson_jaccard_diff": {
+      "r": -0.3171639829613656,
+      "p": 4.740413674555713e-06
+    },
+    "pearson_cosine_diff": {
+      "r": -0.07675470290921191,
+      "p": 0.2800237257226628
+    },
+    "spearman_jaccard_diff": {
+      "r": -0.23974281037344597,
+      "p": 0.0006279953277139567
+    },
+    "spearman_cosine_diff": {
+      "r": -0.12398745861606167,
+      "p": 0.08025427828628945
+    },
+    "pearson_jaccard_avg": {
+      "r": -0.3779638293042748,
+      "p": 3.4333742355721113e-08
+    },
+    "pearson_cosine_avg": {
+      "r": -0.05124930222212176,
+      "p": 0.4710907616048336
+    },
+    "spearman_jaccard_avg": {
+      "r": -0.33268092958961376,
+      "p": 1.485801298920856e-06
+    },
+    "spearman_cosine_avg": {
+      "r": -0.11328468271982597,
+      "p": 0.11022309296785554
+    },
+    "difficulty_pair_stats": {
+      "1-2": {
+        "count": 91,
+        "avg_jaccard": 0.11441548728413878,
+        "avg_cosine": 0.16660853486980876,
+        "std_jaccard": 0.033264326502579024,
+        "std_cosine": 0.07783565432819223
+      },
+      "1-1": {
+        "count": 68,
+        "avg_jaccard": 0.12633738714267256,
+        "avg_cosine": 0.18106431356685598,
+        "std_jaccard": 0.035209248901125645,
+        "std_cosine": 0.07493551734333494
+      },
+      "2-2": {
+        "count": 22,
+        "avg_jaccard": 0.10548581451366806,
+        "avg_cosine": 0.18323755933881872,
+        "std_jaccard": 0.040522827088482184,
+        "std_cosine": 0.09970917140330096
+      },
+      "2-3": {
+        "count": 9,
+        "avg_jaccard": 0.08287138141877853,
+        "avg_cosine": 0.14655502137312879,
+        "std_jaccard": 0.028887622784073513,
+        "std_cosine": 0.05419591366499234
+      },
+      "1-4": {
+        "count": 2,
+        "avg_jaccard": 0.04097545099497861,
+        "avg_cosine": 0.2994252985920879,
+        "std_jaccard": 0.012028082573925982,
+        "std_cosine": 0.17103196526116476
+      },
+      "1-3": {
+        "count": 7,
+        "avg_jaccard": 0.05685966552666627,
+        "avg_cosine": 0.11279487865786068,
+        "std_jaccard": 0.025319197178293278,
+        "std_cosine": 0.049840516874816436
+      },
+      "2-4": {
+        "count": 1,
+        "avg_jaccard": 0.04745762711864407,
+        "avg_cosine": 0.17591165944844384,
+        "std_jaccard": 0.0,
+        "std_cosine": 0.0
+      }
+    }
+  }
+}

@@ -50,17 +50,6 @@ models/
 *.model
 *.safetensors
 
-# Data
-data/
-datasets/
-*.csv
-*.json
-*.jsonl
-*.tsv
-*.sqlite
-*.db
-!metadata.csv  # Keep metadata CSV files
-
 # IDE
 .idea/
 .vscode/

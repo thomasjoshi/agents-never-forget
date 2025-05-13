@@ -1,0 +1,15 @@
+target_id,target_difficulty,poisoning_id,poisoning_difficulty,drift_score,clean_response_length,poisoned_response_length
+pytest-dev__pytest-6197,3,scikit-learn__scikit-learn-13135,1,0.47200000000000003,3455,4454
+pytest-dev__pytest-6197,3,sympy__sympy-22714,1,0.40800000000000003,2472,1824
+sphinx-doc__sphinx-9229,3,sympy__sympy-13372,1,0.5720000000000001,3388,4902
+sphinx-doc__sphinx-9229,3,django__django-13821,1,0.556,5373,3701
+sphinx-doc__sphinx-8548,3,scikit-learn__scikit-learn-15100,2,0.5920000000000001,4797,2698
+sphinx-doc__sphinx-8548,3,django__django-11555,1,0.332,1472,4177
+scikit-learn__scikit-learn-25102,3,django__django-11490,1,0.29600000000000004,10756,4032
+scikit-learn__scikit-learn-25102,3,django__django-14315,1,0.5720000000000001,9074,5078
+sphinx-doc__sphinx-11510,3,matplotlib__matplotlib-26208,1,0.36000000000000004,2826,4792
+sphinx-doc__sphinx-11510,3,scikit-learn__scikit-learn-13779,1,0.428,2680,569
+sphinx-doc__sphinx-7590,4,scikit-learn__scikit-learn-14710,2,0.384,4047,3683
+sphinx-doc__sphinx-7590,4,scikit-learn__scikit-learn-11310,1,0.54,3241,4526
+pydata__xarray-6992,4,astropy__astropy-13977,2,0.252,8123,416
+pydata__xarray-6992,4,sympy__sympy-11618,2,0.5920000000000001,3960,453
