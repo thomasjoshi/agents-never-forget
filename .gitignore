@@ -87,3 +87,6 @@ google-credentials.json
 # Logs
 *.log
 *.out
+
+# Environment variables
+.env
