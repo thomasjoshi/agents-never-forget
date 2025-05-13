@@ -59,10 +59,6 @@ We introduce specialized metrics for evaluating continual learning performance:
 - **Description**: Measures the rate of learning over the sequence
 - **Formula**: Success rate as a function of task number
 - **Details**: Steeper curves indicate faster learning.
-### Cross-Domain Transfer
-- **Description**: Measures how learning on one repository transfers to others
-- **Formula**: `performanceOnRepo2(after_repo1) - performanceOnRepo2(without_repo1)`
-- **Details**: Assesses how well the agent transfers knowledge between different codebases/domains.
 ### CL-Score (Comprehensive Metric)
 - **Description**: A comprehensive continual learning score
 - **Formula**: `successRate * (1 - forgettingRate) * (1 + 0.5 * forwardTransfer + 0.5 * backwardTransfer) * toolUseEfficiency`
