@@ -100,40 +100,42 @@ class SWEBenchDataset(Dataset):
         return len(self.examples)
     
     def __getitem__(self, idx):
-        example = self.examples[idx]
-        
-        # Format input text with instruction
-        input_text = f"Fix the following code:\n\n{example['code']}"
-        
-        # Add memory if enabled
-        if self.use_memory and self.memory_examples:
-            memory_context = "\n\n".join([f"Remember:\n{mem['code']}\\n                                         \nFixed version:\n{mem['fixed_code']}" 
-                                         for mem in self.memory_examples])
-            input_text = f"{memory_context}\n\n{input_text}"
-        
-        # Tokenize input and labels
-        encoding = self.tokenizer(
-            input_text,
-            max_length=self.max_length,
-            padding="max_length",
-            truncation=True,
-            return_tensors="pt"
+    example = self.examples[idx]
+    
+    # Format input text with instruction
+    input_text = f"Fix the following code:\n\n{example['patch']}"
+    
+    # Add memory if enabled
+    if self.use_memory and self.memory_examples:
+        memory_context = "\n\n".join(
+            [f"Remember:\n{mem['patch']}\n\nTest Case:\n{mem['test_patch']}" 
+             for mem in self.memory_examples]
         )
-        
-        # Add labels for language modeling
-        labels = self.tokenizer(
-            example["fixed_code"],
-            max_length=self.max_length,
-            padding="max_length",
-            truncation=True,
-            return_tensors="pt"
-        )["input_ids"]
-        
-        return {
-            "input_ids": encoding["input_ids"].squeeze(),
-            "attention_mask": encoding["attention_mask"].squeeze(),
-            "labels": labels.squeeze()
-        }
+        input_text = f"{memory_context}\n\n{input_text}"
+    
+    # Tokenize input and labels
+    encoding = self.tokenizer(
+        input_text,
+        max_length=self.max_length,
+        padding="max_length",
+        truncation=True,
+        return_tensors="pt"
+    )
+    
+    # Use test_patch as the target for language modeling
+    labels = self.tokenizer(
+        example.get("test_patch", ""),  # Fallback to empty string if not present
+        max_length=self.max_length,
+        padding="max_length",
+        truncation=True,
+        return_tensors="pt"
+    )["input_ids"]
+    
+    return {
+        "input_ids": encoding["input_ids"].squeeze(),
+        "attention_mask": encoding["attention_mask"].squeeze(),
+        "labels": labels.squeeze()
+    }
 
 def load_model_and_tokenizer(model_name=DEFAULT_MODEL, use_4bit=DEFAULT_USE_4BIT, use_lora=True, device="cuda"):
     """
