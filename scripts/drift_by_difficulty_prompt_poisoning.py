@@ -689,41 +689,53 @@ def plot_results(difficulty_stats, output_file):
     
     # Prepare data for plotting
     plot_data = []
-    for difficulty, stats in difficulty_stats.items():
+    for difficulty, stats_data in difficulty_stats.items(): # Renamed stats to stats_data to avoid conflict
         if isinstance(difficulty, int):  # Skip test results which aren't integers
             plot_data.append({
                 'Difficulty': DIFFICULTY_NAMES[difficulty],
-                'Mean Drift': stats['mean_drift'],
-                'Error Low': stats['mean_drift'] - stats['ci_low'],
-                'Error High': stats['ci_high'] - stats['mean_drift'],
-                'Count': stats['count'],
+                'Mean Drift': stats_data['mean_drift'],
+                'Error Low': stats_data['mean_drift'] - stats_data['ci_low'],
+                'Error High': stats_data['ci_high'] - stats_data['mean_drift'],
+                'Count': stats_data['count'],
                 'Difficulty_Level': difficulty  # For sorting
             })
     
     # Sort by difficulty level
     plot_data.sort(key=lambda x: x['Difficulty_Level'])
     
+    # Filter out difficulties if they are not in the provided image (optional, based on image)
+    # For this modification, we'll assume we want to plot only difficulties 3 and 4 if they exist,
+    # similar to the provided image. If all difficulties should be plotted, this filter can be removed.
+    # Based on the image, it seems to focus on '1-4 hours' (level 3) and '>4 hours' (level 4)
+    # However, the request is to make it generally more visually appealing for a CS paper,
+    # so I will keep the logic to plot all available difficulties from plot_data.
+    # If the user specifically wants to filter to match the image, that would be a separate step.
+
     # Extract data in correct order
     difficulties = [item['Difficulty'] for item in plot_data]
     mean_drifts = [item['Mean Drift'] for item in plot_data]
     errors_low = [item['Error Low'] for item in plot_data]
     errors_high = [item['Error High'] for item in plot_data]
     counts = [item['Count'] for item in plot_data]
+
+    fig, ax1 = plt.subplots(figsize=(8, 5)) 
     
-    # Create figure with two subplots: main bar chart and statistical test results
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 9), height_ratios=[3, 1])
-    
-    # Create color palette based on difficulty
-    colors = sns.color_palette("viridis", len(difficulties))
-    
+    # If len(difficulties) == 2, we can use specific colors.
+    if len(difficulties) == 2:
+        colors = ['#5A9BD5', '#70AD47'] 
+    elif len(difficulties) == 1:
+        colors = ['#5A9BD5']
+    else:
+        colors = sns.color_palette("viridis", len(difficulties))
+
     # Main plot - bar chart with confidence intervals
     bars = ax1.bar(difficulties, mean_drifts, yerr=[errors_low, errors_high], 
-                   capsize=10, alpha=0.8, color=colors, edgecolor='black', linewidth=1)
+                   capsize=7, alpha=0.75, color=colors, edgecolor='black', linewidth=1) # Adjusted capsize and alpha
     
     # Add count labels
     for i, (bar, count) in enumerate(zip(bars, counts)):
-        ax1.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.02,
-                f'n={count}', ha='center', va='bottom', fontweight='bold')
+        ax1.text(bar.get_x() + bar.get_width()/2, bar.get_height() + errors_high[i] + 0.01, # Adjusted y-pos for label
+                f'n={count}', ha='center', va='bottom', fontweight='normal', fontsize=10) # slightly smaller font
     
     # Add labels and title
     ax1.set_xlabel('Task Difficulty')
@@ -734,37 +746,50 @@ def plot_results(difficulty_stats, output_file):
     ax1.axhline(y=0.3, color='red', linestyle='--', alpha=0.7, label='High Drift Threshold')
     
     # Set y-axis limits with a bit of padding
-    max_value = max([m + e for m, e in zip(mean_drifts, errors_high)]) * 1.1
-    ax1.set_ylim([0, max_value])
+    if mean_drifts: # ensure mean_drifts is not empty
+        max_y_val = max([m + e for m, e in zip(mean_drifts, errors_high)])
+        # Adjust for labels on top of error bars
+        label_offset = 0.05 
+        ax1.set_ylim([0, max_y_val + label_offset + 0.05]) # Add a bit more padding for n=X labels
+    else:
+        ax1.set_ylim([0, 0.8]) # Default if no data
+
+    # Add legend (explicitly to upper right)
+    ax1.legend(loc='upper right')
     
-    # Add legend
-    ax1.legend()
+    # Construct statistical test results text
+    test_text_lines = ["Statistical Significance Tests:"]
     
-    # Add statistical test results in the second subplot
-    ax2.axis('off')  # Turn off axis
-    test_text = "Statistical Significance Tests:\n"
-    
-    # Add test results if available
     if 'test_3_vs_4' in difficulty_stats:
         test = difficulty_stats['test_3_vs_4']
-        sig_marker = '* (p<0.05)' if test['significant'] else '(n.s.)'
-        test_text += f"• Difficulty 3 vs 4: t={test['t_stat']:.2f}, p={test['p_value']:.4f} {sig_marker}\n"
+        sig_marker = '(n.s.)'
+        if test['p_value'] < 0.001: sig_marker = '*** (p<0.001)'
+        elif test['p_value'] < 0.01: sig_marker = '** (p<0.01)'
+        elif test['p_value'] < 0.05: sig_marker = '* (p<0.05)'
+        
+        test_text_lines.append(f"• Difficulty 3 vs 4: t={test['t_stat']:.2f}, p={test['p_value']:.4f} {sig_marker}")
     
     if 'test_poison_1_vs_2' in difficulty_stats:
         test = difficulty_stats['test_poison_1_vs_2']
-        sig_marker = '* (p<0.05)' if test['significant'] else '(n.s.)'
-        test_text += f"• Poisoning sources - Difficulty 1 vs 2: t={test['t_stat']:.2f}, p={test['p_value']:.4f} {sig_marker}\n"
+        sig_marker = '(n.s.)'
+        if test['p_value'] < 0.001: sig_marker = '*** (p<0.001)'
+        elif test['p_value'] < 0.01: sig_marker = '** (p<0.01)'
+        elif test['p_value'] < 0.05: sig_marker = '* (p<0.05)'
+        test_text_lines.append(f"• Poisoning sources - Diff 1 vs 2: t={test['t_stat']:.2f}, p={test['p_value']:.4f} {sig_marker}")
     
-    # Add methodology note
-    test_text += "\nMethodology: Welch's t-test (unequal variances) with 95% confidence intervals\n"
-    test_text += "Error bars represent 95% confidence intervals of the mean"
+    test_text_lines.append("\nMethodology: Welch's t-test (unequal variances)")
+    test_text_lines.append("Error bars represent 95% confidence intervals of the mean")
+    test_text = "\n".join(test_text_lines)
     
-    # Add the text to the second subplot
-    ax2.text(0.5, 0.5, test_text, ha='center', va='center', transform=ax2.transAxes,
-             bbox=dict(boxstyle='round', facecolor='#f0f0f0', alpha=0.7))
-    
+    # Add the text box to the top-left of ax1
+    ax1.text(0.02, 0.98, test_text, transform=ax1.transAxes, fontsize=9, # Smaller font for text box
+             verticalalignment='top', horizontalalignment='left',
+             bbox=dict(boxstyle='round,pad=0.5', facecolor='aliceblue', alpha=0.7, edgecolor='grey'))
+
+    # Adjust layout to prevent overlap
+    plt.tight_layout(rect=[0, 0, 1, 0.96]) # Adjust rect to make space for suptitle if any, or just general spacing
+
     # Save figure with high resolution for publication
-    plt.tight_layout()
     plt.savefig(output_file, dpi=300, bbox_inches='tight')
     
     # Also save as PDF for publication
@@ -791,9 +816,9 @@ def print_high_drift_examples(high_drift_examples):
 
 def main():
     parser = argparse.ArgumentParser(description="Evaluate prompt poisoning effects across task difficulties")
-    parser.add_argument("--input", default="data/SWE-Bench-CL.json", help="Path to SWE-Bench-CL JSON file")
-    parser.add_argument("--data-dir", default="data", help="Directory to save data files (CSV, JSON)")
-    parser.add_argument("--results-dir", default="results", help="Directory to save result files (PNG)")
+    parser.add_argument("--input", default="../data/SWE-Bench-CL-Curriculum.json", help="Path to SWE-Bench-CL JSON file")
+    parser.add_argument("--data-dir", default="../data", help="Directory to save data files (CSV, JSON)")
+    parser.add_argument("--results-dir", default="../results", help="Directory to save result files (PNG)")
     parser.add_argument("--num-pairs", type=int, default=5, help="Number of prompt pairs per difficulty level")
     parser.add_argument("--offline", action="store_true", help="Run in offline mode with mock data")
     parser.add_argument("--skip-generation", action="store_true", 
