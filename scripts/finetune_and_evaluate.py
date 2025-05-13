@@ -1,518 +1,387 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
-Sequential fine-tuning and evaluation for continual learning on SWE-Bench-CL.
+Finetune and evaluate a model on a sequence of continual learning tasks.
 
-This script loads a model, fine-tunes it sequentially on tasks from a continual learning
-stream, and evaluates forgetting and forward transfer metrics across all tasks.
+This script loads a model, finetunes it sequentially on a stream of tasks,
+and evaluates catastrophic forgetting and forward transfer.
 """
 
 import argparse
 import json
 import os
 import sys
-import csv
-import logging
-from typing import Dict, List, Tuple
+import time
 import numpy as np
-from datetime import datetime
+import pandas as pd
 import torch
 from torch.utils.data import Dataset, DataLoader
-import matplotlib.pyplot as plt
 from tqdm import tqdm
-
-# Import Hugging Face Transformers
-try:
-    from transformers import (
-        AutoModelForCausalLM,
-        AutoTokenizer, 
-        TrainingArguments, 
-        Trainer, 
-        default_data_collator,
-        get_scheduler
-    )
-except ImportError:
-    print("Error: This script requires the transformers library. Install with: pip install transformers", 
-          file=sys.stderr)
-    sys.exit(1)
-
-# Configure logging
-logging.basicConfig(
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    level=logging.INFO,
-    datefmt='%Y-%m-%d %H:%M:%S'
+import matplotlib.pyplot as plt
+from transformers import (
+    AutoModelForCausalLM,
+    AutoTokenizer,
+    Trainer,
+    TrainingArguments,
+    default_data_collator,
+    get_scheduler
 )
-logger = logging.getLogger(__name__)
+
+# For reproducibility
+torch.manual_seed(42)
+np.random.seed(42)
+
 
 class SWEBenchDataset(Dataset):
-    """Dataset for SWE-Bench code tasks."""
+    """Dataset for SWE-Bench tasks."""
     
-    def __init__(self, tasks, tokenizer, max_length=1024):
+    def __init__(self, examples, tokenizer, max_length=1024):
         """
-        Initialize dataset with tasks.
+        Initialize dataset.
         
         Args:
-            tasks (list): List of task dictionaries
-            tokenizer: HuggingFace tokenizer
-            max_length (int): Maximum sequence length for tokenization
+            examples: List of examples from the task
+            tokenizer: Tokenizer to use for encoding
+            max_length: Maximum length of encoded sequences
         """
-        self.tasks = tasks
+        self.examples = examples
         self.tokenizer = tokenizer
         self.max_length = max_length
         
     def __len__(self):
-        return len(self.tasks)
+        return len(self.examples)
     
     def __getitem__(self, idx):
-        task = self.tasks[idx]
+        example = self.examples[idx]
         
-        # Format input (customize this based on your model and task format)
-        task_input = f"Task: {task['title']}\n\n"
-        task_input += f"Problem: {task['body']}\n\n"
+        # Construct prompt from problem statement
+        prompt = f"Fix the following issue in the code:\n\n{example['problem_statement']}"
         
-        # Format output - this could be the patch or other task solution
-        task_output = task.get('patch', '')
+        # Get ground truth solution (if available)
+        solution = example.get('patch', '')
+        if not solution:
+            # Fallback to changes if patch not available
+            solution = example.get('changes', '')
         
-        # Prepare for causal language modeling (text generation)
-        full_text = f"{task_input}\nSolution: {task_output}"
+        # Combine for training
+        combined = f"{prompt}\n\nSolution:\n{solution}"
         
-        # Tokenize inputs with attention mask
-        encodings = self.tokenizer(
-            full_text,
-            truncation=True,
+        # Tokenize
+        encoded = self.tokenizer(
+            combined, 
             max_length=self.max_length,
             padding="max_length",
+            truncation=True,
             return_tensors="pt"
         )
         
-        # Prepare for causal LM training (shift labels)
-        input_ids = encodings.input_ids[0]
-        attention_mask = encodings.attention_mask[0]
-        labels = input_ids.clone()
-        
-        # For causal LM, we use -100 to mask the input part from loss computation
-        # Find the "Solution:" marker to separate input from output
-        solution_tokens = self.tokenizer.encode("Solution:", add_special_tokens=False)
-        solution_start = None
-        
-        for i in range(len(input_ids) - len(solution_tokens)):
-            if input_ids[i:i+len(solution_tokens)].tolist() == solution_tokens:
-                solution_start = i + len(solution_tokens)
-                break
-        
-        if solution_start:
-            # Mask input part from loss
-            labels[:solution_start] = -100
-        
-        return {
-            "input_ids": input_ids,
-            "attention_mask": attention_mask,
-            "labels": labels,
-            "task_id": f"{task['repo']}/{task['issue_id']}"
+        # For causal language modeling, labels are the input_ids
+        item = {
+            "input_ids": encoded["input_ids"][0],
+            "attention_mask": encoded["attention_mask"][0],
+            "labels": encoded["input_ids"][0].clone()
         }
+        
+        return item
 
-def prepare_datasets(task_stream, tokenizer, max_length=1024):
+
+def load_task_stream(task_stream_file):
     """
-    Prepare datasets for all tasks.
+    Load the task stream from a JSON file.
     
     Args:
-        task_stream (dict): Task stream dictionary
-        tokenizer: HuggingFace tokenizer
-        max_length (int): Maximum sequence length
-        
+        task_stream_file: Path to task stream JSON file
+    
     Returns:
-        dict: Dictionary mapping task names to datasets
+        Dictionary containing task stream data
     """
-    datasets = {}
-    metadata = task_stream.get("metadata", {})
-    task_ordering = metadata.get("task_ordering", [])
-    
-    for task_name in task_ordering:
-        tasks = task_stream.get(task_name, [])
-        if tasks:
-            datasets[task_name] = SWEBenchDataset(tasks, tokenizer, max_length)
-            logger.info(f"Prepared dataset for {task_name} with {len(tasks)} examples")
-        else:
-            logger.warning(f"No tasks found for {task_name}")
-    
-    return datasets
-
-def evaluate_model(model, dataset, tokenizer, device, batch_size=4):
-    """
-    Evaluate model performance on a dataset.
-    
-    Args:
-        model: HuggingFace model
-        dataset: Dataset instance
-        tokenizer: HuggingFace tokenizer
-        device: PyTorch device
-        batch_size (int): Batch size for evaluation
-        
-    Returns:
-        float: Accuracy score (or other relevant metric)
-    """
-    model.eval()
-    dataloader = DataLoader(dataset, batch_size=batch_size, collate_fn=default_data_collator)
-    
-    total_loss = 0
-    with torch.no_grad():
-        for batch in tqdm(dataloader, desc="Evaluating", leave=False):
-            # Move batch to device
-            batch = {k: v.to(device) if isinstance(v, torch.Tensor) else v 
-                     for k, v in batch.items()}
-            
-            outputs = model(**{k: v for k, v in batch.items() 
-                             if k in ["input_ids", "attention_mask", "labels"]})
-            
-            total_loss += outputs.loss.item()
-    
-    # Convert loss to "accuracy" metric (1 - normalized loss)
-    # This is just one approach - you might want a different metric
-    avg_loss = total_loss / len(dataloader)
-    
-    # Higher is better (1 = perfect, 0 = worst)
-    accuracy = max(0, 1 - avg_loss / 10)  # Normalize loss to 0-1 range
-    
-    return accuracy
-
-def finetune_model(model, dataset, tokenizer, device, learning_rate=5e-5, 
-                  epochs=3, batch_size=4, output_dir=None):
-    """
-    Fine-tune model on a dataset.
-    
-    Args:
-        model: HuggingFace model
-        dataset: Dataset instance
-        tokenizer: HuggingFace tokenizer
-        device: PyTorch device
-        learning_rate (float): Learning rate
-        epochs (int): Number of training epochs
-        batch_size (int): Training batch size
-        output_dir (str): Directory to save checkpoints (optional)
-        
-    Returns:
-        model: Fine-tuned model
-    """
-    # Set up training arguments
-    training_args = TrainingArguments(
-        output_dir=output_dir if output_dir else "./temp_trainer",
-        per_device_train_batch_size=batch_size,
-        learning_rate=learning_rate,
-        num_train_epochs=epochs,
-        weight_decay=0.01,
-        logging_dir=os.path.join(output_dir, "logs") if output_dir else None,
-        logging_steps=10,
-        save_total_limit=1,
-        save_steps=500,
-        report_to="none",  # Disable wandb/tensorboard
-    )
-    
-    # Initialize trainer
-    trainer = Trainer(
-        model=model,
-        args=training_args,
-        train_dataset=dataset,
-        tokenizer=tokenizer,
-        data_collator=default_data_collator,
-    )
-    
-    # Train the model
-    trainer.train()
-    
-    return model
-
-def prompt_based_update(model, dataset, tokenizer, device):
-    """
-    Update model using prompt-based learning (no parameter updates).
-    This is just a placeholder - implement based on your specific approach.
-    
-    Args:
-        model: HuggingFace model
-        dataset: Dataset instance
-        tokenizer: HuggingFace tokenizer
-        device: PyTorch device
-        
-    Returns:
-        model: Model (unchanged in this case)
-    """
-    # For prompt-based learning, we might not update the model at all,
-    # but instead prepare prompt templates, examples, etc.
-    logger.info("Using prompt-based learning (no parameter updates)")
-    
-    # This is where you would implement your prompt engineering approach
-    # For this skeleton code, we just return the unchanged model
-    return model
-
-def track_metrics(task_accuracies, current_task, seen_tasks):
-    """
-    Calculate forgetting and other metrics.
-    
-    Args:
-        task_accuracies (dict): Dictionary mapping task names to list of accuracies
-        current_task (str): Name of current task
-        seen_tasks (list): List of previously seen tasks
-        
-    Returns:
-        dict: Dictionary of metrics
-    """
-    metrics = {
-        "current_task": current_task,
-        "current_accuracy": task_accuracies[current_task][-1],
-        "avg_accuracy": np.mean([task_accuracies[t][-1] for t in seen_tasks]),
-        "task_accuracies": {t: task_accuracies[t][-1] for t in seen_tasks},
-        "forgetting": {},
-        "forward_transfer": {}
-    }
-    
-    # Calculate forgetting for each previously seen task
-    for task in seen_tasks:
-        if task == current_task:
-            # No forgetting for current task
-            metrics["forgetting"][task] = 0
-            continue
-            
-        if len(task_accuracies[task]) >= 2:
-            # Forgetting = max previous accuracy - current accuracy
-            max_prev_acc = max(task_accuracies[task][:-1])
-            curr_acc = task_accuracies[task][-1]
-            forgetting = max(0, max_prev_acc - curr_acc)
-            metrics["forgetting"][task] = forgetting
-    
-    # Calculate average forgetting
-    if len(metrics["forgetting"]) > 0:
-        metrics["avg_forgetting"] = np.mean(list(metrics["forgetting"].values()))
-    else:
-        metrics["avg_forgetting"] = 0
-        
-    return metrics
-
-def plot_results(metrics_history, output_dir):
-    """
-    Create plots for accuracy and forgetting.
-    
-    Args:
-        metrics_history (list): List of metrics dictionaries
-        output_dir (str): Directory to save plots
-    """
-    # Extract data for plotting
-    tasks = []
-    avg_accuracies = []
-    avg_forgetting = []
-    
-    for metrics in metrics_history:
-        tasks.append(metrics["current_task"])
-        avg_accuracies.append(metrics["avg_accuracy"])
-        avg_forgetting.append(metrics.get("avg_forgetting", 0))
-    
-    # Create figure with two subplots
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8))
-    
-    # Plot average accuracy
-    ax1.plot(tasks, avg_accuracies, 'o-', label='Average Accuracy')
-    ax1.set_title('Average Accuracy Across Tasks')
-    ax1.set_xlabel('Current Task')
-    ax1.set_ylabel('Accuracy')
-    ax1.set_ylim(0, 1)
-    ax1.grid(True)
-    
-    # Plot average forgetting
-    ax2.plot(tasks, avg_forgetting, 'o-', color='red', label='Average Forgetting')
-    ax2.set_title('Average Forgetting Across Tasks')
-    ax2.set_xlabel('Current Task')
-    ax2.set_ylabel('Forgetting')
-    ax2.set_ylim(0, 1)
-    ax2.grid(True)
-    
-    plt.tight_layout()
-    
-    # Save figure
-    plot_path = os.path.join(output_dir, 'cl_metrics.png')
-    plt.savefig(plot_path)
-    logger.info(f"Saved plots to {plot_path}")
-    
-    # Close figure to free memory
-    plt.close(fig)
-
-def main():
-    parser = argparse.ArgumentParser(description="Fine-tune and evaluate models on task streams")
-    parser.add_argument("--model_name_or_path", required=True, 
-                        help="Hugging Face model name or path")
-    parser.add_argument("--task_stream_file", required=True, 
-                        help="Path to task stream JSON file")
-    parser.add_argument("--learning_rate", type=float, default=5e-5, 
-                        help="Learning rate for fine-tuning")
-    parser.add_argument("--epochs", type=int, default=3, 
-                        help="Number of epochs per task")
-    parser.add_argument("--batch_size", type=int, default=4, 
-                        help="Batch size for training")
-    parser.add_argument("--output_dir", default="./cl_results", 
-                        help="Directory to save results")
-    parser.add_argument("--update_method", choices=["finetune", "prompt"], default="finetune",
-                        help="Method for updating model (fine-tuning or prompt-based)")
-    parser.add_argument("--max_length", type=int, default=1024,
-                        help="Maximum sequence length for tokenization")
-    parser.add_argument("--seed", type=int, default=42, 
-                        help="Random seed for reproducibility")
-    
-    args = parser.parse_args()
-    
-    # Set random seeds
-    torch.manual_seed(args.seed)
-    np.random.seed(args.seed)
-    
-    # Create output directory
-    os.makedirs(args.output_dir, exist_ok=True)
-    
-    # Set device
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    logger.info(f"Using device: {device}")
-    
-    # Load task stream
     try:
-        with open(args.task_stream_file, 'r') as f:
+        with open(task_stream_file, 'r') as f:
             task_stream = json.load(f)
-        logger.info(f"Loaded task stream from {args.task_stream_file}")
+        
+        # Verify that the file contains the expected structure
+        if "metadata" not in task_stream:
+            print("Warning: Task stream file does not contain metadata.", file=sys.stderr)
+        
+        # Get task ordering from metadata if available
+        if "metadata" in task_stream and "task_ordering" in task_stream["metadata"]:
+            task_ordering = task_stream["metadata"]["task_ordering"]
+        else:
+            # Default: sort task keys (excluding metadata)
+            task_ordering = [k for k in task_stream.keys() if k != "metadata"]
+            task_ordering.sort()
+        
+        print(f"Loaded task stream with {len(task_ordering)} tasks")
+        print(f"Task ordering: {task_ordering}")
+        
+        return task_stream, task_ordering
+    
     except Exception as e:
         print(f"Error loading task stream: {e}", file=sys.stderr)
         sys.exit(1)
+
+
+def evaluate_model(model, tokenizer, task_examples, device, batch_size=4):
+    """
+    Evaluate model on a task.
     
-    # Get task ordering
-    metadata = task_stream.get("metadata", {})
-    task_ordering = metadata.get("task_ordering", [])
+    Args:
+        model: Model to evaluate
+        tokenizer: Tokenizer to use
+        task_examples: List of examples for the task
+        device: Device to run evaluation on
+        batch_size: Batch size for evaluation
     
-    if not task_ordering:
-        print("Error: Task stream has no task ordering in metadata", file=sys.stderr)
-        sys.exit(1)
+    Returns:
+        Accuracy score for the task
+    """
+    model.eval()
+    dataset = SWEBenchDataset(task_examples, tokenizer)
+    dataloader = DataLoader(dataset, batch_size=batch_size, collate_fn=default_data_collator)
     
-    # Load model and tokenizer
+    total_loss = 0.0
+    with torch.no_grad():
+        for batch in tqdm(dataloader, desc="Evaluating", leave=False):
+            batch = {k: v.to(device) for k, v in batch.items()}
+            outputs = model(**batch)
+            total_loss += outputs.loss.item()
+    
+    # Convert loss to accuracy-like metric (lower is better for loss, higher is better for accuracy)
+    # This is a simplified approach - in a real scenario, you'd evaluate if the model can generate correct code
+    avg_loss = total_loss / len(dataloader)
+    pseudo_accuracy = 1.0 - min(avg_loss / 10.0, 0.99)  # Normalize loss to a 0-1 scale
+    
+    return pseudo_accuracy
+
+
+def finetune_model(model, tokenizer, task_examples, learning_rate, device, num_epochs=3, batch_size=4):
+    """
+    Finetune model on a task.
+    
+    Args:
+        model: Model to finetune
+        tokenizer: Tokenizer to use
+        task_examples: List of examples for the task
+        learning_rate: Learning rate for finetuning
+        device: Device to run finetuning on
+        num_epochs: Number of epochs to train for
+        batch_size: Batch size for training
+    
+    Returns:
+        Finetuned model
+    """
+    model.train()
+    dataset = SWEBenchDataset(task_examples, tokenizer)
+    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, collate_fn=default_data_collator)
+    
+    optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
+    num_training_steps = len(dataloader) * num_epochs
+    scheduler = get_scheduler(
+        "linear",
+        optimizer=optimizer,
+        num_warmup_steps=0,
+        num_training_steps=num_training_steps
+    )
+    
+    progress_bar = tqdm(range(num_training_steps), desc="Training")
+    
+    for epoch in range(num_epochs):
+        for batch in dataloader:
+            batch = {k: v.to(device) for k, v in batch.items()}
+            outputs = model(**batch)
+            loss = outputs.loss
+            
+            loss.backward()
+            optimizer.step()
+            scheduler.step()
+            optimizer.zero_grad()
+            progress_bar.update(1)
+            progress_bar.set_postfix({"loss": loss.item()})
+    
+    return model
+
+
+def prompt_based_update(model, tokenizer, task_examples, device):
+    """
+    Add task examples to prompt set (no parameter updates).
+    
+    Args:
+        model: Model to use
+        tokenizer: Tokenizer to use
+        task_examples: List of examples for the task
+        device: Device
+    
+    Returns:
+        Model (unchanged) - this is a placeholder for prompt-based methods
+    """
+    # In a real prompt-based approach, you might store examples in a retrieval database
+    # For simplicity, we're just demonstrating the API here
+    print("Prompt-based update: storing examples without parameter updates")
+    return model
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Finetune and evaluate a model on a continual learning task stream")
+    parser.add_argument("--model_name_or_path", required=True, help="HuggingFace model name or path")
+    parser.add_argument("--task_stream_file", required=True, help="Path to task stream JSON file")
+    parser.add_argument("--learning_rate", type=float, default=5e-5, help="Learning rate for finetuning")
+    parser.add_argument("--output_dir", required=True, help="Directory to save outputs")
+    parser.add_argument("--update_method", choices=["finetune", "prompt"], default="finetune",
+                        help="Method to update model: finetune (full parameter update) or prompt (no parameter update)")
+    parser.add_argument("--batch_size", type=int, default=4, help="Batch size for training and evaluation")
+    parser.add_argument("--num_epochs", type=int, default=3, help="Number of epochs per task")
+    parser.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu",
+                        help="Device to run on (cuda or cpu)")
+    
+    args = parser.parse_args()
+    
     try:
+        # Create output directory
+        os.makedirs(args.output_dir, exist_ok=True)
+        
+        # Load model and tokenizer
+        print(f"Loading model: {args.model_name_or_path}")
         tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path)
         model = AutoModelForCausalLM.from_pretrained(args.model_name_or_path)
         
-        # Ensure the tokenizer has a padding token
+        # If the tokenizer doesn't have a pad token, set it to eos token
         if tokenizer.pad_token is None:
-            if tokenizer.eos_token is not None:
-                tokenizer.pad_token = tokenizer.eos_token
-            else:
-                tokenizer.pad_token = tokenizer.eos_token = "</s>"
+            tokenizer.pad_token = tokenizer.eos_token
         
+        device = torch.device(args.device)
         model.to(device)
-        logger.info(f"Loaded model: {args.model_name_or_path}")
-    except Exception as e:
-        print(f"Error loading model: {e}", file=sys.stderr)
-        sys.exit(1)
-    
-    # Prepare datasets
-    datasets = prepare_datasets(task_stream, tokenizer, args.max_length)
-    
-    # Track metrics for each task
-    task_accuracies = {task_name: [] for task_name in task_ordering}
-    metrics_history = []
-    
-    # CSV for saving results
-    csv_path = os.path.join(args.output_dir, "metrics.csv")
-    with open(csv_path, 'w', newline='') as csvfile:
-        fieldnames = ['current_task', 'task', 'accuracy', 'forgetting', 'timestamp']
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        writer.writeheader()
         
-        # Sequential training and evaluation
-        seen_tasks = []
+        # Load task stream
+        task_stream, task_ordering = load_task_stream(args.task_stream_file)
         
-        for task_idx, current_task in enumerate(task_ordering):
-            logger.info(f"==== Task {task_idx+1}/{len(task_ordering)}: {current_task} ====")
+        # Initialize metrics tracking
+        metrics = {
+            "task": [],
+            "task_accuracy": [],
+            "forgetting": [],
+            "mean_accuracy": []
+        }
+        
+        # Track per-task accuracy over time
+        task_accuracies = {}
+        
+        # Iterate through tasks in order
+        for task_idx, task_name in enumerate(task_ordering):
+            print(f"\n{'='*50}")
+            print(f"Task {task_idx+1}/{len(task_ordering)}: {task_name}")
             
-            # Get current task dataset
-            if current_task not in datasets:
-                logger.warning(f"Skipping task {current_task} - no dataset available")
-                continue
-                
-            current_dataset = datasets[current_task]
-            seen_tasks.append(current_task)
+            task_examples = task_stream[task_name]
+            print(f"Examples in task: {len(task_examples)}")
             
-            # Update model based on specified method
+            # Evaluate model on current task (before update)
+            print("Evaluating on current task (before update)...")
+            current_task_acc_before = evaluate_model(model, tokenizer, task_examples, device, args.batch_size)
+            
+            # Update model
             if args.update_method == "finetune":
-                # Fine-tune on current task
-                task_output_dir = os.path.join(args.output_dir, f"checkpoint_{current_task}")
-                os.makedirs(task_output_dir, exist_ok=True)
-                
+                print(f"Finetuning model on {task_name}...")
                 model = finetune_model(
-                    model, 
-                    current_dataset, 
-                    tokenizer, 
-                    device,
-                    learning_rate=args.learning_rate,
-                    epochs=args.epochs,
-                    batch_size=args.batch_size,
-                    output_dir=task_output_dir
+                    model, tokenizer, task_examples, args.learning_rate, device, args.num_epochs, args.batch_size
                 )
-            else:
-                # Prompt-based learning
-                model = prompt_based_update(model, current_dataset, tokenizer, device)
+            else:  # prompt
+                print(f"Updating prompt store with {task_name}...")
+                model = prompt_based_update(model, tokenizer, task_examples, device)
             
-            # Evaluate on all seen tasks
-            logger.info(f"Evaluating on all {len(seen_tasks)} seen tasks")
+            # Evaluate model on all seen tasks
+            print("Evaluating on all seen tasks...")
+            all_task_accuracies = {}
             
-            for task_name in seen_tasks:
-                task_dataset = datasets[task_name]
-                accuracy = evaluate_model(model, task_dataset, tokenizer, device, args.batch_size)
-                task_accuracies[task_name].append(accuracy)
+            for prev_task_name in task_ordering[:task_idx+1]:
+                prev_task_examples = task_stream[prev_task_name]
+                task_acc = evaluate_model(model, tokenizer, prev_task_examples, device, args.batch_size)
+                all_task_accuracies[prev_task_name] = task_acc
                 
-                # Save to CSV
-                writer.writerow({
-                    'current_task': current_task,
-                    'task': task_name,
-                    'accuracy': accuracy,
-                    'forgetting': (max(task_accuracies[task_name]) - accuracy) 
-                                 if len(task_accuracies[task_name]) > 1 else 0,
-                    'timestamp': datetime.now().isoformat()
-                })
-                csvfile.flush()  # Make sure data is written to disk
-                
-                if task_name == current_task:
-                    logger.info(f"Accuracy on current task ({task_name}): {accuracy:.4f}")
+                # Store accuracy for this task at this timestep
+                if prev_task_name not in task_accuracies:
+                    task_accuracies[prev_task_name] = [task_acc]
                 else:
-                    prev_max = max(task_accuracies[task_name][:-1]) if len(task_accuracies[task_name]) > 1 else 0
-                    forgetting = max(0, prev_max - accuracy)
-                    logger.info(f"Accuracy on previous task {task_name}: {accuracy:.4f} (forgetting: {forgetting:.4f})")
+                    task_accuracies[prev_task_name].append(task_acc)
             
-            # Calculate and display metrics
-            metrics = track_metrics(task_accuracies, current_task, seen_tasks)
-            metrics_history.append(metrics)
+            # Compute mean accuracy across all seen tasks
+            mean_accuracy = np.mean(list(all_task_accuracies.values()))
             
-            logger.info(f"Average accuracy: {metrics['avg_accuracy']:.4f}")
+            # Compute forgetting for previous tasks
+            forgetting = 0.0
             if task_idx > 0:
-                logger.info(f"Average forgetting: {metrics['avg_forgetting']:.4f}")
-            logger.info("=" * 50)
+                forgetting_values = []
+                for prev_task_name in task_ordering[:task_idx]:
+                    # Forgetting = maximum previous accuracy - current accuracy
+                    max_prev_acc = max(task_accuracies[prev_task_name][:-1])  # max accuracy before current update
+                    current_acc = task_accuracies[prev_task_name][-1]         # accuracy after current update
+                    task_forgetting = max(0, max_prev_acc - current_acc)      # forgetting cannot be negative
+                    forgetting_values.append(task_forgetting)
+                
+                forgetting = np.mean(forgetting_values) if forgetting_values else 0.0
+            
+            # Save metrics
+            metrics["task"].append(task_name)
+            metrics["task_accuracy"].append(all_task_accuracies[task_name])
+            metrics["forgetting"].append(forgetting)
+            metrics["mean_accuracy"].append(mean_accuracy)
+            
+            # Print current metrics
+            print(f"\nMetrics after task {task_name}:")
+            print(f"  Current task accuracy: {all_task_accuracies[task_name]:.4f}")
+            print(f"  Mean accuracy across seen tasks: {mean_accuracy:.4f}")
+            print(f"  Forgetting: {forgetting:.4f}")
+            
+            # Save current model if needed
+            model_output_dir = os.path.join(args.output_dir, f"model_after_{task_name}")
+            os.makedirs(model_output_dir, exist_ok=True)
+            
+            # Optionally save model weights - comment out if not needed
+            # model.save_pretrained(model_output_dir)
+            # tokenizer.save_pretrained(model_output_dir)
+            
+            # Save task accuracies after each task
+            task_acc_df = pd.DataFrame({
+                task_name: accs + [None] * (len(task_ordering) - len(accs))
+                for task_name, accs in task_accuracies.items()
+            })
+            task_acc_df.index = [f"After_{task}" for task in task_ordering[:len(task_acc_df)]]
+            task_acc_df.to_csv(os.path.join(args.output_dir, "task_accuracies.csv"))
         
-        # Plot final results
-        plot_results(metrics_history, args.output_dir)
+        # Convert metrics to DataFrame and save
+        metrics_df = pd.DataFrame(metrics)
+        metrics_df.to_csv(os.path.join(args.output_dir, "metrics.csv"), index=False)
+        print(f"\nSaved metrics to {os.path.join(args.output_dir, 'metrics.csv')}")
         
-        # Save final summary
-        summary_path = os.path.join(args.output_dir, "summary.txt")
-        with open(summary_path, 'w') as f:
-            f.write(f"SWE-Bench-CL Continual Learning Experiment\n")
-            f.write(f"Date: {datetime.now().isoformat()}\n")
-            f.write(f"Model: {args.model_name_or_path}\n")
-            f.write(f"Update method: {args.update_method}\n\n")
-            
-            f.write("Final Metrics:\n")
-            f.write(f"Average accuracy across all tasks: {metrics_history[-1]['avg_accuracy']:.4f}\n")
-            
-            if len(metrics_history) > 1:
-                f.write(f"Average forgetting: {metrics_history[-1]['avg_forgetting']:.4f}\n\n")
-            
-            f.write("Task-specific accuracies:\n")
-            for task in task_ordering:
-                if task in task_accuracies and task_accuracies[task]:
-                    f.write(f"  {task}: {task_accuracies[task][-1]:.4f}\n")
-            
-        logger.info(f"Experiment complete! Results saved to {args.output_dir}")
+        # Plot accuracy and forgetting
+        plt.figure(figsize=(12, 8))
+        
+        # Accuracy plot
+        plt.subplot(2, 1, 1)
+        plt.plot(metrics["task"], metrics["task_accuracy"], marker='o', label="Current task accuracy")
+        plt.plot(metrics["task"], metrics["mean_accuracy"], marker='s', label="Mean accuracy (seen tasks)")
+        plt.xlabel("Task")
+        plt.ylabel("Accuracy")
+        plt.title("Accuracy over tasks")
+        plt.legend()
+        plt.grid(True, linestyle='--', alpha=0.7)
+        
+        # Forgetting plot
+        plt.subplot(2, 1, 2)
+        plt.plot(metrics["task"][1:], metrics["forgetting"][1:], marker='d', color='red')
+        plt.xlabel("Task")
+        plt.ylabel("Forgetting")
+        plt.title("Forgetting over tasks")
+        plt.grid(True, linestyle='--', alpha=0.7)
+        
+        plt.tight_layout()
+        plt.savefig(os.path.join(args.output_dir, "learning_curves.png"))
+        print(f"Saved learning curves to {os.path.join(args.output_dir, 'learning_curves.png')}")
+        
+        print("\nExperiment completed successfully!")
+        
+    except Exception as e:
+        print(f"Error: {e}", file=sys.stderr)
+        import traceback
+        traceback.print_exc(file=sys.stderr)
+        sys.exit(1)
 
 if __name__ == "__main__":
-    try:
-        main()
-    except Exception as e:
-        import traceback
-        print(f"Error: {e}", file=sys.stderr)
-        print(traceback.format_exc(), file=sys.stderr)
-        sys.exit(1)
+    main()
