@@ -23,9 +23,8 @@ TEST_REQS := test-requirements.txt
 DEV_REQS := dev-requirements.txt
 
 # Model configuration
-MODEL ?= meta-llama/CodeLlama-7b-hf
-MODEL_REVISION ?= main
-MODEL_CACHE_DIR ?= $(HOME)/.cache/huggingface/models
+# Set these to point to your local model files
+MODEL_PATH ?= $(HOME)/.cache/huggingface/models
 MODEL_PRECISION ?= bfloat16  # Options: float32, float16, bfloat16
 MODEL_BITS ?= 16  # Options: 8, 16 (for quantization)
 
@@ -80,12 +79,12 @@ help:
 	@echo "============================"
 	@echo ""
 	@echo "Setup targets:"
-	@echo "  setup                Setup complete environment (venv + deps + model)"
+	@echo "  setup                Setup complete environment (venv + deps)"
 	@echo "  venv                 Create virtual environment"
-	@echo "  deps                 Install dependencies (automatically called by other targets)"
+	@echo "  deps                 Install Python dependencies"
 	@echo "  generate-requirements Generate requirements.txt file"
 	@echo "  generate-test-requirements Generate test-requirements.txt file"
-	@echo "  download-model       Download model for local inference"
+	@echo "  check-model          Verify model is properly set up"
 	@echo ""
 	@echo "Data processing targets:"
 	@echo "  process-data         Process SWE-Bench-CL dataset for evaluation"
@@ -136,7 +135,7 @@ help:
 # ===================================================================
 
 .PHONY: setup
-setup: venv generate-requirements generate-test-requirements deps download-model
+setup: venv deps check-model
 	@echo "✓ Setup complete! Use 'source $(VENV_DIR)/bin/activate' to activate the environment."
 
 .PHONY: venv
@@ -159,11 +158,15 @@ $(DEPS_STAMP): $(REQS) $(TEST_REQS) $(wildcard pyproject.toml)
 	@touch $@
 	@echo "✓ Dependencies installed"
 
-.PHONY: download-model
-download-model: deps
-	@echo "Downloading model $(MODEL)..."
-	$(VENV_DIR)/bin/python -c "from huggingface_hub import snapshot_download; snapshot_download('$(MODEL)', revision='$(MODEL_REVISION)', cache_dir='$(MODEL_CACHE_DIR)')"
-	@echo "✓ Model downloaded to $(MODEL_CACHE_DIR)"
+.PHONY: check-model
+check-model:
+	@if [ ! -d "$(MODEL_PATH)" ]; then \
+		echo "Error: Model not found at $(MODEL_PATH)"; \
+		echo "Please set MODEL_PATH to point to your model directory"; \
+		echo "Example: make setup MODEL_PATH=/path/to/your/model"; \
+		exit 1; \
+	fi
+	@echo "✓ Model found at $(MODEL_PATH)"
 
 # ===================================================================
 # DATA PROCESSING TARGETS
@@ -190,55 +193,87 @@ generate-embed: deps process-data
 # ===================================================================
 
 .PHONY: eval-zero-shot
-eval-zero-shot: deps process-data
-	@echo "Running zero-shot evaluation with $(MODEL)..."
+eval-zero-shot: deps check-model process-data
+	@echo "Running zero-shot evaluation with model from $(MODEL_PATH)..."
 	$(VENV_DIR)/bin/python $(SCRIPTS_DIR)/evaluate_zero_shot.py \
 		--input $(DATA_DIR)/processed_tasks.json \
 		--output $(RESULTS_DIR)/zero_shot_results.json \
-		--model $(MODEL) \
+		--model_path $(MODEL_PATH) \
 		--batch_size $(BATCH_SIZE) \
 		--max_seq_len $(MAX_SEQ_LEN) \
 		--precision $(MODEL_PRECISION) \
-		--model_bits $(MODEL_BITS) \
 		--num_tasks $(NUM_TASKS) \
-		--repo_filter $(REPO_FILTER)
-	@echo "✓ Zero-shot evaluation complete"
+		--repo_filter $(REPO_FILTER) \
+		--seed $(SEED)
+	@echo "✓ Zero-shot evaluation complete. Results saved to $(RESULTS_DIR)/zero_shot_results.json"
+
+.PHONY: quick-eval
+quick-eval: deps check-model
+	@echo "Running quick evaluation with model from $(MODEL_PATH)..."
+	$(VENV_DIR)/bin/python $(SCRIPTS_DIR)/finetune_and_evaluate.py \
+		--model_path $(MODEL_PATH) \
+		--batch_size $(BATCH_SIZE) \
+		--max_seq_len $(MAX_SEQ_LEN) \
+		--precision $(MODEL_PRECISION) \
+		--epochs $(QUICK_EPOCHS) \
+		--output_dir $(RESULTS_DIR)/quick_eval_$(shell date +%Y%m%d_%H%M%S) \
+		--seed $(SEED)
+	@echo "✓ Quick evaluation complete. Results saved to $(RESULTS_DIR)/quick_eval_*/"
+
+.PHONY: full-eval
+full-eval: deps check-model
+	@echo "Running full evaluation with model from $(MODEL_PATH)..."
+	$(VENV_DIR)/bin/python $(SCRIPTS_DIR)/finetune_and_evaluate.py \
+		--model_path $(MODEL_PATH) \
+		--batch_size $(BATCH_SIZE) \
+		--max_seq_len $(MAX_SEQ_LEN) \
+		--precision $(MODEL_PRECISION) \
+		--epochs $(TRAIN_EPOCHS) \
+		--output_dir $(RESULTS_DIR)/full_eval_$(shell date +%Y%m%d_%H%M%S) \
+		--seed $(SEED)
+	@echo "✓ Full evaluation complete. Results saved to $(RESULTS_DIR)/full_eval_*/"
 
 .PHONY: eval-context-aug
-eval-context-aug: deps process-data generate-embed
-	@echo "Running evaluation with context augmentation..."
+eval-context-aug: deps check-model process-data generate-embed
+	@echo "Running evaluation with context augmentation using model from $(MODEL_PATH)..."
 	$(VENV_DIR)/bin/python $(SCRIPTS_DIR)/evaluate_context_aug.py \
 		--input $(DATA_DIR)/processed_tasks.json \
 		--embeddings $(DATA_DIR)/task_embeddings.pkl \
 		--output $(RESULTS_DIR)/context_aug_results.json \
-		--model $(MODEL) \
+		--model_path $(MODEL_PATH) \
 		--batch_size $(BATCH_SIZE) \
 		--max_seq_len $(MAX_SEQ_LEN) \
 		--precision $(MODEL_PRECISION) \
-		--model_bits $(MODEL_BITS) \
 		--num_tasks $(NUM_TASKS) \
-		--repo_filter $(REPO_FILTER)
-	@echo "✓ Context augmentation evaluation complete"
+		--repo_filter $(REPO_FILTER) \
+		--top_k 3 \
+		--seed $(SEED)
+	@echo "✓ Context augmentation evaluation complete. Results saved to $(RESULTS_DIR)/context_aug_results.json"
 
 .PHONY: eval-memory
-eval-memory: deps process-data generate-embed
-	@echo "Running evaluation with memory mechanism..."
+eval-memory: deps check-model process-data generate-embed
+	@echo "Running evaluation with memory mechanism using model from $(MODEL_PATH)..."
 	$(VENV_DIR)/bin/python $(SCRIPTS_DIR)/evaluate_memory.py \
 		--input $(DATA_DIR)/processed_tasks.json \
 		--embeddings $(DATA_DIR)/task_embeddings.pkl \
 		--output $(RESULTS_DIR)/memory_results.json \
-		--model $(MODEL) \
+		--model_path $(MODEL_PATH) \
 		--batch_size $(BATCH_SIZE) \
 		--max_seq_len $(MAX_SEQ_LEN) \
 		--precision $(MODEL_PRECISION) \
-		--model_bits $(MODEL_BITS) \
 		--num_tasks $(NUM_TASKS) \
-		--repo_filter $(REPO_FILTER)
-	@echo "✓ Memory-based evaluation complete"
+		--repo_filter $(REPO_FILTER) \
+		--memory_size 100 \
+		--seed $(SEED)
+	@echo "✓ Memory mechanism evaluation complete. Results saved to $(RESULTS_DIR)/memory_results.json"
 
 .PHONY: eval-all
-eval-all: eval-zero-shot eval-context-aug eval-memory
-	@echo "✓ All evaluations complete"
+eval-all: check-model
+	@echo "Running all evaluations with model from $(MODEL_PATH)..."
+	@$(MAKE) eval-zero-shot
+	@$(MAKE) eval-context-aug
+	@$(MAKE) eval-memory
+	@echo "✓ All evaluations completed. Results saved to $(RESULTS_DIR)/"
 
 # ===================================================================
 # ANALYSIS TARGETS

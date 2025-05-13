@@ -47,8 +47,17 @@ torch.manual_seed(42)
 np.random.seed(42)
 
 # Constants
-DEFAULT_MODEL = "codellama/CodeLlama-3B-Instruct-hf"
+# Using TinyLlama for faster experimentation
+DEFAULT_MODEL = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
 CHECKPOINT_DIR = "checkpoints"
+
+# Optimized training defaults
+DEFAULT_BATCH_SIZE = 16  # Increased from 4
+DEFAULT_GRAD_ACCUM_STEPS = 2  # Reduced from 4
+DEFAULT_LEARNING_RATE = 2e-4  # Increased from 5e-5
+DEFAULT_NUM_EPOCHS = 2  # Reduced from 3
+DEFAULT_MAX_LENGTH = 1024  # Context length
+DEFAULT_USE_4BIT = True  # Use 4-bit quantization
 RESULTS_DIR = "results"
 
 # Check for GPU availability
@@ -194,81 +203,73 @@ class SWEBenchDataset(Dataset):
         return item
 
 
-def load_model_and_tokenizer(model_name=DEFAULT_MODEL, use_8bit=True, use_lora=True, device="cuda"):
+def load_model_and_tokenizer(model_name=DEFAULT_MODEL, use_4bit=DEFAULT_USE_4BIT, use_lora=True, device="cuda"):
     """
-    Load and prepare CodeLlama model with quantization.
+    Load and prepare TinyLlama model with optimization for faster training.
     
     Args:
         model_name: HF model name or path
-        use_8bit: Whether to use 8-bit quantization
+        use_4bit: Whether to use 4-bit quantization (faster than 8-bit)
         use_lora: Whether to use LoRA for parameter-efficient fine-tuning
         device: Device to load the model on
     
     Returns:
         Tuple of (model, tokenizer)
     """
-    print(f"\nLoading model: {model_name}")
-    print(f"Quantization: {'8-bit' if use_8bit else 'None'}")
-    print(f"Using LoRA: {use_lora}")
+    print(f"Loading model {model_name} with optimizations...")
     
-    # Configure quantization
-    if use_8bit:
-        quantization_config = BitsAndBytesConfig(
-            load_in_8bit=True,
-            llm_int8_threshold=6.0,
-            llm_int8_has_fp16_weight=False
-        )
-    else:
-        quantization_config = None
-    
-    # Load tokenizer
-    try:
-        tokenizer = AutoTokenizer.from_pretrained(model_name)
-        print("Tokenizer loaded successfully")
-    except Exception as e:
-        print(f"Error loading tokenizer: {e}")
-        sys.exit(1)
-    
-    # Ensure tokenizer has padding token
+    # Configure tokenizer with padding
+    tokenizer = AutoTokenizer.from_pretrained(
+        model_name,
+        padding_side="right",
+        truncation_side="right"
+    )
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
     
-    # Load model with quantization config
-    try:
+    # Configure 4-bit quantization
+    if use_4bit:
+        print("Using 4-bit quantization with nf4 type")
+        bnb_config = BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_quant_type="nf4",
+            bnb_4bit_use_double_quant=True,
+            bnb_4bit_compute_dtype=torch.bfloat16
+        )
         model = AutoModelForCausalLM.from_pretrained(
             model_name,
-            quantization_config=quantization_config,
-            device_map="auto" if device == "cuda" else None,
-            torch_dtype=torch.float16 if device == "cuda" else torch.float32
+            quantization_config=bnb_config,
+            device_map="auto",
+            torch_dtype=torch.bfloat16,
+            attn_implementation="flash_attention_2"  # Faster attention
         )
-        print("Model loaded successfully")
-    except Exception as e:
-        print(f"Error loading model: {e}")
-        print("\nPossible solutions:")
-        print("1. Check that you have enough GPU memory (try smaller model or increase quantization)")
-        print("2. Ensure you have the latest versions of transformers and bitsandbytes installed")
-        print("3. Try a different model checkpoint")
-        sys.exit(1)
+    else:
+        model = AutoModelForCausalLM.from_pretrained(
+            model_name,
+            device_map="auto",
+            torch_dtype=torch.bfloat16,
+            attn_implementation="flash_attention_2"
+        )
     
-    # Apply LoRA for parameter-efficient fine-tuning
+    # Configure LoRA if enabled (more efficient for TinyLlama)
     if use_lora:
+        print("Applying LoRA with optimized settings...")
         lora_config = LoraConfig(
-            r=16,               # Rank
-            lora_alpha=32,      # Alpha parameter for LoRA scaling
+            r=8,  # Reduced from 16 for faster training
+            lora_alpha=16,
             target_modules=["q_proj", "k_proj", "v_proj", "o_proj"],
             lora_dropout=0.05,
             bias="none",
             task_type=TaskType.CAUSAL_LM
         )
-        
-        # Create PEFT model
         model = get_peft_model(model, lora_config)
         model.print_trainable_parameters()
     
-    # Report memory usage after model loading
-    memory_usage = get_memory_usage()
-    print(f"Memory after model loading - GPU: {memory_usage['gpu']['allocated']:.2f} GB, "
-          f"CPU: {memory_usage['cpu']:.2f} GB")
+    # Enable gradient checkpointing and compile model if available (PyTorch 2.0+)
+    model.gradient_checkpointing_enable()
+    if hasattr(torch, 'compile') and torch.cuda.is_available():
+        print("Compiling model for better performance...")
+        model = torch.compile(model)
     
     return model, tokenizer
 
@@ -422,10 +423,14 @@ def evaluate_model(model, tokenizer, task_examples, device, batch_size=4, use_me
         return 0.0  # Default value if evaluation failed
 
 
-def finetune_model(model, tokenizer, task_examples, learning_rate, device, num_epochs=3, batch_size=4, 
-                gradient_accumulation_steps=1, use_memory=False, memory_examples=None):
+def finetune_model(model, tokenizer, task_examples, learning_rate, device, 
+                  num_epochs=DEFAULT_NUM_EPOCHS, 
+                  batch_size=DEFAULT_BATCH_SIZE, 
+                  gradient_accumulation_steps=DEFAULT_GRAD_ACCUM_STEPS, 
+                  use_memory=False, memory_examples=None,
+                  max_steps=100):
     """
-    Finetune model on a task using LoRA with quantization.
+    Finetune TinyLlama on a task with optimizations for faster training.
     
     Args:
         model: Model to finetune
@@ -433,55 +438,78 @@ def finetune_model(model, tokenizer, task_examples, learning_rate, device, num_e
         task_examples: List of examples for the task
         learning_rate: Learning rate for finetuning
         device: Device to run finetuning on
-        num_epochs: Number of epochs to train for
-        batch_size: Batch size for training
-        gradient_accumulation_steps: Number of steps to accumulate gradients for
+        num_epochs: Number of epochs to train for (default: 2)
+        batch_size: Batch size for training (default: 16)
+        gradient_accumulation_steps: Gradient accumulation steps (default: 2)
         use_memory: Whether to include memory in training examples
         memory_examples: Examples from previous tasks to use as memory
+        max_steps: Maximum number of training steps (safety limit)
     
     Returns:
         Finetuned model
     """
-    model.train()
+    print(f"Finetuning model for {num_epochs} epochs with batch size {batch_size}...")
     
-    # Create dataset with memory if enabled
-    dataset = SWEBenchDataset(task_examples, tokenizer, use_memory=use_memory, memory_examples=memory_examples)
+    # Limit number of examples for faster training
+    max_examples = 200  # Limit examples per task for faster iteration
+    if len(task_examples) > max_examples:
+        print(f"Limiting examples from {len(task_examples)} to {max_examples} for faster training")
+        task_examples = task_examples[:max_examples]
     
-    # Create dataloader with appropriate batch size
-    effective_batch_size = batch_size * gradient_accumulation_steps
-    print(f"Dataset size: {len(dataset)} examples")
-    print(f"Batch size: {batch_size} (effective: {effective_batch_size} with {gradient_accumulation_steps} gradient accumulation steps)")
-    
-    dataloader = DataLoader(
-        dataset, 
-        batch_size=batch_size,
-        shuffle=True, 
-        collate_fn=default_data_collator
+    # Prepare dataset
+    dataset = SWEBenchDataset(
+        examples=task_examples,
+        tokenizer=tokenizer,
+        max_length=DEFAULT_MAX_LENGTH,
+        use_memory=use_memory,
+        memory_examples=memory_examples
     )
     
-    # Setup optimizer and scheduler
-    optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate, weight_decay=0.01)
-    num_training_steps = len(dataloader) * num_epochs // gradient_accumulation_steps
-    num_warmup_steps = min(100, int(num_training_steps * 0.1))  # 10% warmup
+    # Calculate warmup steps (10% of total steps)
+    total_steps = min(
+        (len(dataset) * num_epochs) // (batch_size * gradient_accumulation_steps),
+        max_steps
+    )
+    warmup_steps = max(1, int(total_steps * 0.1))
     
-    scheduler = get_scheduler(
-        "linear",
-        optimizer=optimizer,
-        num_warmup_steps=num_warmup_steps,
-        num_training_steps=num_training_steps
+    # Optimized training arguments
+    training_args = TrainingArguments(
+        output_dir="./results",
+        num_train_epochs=num_epochs,
+        max_steps=max_steps,  # Safety limit
+        per_device_train_batch_size=batch_size,
+        gradient_accumulation_steps=gradient_accumulation_steps,
+        learning_rate=learning_rate,
+        weight_decay=0.01,
+        warmup_steps=warmup_steps,
+        lr_scheduler_type="cosine",
+        logging_steps=5,  # More frequent logging
+        save_strategy="no",  # Disable checkpointing
+        fp16=True,  # Mixed precision training
+        bf16=torch.cuda.is_bf16_supported(),  # Use bfloat16 if available
+        remove_unused_columns=True,  # Saves memory
+        optim="adamw_torch_fused",  # Fused optimizer
+        report_to="none",  # Disable external logging
+        gradient_checkpointing=True,  # Save memory
+        dataloader_num_workers=2,  # Parallel data loading
+        dataloader_pin_memory=True,  # Faster data transfer
     )
     
-    # Training loop with gradient accumulation and error handling
-    progress_bar = tqdm(range(num_training_steps), desc="Training")
-    accumulated_loss = 0.0
-    step = 0
+    # Initialize trainer with optimizations
+    trainer = Trainer(
+        model=model,
+        args=training_args,
+        train_dataset=dataset,
+        data_collator=default_data_collator,
+    )
     
-    for epoch in range(num_epochs):
-        epoch_loss = 0.0
-        epoch_steps = 0
-        
-        for batch_idx, batch in enumerate(dataloader):
-            try:
+    # Train model with timing
+    start_time = time.time()
+    trainer.train()
+    training_time = (time.time() - start_time) / 60  # in minutes
+    print(f"Training completed in {training_time:.1f} minutes")
+    
+    return model
                 # Move batch to device
                 batch = {k: v.to(device) for k, v in batch.items()}
                 
@@ -715,16 +743,26 @@ def main():
     parser.add_argument("--model_name", default=DEFAULT_MODEL, help=f"HuggingFace model name or path (default: {DEFAULT_MODEL})")
     parser.add_argument("--task_stream_file", required=True, help="Path to task stream JSON file")
     parser.add_argument("--filter_repo", default="sympy/sympy", help="Repository to filter tasks for (default: sympy/sympy)")
-    parser.add_argument("--learning_rate", type=float, default=5e-5, help="Learning rate for finetuning")
+    parser.add_argument("--learning_rate", type=float, default=DEFAULT_LEARNING_RATE, 
+                        help=f"Learning rate for finetuning (default: {DEFAULT_LEARNING_RATE})")
     parser.add_argument("--output_dir", default="results", help="Directory to save outputs")
-    parser.add_argument("--batch_size", type=int, default=4, help="Batch size for training")
-    parser.add_argument("--gradient_accumulation_steps", type=int, default=4, help="Number of steps to accumulate gradients for")
-    parser.add_argument("--num_epochs", type=int, default=3, help="Number of epochs per task")
-    parser.add_argument("--use_8bit", action="store_true", help="Use 8-bit quantization for model")
-    parser.add_argument("--use_lora", action="store_true", help="Use LoRA for parameter-efficient fine-tuning")
+    parser.add_argument("--batch_size", type=int, default=DEFAULT_BATCH_SIZE, 
+                        help=f"Batch size for training (default: {DEFAULT_BATCH_SIZE})")
+    parser.add_argument("--gradient_accumulation_steps", type=int, default=DEFAULT_GRAD_ACCUM_STEPS, 
+                        help=f"Gradient accumulation steps (default: {DEFAULT_GRAD_ACCUM_STEPS})")
+    parser.add_argument("--num_epochs", type=int, default=DEFAULT_NUM_EPOCHS, 
+                        help=f"Number of epochs per task (default: {DEFAULT_NUM_EPOCHS})")
+    parser.add_argument("--max_steps", type=int, default=100, 
+                        help="Maximum number of training steps per task (safety limit)")
+    parser.add_argument("--use_4bit", action="store_true", default=DEFAULT_USE_4BIT, 
+                        help=f"Use 4-bit quantization (faster, default: {DEFAULT_USE_4BIT})")
+    parser.add_argument("--use_lora", action="store_true", default=True, 
+                        help="Use LoRA for parameter-efficient fine-tuning (default: True)")
     parser.add_argument("--seed", type=int, default=42, help="Random seed for reproducibility")
     parser.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu",
                         help="Device to run on (cuda or cpu)")
+    parser.add_argument("--max_examples", type=int, default=200,
+                        help="Maximum number of examples per task (for faster training)")
     
     args = parser.parse_args()
     
@@ -759,10 +797,10 @@ def main():
             print(f"Starting experiment with memory {'enabled' if memory_enabled else 'disabled'}")
             print(f"{'='*80}")
             
-            # Load model and tokenizer
+            # Load model and tokenizer with optimized settings
             model, tokenizer = load_model_and_tokenizer(
                 model_name=args.model_name,
-                use_8bit=args.use_8bit, 
+                use_4bit=args.use_4bit,
                 use_lora=args.use_lora,
                 device=args.device
             )
@@ -805,12 +843,19 @@ def main():
                 )
                 
                 try:
-                    # Finetune model on current task
-                    print(f"\nFinetuning model on {task_name}...")
+                    # Finetune model on current task with optimized settings
                     model = finetune_model(
-                        model, tokenizer, task_examples, args.learning_rate, args.device,
-                        args.num_epochs, args.batch_size, args.gradient_accumulation_steps,
-                        use_memory=memory_enabled, memory_examples=stored_memories
+                        model=model,
+                        tokenizer=tokenizer,
+                        task_examples=task_examples[:args.max_examples],
+                        learning_rate=args.learning_rate,
+                        device=args.device,
+                        num_epochs=args.num_epochs,
+                        batch_size=args.batch_size,
+                        gradient_accumulation_steps=args.gradient_accumulation_steps,
+                        use_memory=memory_enabled,
+                        memory_examples=stored_memories,
+                        max_steps=args.max_steps
                     )
                     
                     # Save model checkpoint
