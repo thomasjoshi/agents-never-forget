@@ -592,14 +592,15 @@ def evaluate_success(model, dataset, batch_size=4):
     import os
     import subprocess
     import shutil
+    import time
     
     # Check if Docker is available
     def is_docker_available():
         try:
             result = subprocess.run(["docker", "--version"], 
-                                   stdout=subprocess.PIPE, 
-                                   stderr=subprocess.PIPE, 
-                                   check=False)
+                                 stdout=subprocess.PIPE, 
+                                 stderr=subprocess.PIPE, 
+                                 check=False)
             return result.returncode == 0
         except FileNotFoundError:
             return False
@@ -640,6 +641,7 @@ def evaluate_success(model, dataset, batch_size=4):
         Returns:
             Boolean indicating if all tests passed
         """
+        container_id = None
         try:
             # Create a temporary directory for test execution
             with tempfile.TemporaryDirectory() as temp_dir:
@@ -650,11 +652,68 @@ def evaluate_success(model, dataset, batch_size=4):
                 # Initialize repository with base commit
                 base_commit = issue.get("base_commit")
                 repo_name = issue.get("repo")
-                if not base_commit or not repo_name:
-                    print(f"Missing base_commit or repo for issue {issue.get('instance_id')}")
+                instance_id = issue.get('instance_id')
+                
+                if not base_commit or not repo_name or not instance_id:
+                    print(f"Missing required fields (base_commit, repo, or instance_id) for issue {instance_id}")
                     return False
                 
-                # Clone repository at specific commit
+                # Check if we have a cached Docker image for this repo/commit
+                image_name = f"swebench-{repo_name.replace('/', '_')}-{base_commit[:8]}"
+                
+                # If image doesn't exist, build it
+                if not docker_image_exists(image_name):
+                    print(f"Docker image {image_name} not found in cache. Building...")
+                    # Clone repository at specific commit
+                    clone_cmd = [
+                        "git", "clone", 
+                        f"https://github.com/{repo_name}.git",
+                        repo_path
+                    ]
+                    clone_result = subprocess.run(clone_cmd, 
+                                                stdout=subprocess.PIPE, 
+                                                stderr=subprocess.PIPE, 
+                                                check=False)
+                    
+                    if clone_result.returncode != 0:
+                        print(f"Failed to clone {repo_name}: {clone_result.stderr.decode()}")
+                        return False
+                    
+                    # Checkout base commit
+                    checkout_cmd = ["git", "checkout", base_commit]
+                    checkout_result = subprocess.run(checkout_cmd, 
+                                                  cwd=repo_path, 
+                                                  stdout=subprocess.PIPE, 
+                                                  stderr=subprocess.PIPE, 
+                                                  check=False)
+                    
+                    if checkout_result.returncode != 0:
+                        print(f"Failed to checkout {base_commit} for {repo_name}: {checkout_result.stderr.decode()}")
+                        return False
+                    
+                    # Build Docker image with cache
+                    docker_build_cmd = [
+                        "docker", "build", 
+                        "--no-cache=false",  # Use cache layers
+                        "-t", image_name,
+                        "."
+                    ]
+                    
+                    build_result = subprocess.run(docker_build_cmd, 
+                                               cwd=repo_path,
+                                               stdout=subprocess.PIPE, 
+                                           stderr=subprocess.PIPE, 
+                                           timeout=60,
+                                           check=False)
+                if build_result.returncode != 0:
+                    print(f"Docker build failed for {issue.get('instance_id')}")
+                    return False
+                
+                # Clean up the cloned repo after building the image
+                shutil.rmtree(repo_path, ignore_errors=True)
+                os.makedirs(repo_path, exist_ok=True)
+                
+                # Re-clone for applying the patch
                 clone_cmd = [
                     "git", "clone", 
                     f"https://github.com/{repo_name}.git",
@@ -666,12 +725,11 @@ def evaluate_success(model, dataset, batch_size=4):
                               check=False)
                 
                 # Checkout base commit
-                checkout_cmd = ["git", "checkout", base_commit]
-                subprocess.run(checkout_cmd, 
-                              cwd=repo_path, 
-                              stdout=subprocess.PIPE, 
-                              stderr=subprocess.PIPE, 
-                              check=False)
+                subprocess.run(["git", "checkout", base_commit], 
+                             cwd=repo_path,
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE,
+                             check=False)
                 
                 # Apply patch
                 with open(patch_path, "r") as f:
@@ -685,67 +743,84 @@ def evaluate_success(model, dataset, batch_size=4):
                                             stderr=subprocess.PIPE)
                 apply_proc.communicate(input=patch_content.encode())
                 
-                # Run tests in Docker container
                 # Prepare test commands for FAIL_TO_PASS tests
                 f2p_tests = issue.get("FAIL_TO_PASS_list", [])
                 p2p_tests = issue.get("PASS_TO_PASS_list", [])
                 
-                # Build Docker image
-                docker_build_cmd = [
-                    "docker", "build", 
-                    "-t", f"swebench-{issue.get('instance_id')}", 
-                    "."
+                # Run tests in the container with proper cleanup
+                container_name = f"swebench-{instance_id}-{int(time.time())}"
+                
+                # Start the container in detached mode
+                docker_run_cmd = [
+                    "docker", "run",
+                    "-d",  # Run in detached mode
+                    "--rm",  # Automatically remove when done
+                    "-v", f"{os.path.abspath(repo_path)}:/app",
+                    "--name", container_name,
+                    image_name,
+                    "sleep", "3600"  # Keep container running for test execution
                 ]
-                build_result = subprocess.run(docker_build_cmd, 
-                                           cwd=repo_path,
-                                           stdout=subprocess.PIPE, 
-                                           stderr=subprocess.PIPE, 
-                                           timeout=60,
-                                           check=False)
-                if build_result.returncode != 0:
-                    print(f"Docker build failed for {issue.get('instance_id')}")
-                    return False
                 
-                # Run tests in container
-                all_tests_pass = True
-                
-                # Run FAIL_TO_PASS tests (should now pass)
-                for test in f2p_tests:
-                    test_cmd = [
-                        "docker", "run", 
-                        f"swebench-{issue.get('instance_id')}", 
-                        "pytest", test, "-v"
-                    ]
-                    test_result = subprocess.run(test_cmd, 
-                                              stdout=subprocess.PIPE, 
-                                              stderr=subprocess.PIPE, 
-                                              timeout=timeout,
-                                              check=False)
-                    if test_result.returncode != 0:
-                        all_tests_pass = False
-                        break
-                
-                # Run PASS_TO_PASS tests (should still pass)
-                if all_tests_pass:
-                    for test in p2p_tests:
+                try:
+                    # Start container
+                    run_result = subprocess.run(docker_run_cmd,
+                                             stdout=subprocess.PIPE,
+                                             stderr=subprocess.PIPE,
+                                             check=False)
+                    
+                    if run_result.returncode != 0:
+                        print(f"Failed to start container: {run_result.stderr.decode()}")
+                        return False
+                    
+                    container_id = run_result.stdout.decode().strip()
+                    
+                    # Run FAIL_TO_PASS tests
+                    all_passed = True
+                    for test in f2p_tests:
                         test_cmd = [
-                            "docker", "run", 
-                            f"swebench-{issue.get('instance_id')}", 
-                            "pytest", test, "-v"
+                            "docker", "exec", container_id,
+                            "pytest", test
                         ]
-                        test_result = subprocess.run(test_cmd, 
-                                                  stdout=subprocess.PIPE, 
-                                                  stderr=subprocess.PIPE, 
+                        test_result = subprocess.run(test_cmd,
+                                                  stdout=subprocess.PIPE,
+                                                  stderr=subprocess.PIPE,
                                                   timeout=timeout,
                                                   check=False)
                         if test_result.returncode != 0:
-                            all_tests_pass = False
+                            all_passed = False
                             break
-                
-                return all_tests_pass
+                    
+                    # If FAIL_TO_PASS tests passed, check PASS_TO_PASS tests
+                    if all_passed and p2p_tests:
+                        for test in p2p_tests:
+                            test_cmd = [
+                                "docker", "exec", container_id,
+                                "pytest", test
+                            ]
+                            test_result = subprocess.run(test_cmd,
+                                                      stdout=subprocess.PIPE,
+                                                      stderr=subprocess.PIPE,
+                                                      timeout=timeout,
+                                                      check=False)
+                            if test_result.returncode != 0:
+                                all_passed = False
+                                break
+                    
+                    return all_passed
+                    
+                except subprocess.TimeoutExpired:
+                    print(f"Test execution timed out after {timeout} seconds")
+                    return False
+                except Exception as e:
+                    print(f"Error running tests: {str(e)}")
+                    return False
+                finally:
+                    # Ensure container is cleaned up
+                    if container_id:
+                        cleanup_docker_containers([container_id])
                 
         except Exception as e:
-            print(f"Error running tests: {e}")
+            print(f"Error in test execution setup: {str(e)}")
             return False
     
     # Process each example in the dataset
@@ -758,8 +833,41 @@ def evaluate_success(model, dataset, batch_size=4):
             
             # Generate patch with model
             try:
-                # Prepare input for the model
-                prompt = issue.get("prompt") or f"Fix the following code:\n\n{issue.get('patch', '')}\n"
+                # Prepare input for the model using SWE Bench paper format
+                prompt = (
+                    "You will be provided with a partial code base and an issue statement "
+                    "explaining a problem to resolve.\n\n"
+                    f"<issue>\n{issue.get('problem_statement', issue.get('prompt', ''))}\n</issue>\n"
+                    f"<code>\n"
+                )
+                
+                # Add code files if available in the issue
+                if 'code_files' in issue and isinstance(issue['code_files'], dict):
+                    for file_path, file_content in issue['code_files'].items():
+                        prompt += f"[start of {file_path}]\n{file_content}\n[end of {file_path}]\n"
+                
+                prompt += (
+                    "</code>\n\n"
+                    "Here is an example of a patch file. It consists of changes to the code "
+                    "base. It specifies the file names, the line numbers of each change, "
+                    "and the removed and added lines. A single patch file can contain "
+                    "changes to multiple files.\n"
+                    "<patch>\n"
+                    "--- a/example.py\n"
+                    "+++ b/example.py\n"
+                    "@@ -1,2 +1,5 @@\n"
+                    " def example():\n"
+                    "-    return \"old code\"\n"
+                    "+    # This is an example patch\n"
+                    "+    return \"new code\"\n"
+                    "+    # End of changes\n"
+                    "</patch>\n\n"
+                    "I need you to solve the provided issue by generating a single patch file "
+                    "that I can apply directly to this repository using git apply. Please "
+                    "respond with a single patch file in the format shown above.\n\n"
+                    "Respond below:"
+                )
+                
                 inputs = tokenizer(prompt, return_tensors="pt").to(device)
                 
                 # Generate the patch
