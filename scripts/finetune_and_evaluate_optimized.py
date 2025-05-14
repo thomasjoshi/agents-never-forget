@@ -5,6 +5,21 @@ This script loads TinyLlama-1.1B-Chat with 4-bit quantization, finetunes it sequ
 and evaluates catastrophic forgetting and forward transfer.
 """
 
+# IMMEDIATE STARTUP LOGGING
+# This will print even before imports to confirm script execution has started
+import sys
+import os
+import time
+
+print(f"\n{'='*80}")
+print(f"SCRIPT STARTING: {os.path.basename(__file__)}")
+print(f"Time: {time.strftime('%Y-%m-%d %H:%M:%S')}")
+print(f"PID: {os.getpid()}")
+print(f"Python: {sys.version.split()[0]}")
+print(f"Working directory: {os.getcwd()}")
+sys.stdout.flush()  # Force output buffer to flush
+print(f"{'='*80}\n")
+
 import os
 import json
 import random
@@ -69,15 +84,26 @@ def check_gpu_availability():
 
 def get_memory_usage():
     """Get current memory usage stats."""
-    gpu_mem = {"allocated": 0, "cached": 0}
+    gpu_mem = {"allocated": 0, "reserved": 0}
+    cpu_percent = 0
+    
+    # Get GPU memory info if available
     if torch.cuda.is_available():
         gpu_mem = {
             "allocated": torch.cuda.memory_allocated() / 1024**3,  # Convert to GB
-            "cached": torch.cuda.memory_reserved() / 1024**3,  # Convert to GB
+            "reserved": torch.cuda.memory_reserved() / 1024**3,  # Convert to GB
         }
+    
+    # Get CPU usage
+    try:
+        import psutil
+        cpu_percent = psutil.cpu_percent(interval=0.1)
+    except (ImportError, Exception):
+        cpu_percent = 0
     
     return {
         "gpu": gpu_mem,
+        "cpu_percent": cpu_percent
     }
 
 class SWEBenchDataset(Dataset):
@@ -255,6 +281,9 @@ def load_task_stream(task_stream_file, filter_repo=None):
     Returns:
         Dictionary containing task stream data and task ordering
     """
+    print(f"\n[{time.strftime('%Y-%m-%d %H:%M:%S')}] LOADING TASK STREAM: {task_stream_file}")
+    sys.stdout.flush()
+    
     log_step(f"Attempting to load task stream from: {os.path.abspath(task_stream_file)}")
     
     # Check if file exists
@@ -669,13 +698,34 @@ def evaluate_success(model, dataset, batch_size=4):
     
     # Check if Docker is available
     def is_docker_available():
+        """Check if Docker is available on the system."""
         try:
-            result = subprocess.run(["docker", "--version"], 
-                                 stdout=subprocess.PIPE, 
-                                 stderr=subprocess.PIPE, 
-                                 check=False)
+            subprocess.run(["docker", "--version"], 
+                          check=True, 
+                          stdout=subprocess.PIPE, 
+                          stderr=subprocess.PIPE)
+            return True
+        except (subprocess.SubprocessError, FileNotFoundError):
+            return False
+
+    def docker_image_exists(image_name):
+        """Check if a Docker image exists locally.
+        
+        Args:
+            image_name: Name of the Docker image to check
+        
+        Returns:
+            Boolean indicating if the image exists
+        """
+        try:
+            result = subprocess.run(
+                ["docker", "image", "inspect", image_name],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False
+            )
             return result.returncode == 0
-        except FileNotFoundError:
+        except Exception:
             return False
     
     if not is_docker_available():
@@ -1009,6 +1059,10 @@ def finetune_model(model, tokenizer, task_examples, learning_rate, device,
     Returns:
         Finetuned model
     """
+    # Direct console output for immediate feedback
+    print(f"\n[{time.strftime('%Y-%m-%d %H:%M:%S')}] STARTING FINE-TUNING ON {len(task_examples)} EXAMPLES")
+    print(f"Training config: batch={batch_size}, lr={learning_rate}, epochs={num_epochs}, device={device}")
+    sys.stdout.flush()
     log_step(f"Starting model fine-tuning on {len(task_examples)} examples")
     log_step(f"Training parameters: batch_size={batch_size}, lr={learning_rate}, "
             f"epochs={num_epochs}, grad_accum_steps={gradient_accumulation_steps}")
