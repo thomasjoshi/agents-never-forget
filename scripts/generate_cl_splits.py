@@ -168,29 +168,69 @@ def parse_test_list(test_str):
 
 def create_task_splits_by_repo(df, num_tasks):
     """
-    Create task splits by repository.
+    Create task splits by repository, ensuring each task has 20-100 issues.
+    Keeps each repository contiguous (all in the same task).
     
     Args:
         df: DataFrame with SWE-Bench-Verified data
-        num_tasks: Number of tasks to create
+        num_tasks: Number of tasks to create (max 15)
     
     Returns:
         Dictionary with task splits
     """
-    # Get unique repositories
-    repos = df['repo'].unique().tolist()
-    np.random.shuffle(repos)
+    # Limit max number of tasks to 15
+    num_tasks = min(num_tasks, 15)
     
-    # Split repositories into num_tasks groups
-    repo_splits = np.array_split(repos, num_tasks)
+    # Group by repository
+    repo_groups = df.groupby('repo')
     
-    # Create task dictionary
+    # Get issue count for each repo
+    repo_counts = {repo: len(group) for repo, group in repo_groups}
+    
+    # Sort repositories by size (descending)
+    sorted_repos = sorted(repo_counts.items(), key=lambda x: x[1], reverse=True)
+    
+    # Algorithm to distribute repositories into tasks with constraints:
+    # 1. Each task should have 20-100 issues
+    # 2. Keep repositories contiguous
+    tasks_dict = {}
+    current_task = []
+    current_count = 0
+    task_id = 1
+    
+    for repo, count in sorted_repos:
+        # If adding this repo exceeds 100 issues and we already have at least 20,
+        # or if the repo itself has more than 100 issues but we need to place it somewhere
+        if ((current_count + count > 100 and current_count >= 20) or 
+            (task_id == num_tasks and len(current_task) == 0)):
+            # Save current task and start a new one
+            if current_task:
+                task_name = f"T_{task_id}"
+                repo_list = current_task
+                task_id += 1
+                tasks_dict[task_name] = repo_list
+                current_task = [repo]
+                current_count = count
+            else:
+                # If we couldn't fit it, we still need to place it somewhere
+                current_task = [repo]
+                current_count = count
+        else:
+            # Add repo to current task
+            current_task.append(repo)
+            current_count += count
+    
+    # Add the last task if not empty
+    if current_task:
+        task_name = f"T_{task_id}"
+        tasks_dict[task_name] = current_task
+    
+    # Build the actual task dictionary with examples
     tasks = {}
-    for i, repo_group in enumerate(repo_splits):
-        task_name = f"T_{i+1}"
-        task_df = df[df['repo'].isin(repo_group)]
+    for task_name, repos in tasks_dict.items():
+        task_df = df[df['repo'].isin(repos)]
         tasks[task_name] = task_df.to_dict('records')
-        print(f"Task {task_name}: {len(task_df)} issues from {len(repo_group)} repositories")
+        print(f"Task {task_name}: {len(task_df)} issues, {len(repos)} repositories")
     
     return tasks
 
@@ -284,14 +324,23 @@ def main():
             tasks = create_random_task_splits(df, args.num_tasks)
             stream_type = "random"
         
-        # Add metadata
+        # Add metadata with ordering strategy
         task_ordering = list(tasks.keys())
+        
+        # Map split_by to ordering strategy name
+        ordering_map = {
+            "repo": "repository",
+            "time": "chronological",
+            "random": "random"
+        }
+        
         metadata = {
             "stream_type": stream_type,
             "task_ordering": task_ordering,
             "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "num_tasks": args.num_tasks,
-            "total_issues": sum(len(tasks[t]) for t in task_ordering)
+            "total_issues": sum(len(tasks[t]) for t in task_ordering),
+            "ordering": ordering_map.get(args.split_by, args.split_by)
         }
         
         output_data = {**tasks, "metadata": metadata}

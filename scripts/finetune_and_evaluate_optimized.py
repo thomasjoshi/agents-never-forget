@@ -843,71 +843,175 @@ def save_model_checkpoint(model, tokenizer, output_dir, task_name):
         print(f"Error saving model checkpoint: {e}")
         return None
 
-def plot_metrics(metrics_df, output_dir):
+def plot_metrics(metrics_df, output_dir, log_token_metrics=False):
     """
-    Plot accuracy, forgetting, and transfer metrics with enhanced visualization.
+    Plot continual learning metrics with focus on functional success rates.
     
     Args:
         metrics_df: DataFrame containing metrics data
         output_dir: Directory to save plots
+        log_token_metrics: Whether to also plot token-level metrics
     """
     os.makedirs(output_dir, exist_ok=True)
     
-    # Set style
-    sns.set_theme(style="whitegrid")
+    # Filter metrics for after-training evaluations
+    after_df = metrics_df[metrics_df['evaluation_type'] == 'after_training']
     
-    # Create a 2x2 grid of plots
-    plt.figure(figsize=(16, 12))
+    # Get unique tasks
+    tasks = sorted(metrics_df['task_name'].unique())
+    task_indices = sorted(metrics_df['task_idx'].unique())
+    task_indices = [idx for idx in task_indices if idx >= 0]
+    num_tasks = len(task_indices)
     
-    # 1. Plot accuracy over tasks
-    plt.subplot(2, 2, 1)
-    sns.lineplot(data=metrics_df[metrics_df["evaluation_type"] == "after_training"], 
-                 x="task_idx", y="accuracy", hue="task_name", 
-                 style="memory_enabled", markers=True, dashes=False)
-    plt.title("Accuracy by Task (After Training)")
-    plt.xlabel("Task Index")
-    plt.ylabel("Accuracy")
-    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    if num_tasks == 0:
+        return
     
-    # 2. Plot forgetting
-    forgetting_df = metrics_df[~metrics_df["is_current_task"]]
-    if not forgetting_df.empty:
-        plt.subplot(2, 2, 2)
-        sns.lineplot(data=forgetting_df, x="task_idx", y="forgetting", 
-                     hue="task_name", style="memory_enabled", markers=True, dashes=False)
-        plt.title("Forgetting of Previous Tasks")
-        plt.xlabel("Current Task Index")
-        plt.ylabel("Forgetting")
-        plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    # 1. Create heatmap of success rates
+    results_matrix = np.zeros((num_tasks, num_tasks))
     
-    # 3. Plot forward transfer (if data available)
-    if 'forward_transfer' in metrics_df.columns:
-        plt.subplot(2, 2, 3)
-        sns.lineplot(data=metrics_df[metrics_df["evaluation_type"] == "before_training"],
-                     x="task_idx", y="accuracy", hue="task_name",
-                     style="memory_enabled", markers=True, dashes=False)
-        plt.title("Forward Transfer (Accuracy Before Training)")
-        plt.xlabel("Task Index")
-        plt.ylabel("Accuracy")
-        plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    # Fill in results matrix from metrics
+    for i, curr_task_idx in enumerate(task_indices):
+        curr_task = tasks[curr_task_idx]
+        
+        # For each task we've seen up to the current one
+        for j, eval_task_idx in enumerate(task_indices[:i+1]):
+            eval_task = tasks[eval_task_idx]
+            
+            # Get the success rate after training on curr_task for eval_task
+            task_rows = after_df[(after_df['task_name'] == eval_task) & 
+                                (after_df['current_task'] == curr_task)]
+            
+            if not task_rows.empty and 'success_rate' in task_rows.columns:
+                results_matrix[i, j] = task_rows['success_rate'].values[0]
     
-    # 4. Plot backward transfer
-    if 'backward_transfer' in metrics_df.columns:
-        plt.subplot(2, 2, 4)
-        sns.lineplot(data=metrics_df[metrics_df["evaluation_type"] == "after_training"],
-                     x="task_idx", y="backward_transfer", hue="task_name",
-                     style="memory_enabled", markers=True, dashes=False)
-        plt.axhline(0, color='black', linestyle='--', alpha=0.3)
-        plt.title("Backward Transfer (Δ Accuracy from Initial)")
-        plt.xlabel("Task Index")
-        plt.ylabel("Backward Transfer")
-        plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
-    
+    # Plot heatmap of results
+    plt.figure(figsize=(10, 8))
+    ax = sns.heatmap(results_matrix, annot=True, fmt='.2f', cmap='viridis',
+                    xticklabels=tasks, yticklabels=tasks)
+    plt.xlabel('Task Evaluated')
+    plt.ylabel('After Training on Task')
+    plt.title('Success Rate Matrix')
     plt.tight_layout()
-    plot_path = os.path.join(output_dir, "metrics_plot.png")
-    plt.savefig(plot_path, bbox_inches='tight', dpi=300)
+    plt.savefig(os.path.join(output_dir, 'success_rate_heatmap.png'))
     plt.close()
-    print(f"Saved metrics plot to {plot_path}")
+    
+    # 2. Stability-Plasticity line plot
+    plt.figure(figsize=(12, 6))
+    
+    # Plot success rate of each task over time
+    for j, eval_task_idx in enumerate(task_indices):
+        eval_task = tasks[eval_task_idx]
+        
+        # Get success rates for this task over time
+        success_rates = []
+        x_labels = []
+        
+        for i, curr_task_idx in enumerate(task_indices):
+            if i >= j:  # Only plot after the task has been introduced
+                curr_task = tasks[curr_task_idx]
+                task_rows = after_df[(after_df['task_name'] == eval_task) & 
+                                    (after_df['current_task'] == curr_task)]
+                
+                if not task_rows.empty and 'success_rate' in task_rows.columns:
+                    success_rates.append(task_rows['success_rate'].values[0])
+                    x_labels.append(curr_task)
+        
+        plt.plot(x_labels, success_rates, marker='o', label=f"Task {eval_task}")
+    
+    plt.xlabel('After Training on Task')
+    plt.ylabel('Success Rate')
+    plt.title('Stability-Plasticity: Task Success Over Time')
+    plt.legend(loc='best')
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.savefig(os.path.join(output_dir, 'stability_plasticity.png'))
+    plt.close()
+    
+    # 3. Plot forward transfer (FWT)
+    fwt_values = []
+    for i, task_idx in enumerate(task_indices[1:], 1):  # Skip first task
+        task = tasks[task_idx]
+        task_rows = after_df[(after_df['task_name'] == task) & 
+                           (after_df['is_current_task'] == True)]
+        
+        if not task_rows.empty and 'fwt' in task_rows.columns:
+            fwt_values.append({
+                'task': task,
+                'fwt': task_rows['fwt'].values[0]
+            })
+    
+    if fwt_values:
+        fwt_df = pd.DataFrame(fwt_values)
+        plt.figure(figsize=(10, 6))
+        bars = plt.bar(fwt_df['task'], fwt_df['fwt'], color='skyblue')
+        
+        # Add value labels on bars
+        for bar in bars:
+            height = bar.get_height()
+            plt.text(bar.get_x() + bar.get_width()/2., height,
+                    f'{height:.3f}',
+                    ha='center', va='bottom', rotation=0)
+        
+        plt.axhline(y=0, color='r', linestyle='-', alpha=0.3)
+        plt.xlabel('Task')
+        plt.ylabel('Forward Transfer (FWT)')
+        plt.title('Forward Transfer by Task')
+        plt.grid(True, alpha=0.3)
+        plt.tight_layout()
+        plt.savefig(os.path.join(output_dir, 'forward_transfer.png'))
+        plt.close()
+    
+    # 4. Plot backward transfer (BWT)
+    bwt_values = []
+    for task_idx in task_indices[:-1]:  # Exclude the last task
+        task = tasks[task_idx]
+        task_rows = after_df[(after_df['task_name'] == task) & 
+                           (after_df['current_task'] == tasks[-1])]
+        
+        if not task_rows.empty and 'bwt' in task_rows.columns:
+            bwt_values.append({
+                'task': task,
+                'bwt': task_rows['bwt'].values[0]
+            })
+    
+    if bwt_values:
+        bwt_df = pd.DataFrame(bwt_values)
+        plt.figure(figsize=(10, 6))
+        bars = plt.bar(bwt_df['task'], bwt_df['bwt'], color='lightgreen')
+        
+        # Add value labels on bars
+        for bar in bars:
+            height = bar.get_height()
+            plt.text(bar.get_x() + bar.get_width()/2., height,
+                    f'{height:.3f}',
+                    ha='center', va='bottom', rotation=0)
+        
+        plt.axhline(y=0, color='r', linestyle='-', alpha=0.3)
+        plt.xlabel('Task')
+        plt.ylabel('Backward Transfer (BWT)')
+        plt.title('Backward Transfer by Task')
+        plt.grid(True, alpha=0.3)
+        plt.tight_layout()
+        plt.savefig(os.path.join(output_dir, 'backward_transfer.png'))
+        plt.close()
+    
+    # 5. Token-level metrics (only if enabled)
+    if log_token_metrics:
+        # Plot token accuracy over time
+        plt.figure(figsize=(12, 6))
+        for task in tasks:
+            task_df = after_df[after_df['task_name'] == task]
+            if 'token_accuracy' in task_df.columns:
+                plt.plot(task_df['current_task'], task_df['token_accuracy'], marker='o', label=f"Task {task}")
+        
+        plt.xlabel('Current Training Task')
+        plt.ylabel('Token Accuracy')
+        plt.title('Token Accuracy Over Task Sequence')
+        plt.legend(loc='best')
+        plt.grid(True, alpha=0.3)
+        plt.tight_layout()
+        plt.savefig(os.path.join(output_dir, 'token_accuracy_over_time.png'))
+        plt.close()
 
 def main():
     parser = argparse.ArgumentParser(description="Finetune and evaluate a model on a continual learning task stream")
@@ -1050,19 +1154,11 @@ def main():
             print(f"Task {task_idx}: {task_name} ({len(task_examples)} examples)")
             print(f"{'='*80}")
             
-            # Evaluate model on current task (before update)
+            # First, evaluate on current task (before training)
             print("Evaluating on current task (before update)...")
-            before_accuracy = evaluate_model(
-                model=model,
-                tokenizer=tokenizer,
-                task_examples=task_examples,
-                device=args.device,
-                batch_size=args.batch_size,
-                use_memory=memory_enabled,
-                memory_examples=stored_memories
-            )
+            before_accuracy = evaluate_task(model, task_examples)
             
-            # Finetune model on current task with optimized settings
+            # Finetune the model on the current task
             model = finetune_model(
                 model=model,
                 tokenizer=tokenizer,
@@ -1072,13 +1168,13 @@ def main():
                 num_epochs=args.num_epochs,
                 batch_size=args.batch_size,
                 gradient_accumulation_steps=args.gradient_accumulation_steps,
+                max_steps=args.max_steps,
                 use_memory=memory_enabled,
                 memory_examples=stored_memories,
-                max_steps=args.max_steps,
                 use_4bit=args.use_4bit
             )
             
-            # Save model checkpoint
+            # Save checkpoint
             checkpoint_dir = save_model_checkpoint(
                 model, tokenizer, args.output_dir, 
                 f"{'with_memory' if memory_enabled else 'no_memory'}_{task_name}"
@@ -1086,16 +1182,19 @@ def main():
             
             # Evaluate model on current task (after update)
             print("Evaluating on current task (after update)...")
-            after_accuracy = evaluate_model(
-                model=model,
-                tokenizer=tokenizer,
-                task_examples=task_examples,
-                device=args.device,
-                batch_size=args.batch_size,
-                use_memory=memory_enabled,
-                memory_examples=stored_memories
-            )
+            after_accuracy = evaluate_task(model, task_examples)
             
+            # Update results matrix for current task
+            current_acc = after_accuracy["accuracy"]
+            results[task_idx+1, task_idx] = current_acc  # Current task after training
+            
+            # Update peak performance for current task
+            peak[task_idx] = max(peak[task_idx], current_acc)
+            
+            # Calculate forward transfer for current task
+            initial_acc = results[0, task_idx]  # Initial performance
+            forward_transfer = current_acc - initial_acc
+                        
             # Evaluate on all previous tasks to measure forgetting
             for prev_task_idx in range(task_idx):
                 prev_task_name = task_ordering[prev_task_idx]
@@ -1104,73 +1203,125 @@ def main():
                     continue
                     
                 print(f"Evaluating on previous task {prev_task_name}...")
-                prev_accuracy = evaluate_model(
-                    model=model,
-                    tokenizer=tokenizer,
-                    task_examples=prev_task_examples,
-                    device=args.device,
-                    batch_size=args.batch_size,
-                    use_memory=memory_enabled,
-                    memory_examples=stored_memories
-                )
+                prev_accuracy = evaluate_task(model, prev_task_examples)
                 
-                # Calculate forgetting
-                forgetting = task_accuracies[prev_task_name][-1] - prev_accuracy if task_accuracies[prev_task_name] else 0.0
+                # Update results matrix for previous task
+                prev_acc = prev_accuracy["accuracy"]
+                results[task_idx+1, prev_task_idx] = prev_acc
+                
+                # Update peak performance for previous task
+                peak[prev_task_idx] = max(peak[prev_task_idx], prev_acc)
+                
+                # Calculate forgetting (drop from peak)
+                highest_prev = max([results[t+1, prev_task_idx] for t in range(task_idx)])
+                forgetting = max(0, highest_prev - prev_acc)  # Don't allow negative forgetting
                 
                 # Calculate backward transfer (compared to initial accuracy)
-                initial_acc = initial_accuracies.get(prev_task_name, {}).get('accuracy', 0)
-                backward_transfer = prev_accuracy - initial_acc if initial_acc is not None else 0
+                initial_prev_acc = results[0, prev_task_idx]
+                backward_transfer = prev_acc - initial_prev_acc
                 
                 # Store metrics
                 metrics.append({
                     "task_name": prev_task_name,
                     "task_idx": prev_task_idx,
                     "current_task": task_name,
-                    "accuracy": prev_accuracy,
-                    "forgetting": max(0, forgetting),  # Don't allow negative forgetting
-                    "backward_transfer": backward_transfer,
+                    "success_rate": prev_acc,
+                    "forgetting": forgetting,
+                    "bwt": backward_transfer,
                     "evaluation_type": "after_training",
                     "memory_enabled": memory_enabled,
                     "is_current_task": False
                 })
-            
-            # Calculate forward transfer (improvement over initial accuracy)
-            initial_acc = initial_accuracies.get(task_name, {}).get('accuracy', 0)
-            # Extract accuracy from after_accuracy dictionary
-            current_acc = after_accuracy.get('accuracy', 0)
-            forward_transfer = current_acc - initial_acc if initial_acc is not None else 0
+                
+                # Add token metrics if enabled
+                if args.log_token_metrics and not args.functional_eval:
+                    metrics[-1]["token_accuracy"] = prev_accuracy["accuracy"]
             
             # Store metrics for current task
-            task_accuracies[task_name].append(after_accuracy)
             metrics.append({
                 "task_name": task_name,
                 "task_idx": task_idx,
                 "current_task": task_name,
-                "accuracy": after_accuracy,
-                "forgetting": 0.0,  # No forgetting for current task yet
-                "forward_transfer": forward_transfer,
+                "success_rate": current_acc,
+                "forgetting": 0.0,  # No forgetting for current task
+                "fwt": forward_transfer,
                 "evaluation_type": "after_training",
                 "memory_enabled": memory_enabled,
-                "is_current_task": True,
-                "error_distribution": after_accuracy.get('error_analysis', {}).get('error_distribution', {}),
-                "total_errors": after_accuracy.get('error_analysis', {}).get('total_errors', 0)
+                "is_current_task": True
             })
+            
+            # Add token-based metrics if requested
+            if args.log_token_metrics and not args.functional_eval:
+                metrics[-1]["token_accuracy"] = after_accuracy["accuracy"]
+                metrics[-1]["error_distribution"] = after_accuracy.get('error_analysis', {}).get('error_distribution', {})
+                metrics[-1]["total_errors"] = after_accuracy.get('error_analysis', {}).get('total_errors', 0)
             
             # Store memory examples (if enabled)
             if memory_enabled:
                 # Store a subset of examples for memory
                 memory_size = min(10, len(task_examples) // 2)  # Store up to 10 examples
                 stored_memories.extend(random.sample(task_examples, min(memory_size, len(task_examples))))
-                print(f"Added {len(stored_memories)} examples to memory")
+                print(f"Added {memory_size} examples to memory")
         
-        # Save metrics to CSV
+        # Calculate overall CL metrics after all tasks are complete
+        T = len(task_ordering)
+        if T > 0:
+            # Average Accuracy (AA): Mean final success over all tasks
+            # Take the last row of the results matrix (after all tasks trained)
+            AA = np.mean(results[T-1]) if T > 0 else 0.0
+            
+            # Forgetting (F): Avg. drop from peak success
+            forgetting_values = []
+            for i in range(T-1):  # Exclude the last task
+                forgetting_values.append(peak[i] - results[T-1, i])
+            F = np.mean(forgetting_values) if forgetting_values else 0.0
+            
+            # Forward Transfer (FWT): Benefit for unseen task after preceding tasks
+            fwt_values = []
+            for i in range(1, T):  # Start from the second task
+                fwt_values.append(results[i-1, i] - results[0, i])
+            FWT = np.mean(fwt_values) if fwt_values else 0.0
+            
+            # Backward Transfer (BWT): Effect of later learning on earlier tasks
+            bwt_values = []
+            for i in range(T-1):  # Exclude the last task
+                bwt_values.append(results[T-1, i] - results[i, i])
+            BWT = np.mean(bwt_values) if bwt_values else 0.0
+            
+            # Create summary dictionary
+            summary = {
+                "AA": float(AA),
+                "F": float(F),
+                "FWT": float(FWT),
+                "BWT": float(BWT),
+                "wall_clock_minutes": float((time.time() - start_time) / 60),
+                "memory_enabled": memory_enabled
+            }
+            
+            # Add GPU information if available
+            if torch.cuda.is_available():
+                gpu_hours = (time.time() - start_time) / 3600
+                summary["gpu_hours"] = float(gpu_hours)
+            
+            # Save summary to JSON
+            summary_file = os.path.join(args.output_dir, f"summary_{'with_memory' if memory_enabled else 'no_memory'}.json")
+            with open(summary_file, 'w') as f:
+                json.dump(summary, f, indent=2)
+            print(f"\nContinual Learning Metrics:")
+            print(f"Average Accuracy (AA): {AA:.4f}")
+            print(f"Forgetting (F): {F:.4f}")
+            print(f"Forward Transfer (FWT): {FWT:.4f}")
+            print(f"Backward Transfer (BWT): {BWT:.4f}")
+            print(f"\nSaved summary to {summary_file}")
+        
+        # Save metrics to CSV with the new format
         metrics_df = pd.DataFrame(metrics)
         metrics_file = os.path.join(args.output_dir, f"metrics_{'with_memory' if memory_enabled else 'no_memory'}.csv")
         metrics_df.to_csv(metrics_file, index=False)
         print(f"\nSaved metrics to {metrics_file}")
         
         # Plot metrics
-        plot_metrics(metrics_df, args.output_dir)
+        plot_metrics(metrics_df, args.output_dir, args.log_token_metrics)
 
 if __name__ == "__main__":
     main()
