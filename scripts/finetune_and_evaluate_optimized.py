@@ -222,26 +222,68 @@ def load_task_stream(task_stream_file, filter_repo=None):
     with open(task_stream_file, 'r') as f:
         task_stream = json.load(f)
     
+    # The task stream is a dictionary where keys are task names (e.g., 'T_1', 'T_2', etc.)
+    # and values are lists of examples, where each example is a dictionary with a 'repo' field
+    
+    # If no filter is specified, return the entire task stream
+    if not filter_repo:
+        task_ordering = sorted(task_stream.keys())
+        print(f"\nLoaded {len(task_stream)} tasks with the following distribution:")
+        for task in task_ordering:
+            print(f"  {task}: {len(task_stream[task])} examples")
+        
+        return {
+            "tasks": task_stream,
+            "task_ordering": task_ordering
+        }
+    
     # Filter tasks by repository if specified
-    if filter_repo:
-        print(f"Filtering tasks for repository: {filter_repo}")
-        filtered_tasks = {}
-        for task_name, examples in task_stream.items():
-            filtered = [ex for ex in examples if ex.get('repo') == filter_repo]
-            if filtered:
-                filtered_tasks[task_name] = filtered
-        task_stream = filtered_tasks
+    print(f"Filtering tasks for repository: {filter_repo}")
+    filtered_tasks = {}
+    
+    for task_name, examples in task_stream.items():
+        # Skip if examples is not a list
+        if not isinstance(examples, list):
+            print(f"Warning: Task '{task_name}' does not contain a list of examples, skipping...")
+            continue
+            
+        filtered = []
+        for ex in examples:
+            # Skip if the example is not a dictionary or doesn't have a 'repo' field
+            if not isinstance(ex, dict) or 'repo' not in ex:
+                print(f"Warning: Skipping malformed example in task '{task_name}' - not a dictionary or missing 'repo' field")
+                continue
+                
+            # Check if the repository matches the filter
+            if ex['repo'] == filter_repo:
+                filtered.append(ex)
+        
+        # Only add the task if we found matching examples
+        if filtered:
+            filtered_tasks[task_name] = filtered
     
     # Get task ordering (alphabetical by default)
-    task_ordering = sorted(task_stream.keys())
+    task_ordering = sorted(filtered_tasks.keys())
     
     # Print task statistics
-    print(f"\nLoaded {len(task_stream)} tasks with the following distribution:")
+    print(f"\nLoaded {len(filtered_tasks)} tasks with the following distribution:")
     for task in task_ordering:
-        print(f"  {task}: {len(task_stream[task])} examples")
+        print(f"  {task}: {len(filtered_tasks[task])} examples")
+    
+    # If no tasks were found, print available repositories
+    if not filtered_tasks:
+        print("\nNo tasks found for the specified repository. Available repositories:")
+        all_repos = set()
+        for examples in task_stream.values():
+            if isinstance(examples, list):
+                for ex in examples:
+                    if isinstance(ex, dict) and 'repo' in ex:
+                        all_repos.add(ex['repo'])
+        for repo in sorted(all_repos):
+            print(f"  - {repo}")
     
     return {
-        "tasks": task_stream,
+        "tasks": filtered_tasks,
         "task_ordering": task_ordering
     }
 
