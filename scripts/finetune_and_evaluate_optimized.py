@@ -1120,6 +1120,8 @@ def evaluate_success(model, dataset, batch_size=4):
         Returns:
             Boolean indicating if the image exists
         """
+        print(f"DEBUG: Checking if Docker image exists: {image_name} at {time.strftime('%H:%M:%S')}")
+        sys.stdout.flush()
         try:
             result = subprocess.run(
                 ["docker", "image", "inspect", image_name],
@@ -1140,9 +1142,11 @@ def evaluate_success(model, dataset, batch_size=4):
         return 1.0, [True] * len(dataset)
     
     print(f"DEBUG: About to check if Docker is available at {time.strftime('%H:%M:%S')}")
-    sys.stdout.flush()
+    # Check if Docker is available
     docker_available = is_docker_available()
     print(f"DEBUG: Docker availability check result: {docker_available}")
+    print(f"DEBUG: Starting evaluation on {len(dataset)} examples at {time.strftime('%H:%M:%S')}")
+    sys.stdout.flush()
     sys.stdout.flush()
     
     if not docker_available:
@@ -1184,6 +1188,8 @@ def evaluate_success(model, dataset, batch_size=4):
         Returns:
             Boolean indicating if all tests passed
         """
+        print(f"DEBUG: Starting run_swebench_tests for issue {issue.get('instance_id')} at {time.strftime('%H:%M:%S')}")
+        sys.stdout.flush()
         container_id = None
         try:
             # Create a temporary directory for test execution
@@ -1203,6 +1209,8 @@ def evaluate_success(model, dataset, batch_size=4):
                 
                 # Check if we have a cached Docker image for this repo/commit
                 image_name = f"swebench-{repo_name.replace('/', '_')}-{base_commit[:8]}"
+                print(f"DEBUG: Checking for Docker image {image_name} at {time.strftime('%H:%M:%S')}")
+                sys.stdout.flush()
                 
                 # If image doesn't exist, build it
                 if not docker_image_exists(image_name):
