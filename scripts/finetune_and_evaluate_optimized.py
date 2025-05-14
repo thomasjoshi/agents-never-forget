@@ -260,10 +260,15 @@ def load_model_and_tokenizer(model_name=DEFAULT_MODEL, use_4bit=DEFAULT_USE_4BIT
     """
     log_step(f"Initializing model: {model_name}")
     log_step(f"Configuration: 4-bit={use_4bit}, LoRA={use_lora}, device={device}")
+    print(f"DEBUG: Model initialization started at {time.strftime('%H:%M:%S')}")
+    print(f"DEBUG: Model path: {model_name}")
+    sys.stdout.flush()
     
     # Configure quantization if enabled
     bnb_config = None
     if use_4bit:
+        print(f"DEBUG: Setting up 4-bit quantization at {time.strftime('%H:%M:%S')}")
+        sys.stdout.flush()
         log_step("Configuring 4-bit quantization")
         compute_dtype = torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16
         log_step(f"Using compute dtype: {compute_dtype}")
@@ -276,8 +281,17 @@ def load_model_and_tokenizer(model_name=DEFAULT_MODEL, use_4bit=DEFAULT_USE_4BIT
         )
     
     # Load model with optimizations
+    model_start_time = time.time()
+    print(f"DEBUG: Beginning model loading at {time.strftime('%H:%M:%S')}")
+    print(f"DEBUG: Initial GPU memory: {torch.cuda.memory_allocated()/1024**2:.2f}MB / {torch.cuda.get_device_properties(0).total_memory/1024**2:.2f}MB")
+    sys.stdout.flush()
     log_step("Loading model weights...")
     try:
+        print(f"DEBUG: Calling from_pretrained() at {time.strftime('%H:%M:%S')}")
+        sys.stdout.flush()
+        
+        # Add more granular progress when loading model
+        hf_hub_download_start = time.time()
         model = AutoModelForCausalLM.from_pretrained(
             model_name,
             quantization_config=bnb_config,
@@ -285,16 +299,34 @@ def load_model_and_tokenizer(model_name=DEFAULT_MODEL, use_4bit=DEFAULT_USE_4BIT
             trust_remote_code=True,
             use_cache=False,  # Disable cache for faster training
         )
+        
+        print(f"DEBUG: from_pretrained() completed in {time.time() - hf_hub_download_start:.2f} seconds")
+        print(f"DEBUG: Total model loading time: {time.time() - model_start_time:.2f} seconds")
+        sys.stdout.flush()
         log_step(f"Model loaded successfully on device: {model.device}")
         
         # Log model size and memory usage
+        print(f"DEBUG: Calculating model parameters at {time.strftime('%H:%M:%S')}")
+        sys.stdout.flush()
+        
         param_count = sum(p.numel() for p in model.parameters())
         trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
         log_step(f"Model parameters: {param_count:,} total, {trainable_params:,} trainable")
         
+        print(f"DEBUG: Model parameter counts: {param_count:,} total, {trainable_params:,} trainable")
+        sys.stdout.flush()
+        
         if torch.cuda.is_available():
-            log_step(f"GPU Memory allocated: {torch.cuda.memory_allocated()/1024**2:.2f} MB")
-            log_step(f"GPU Memory reserved: {torch.cuda.memory_reserved()/1024**2:.2f} MB")
+            print(f"DEBUG: GPU info at {time.strftime('%H:%M:%S')}")
+            memory_allocated = torch.cuda.memory_allocated()/1024**2
+            memory_reserved = torch.cuda.memory_reserved()/1024**2
+            total_memory = torch.cuda.get_device_properties(0).total_memory/1024**2
+            log_step(f"GPU Memory allocated: {memory_allocated:.2f} MB")
+            log_step(f"GPU Memory reserved: {memory_reserved:.2f} MB")
+            
+            print(f"DEBUG: GPU Memory: {memory_allocated:.2f}MB allocated, {memory_reserved:.2f}MB reserved, {total_memory:.2f}MB total")
+            print(f"DEBUG: GPU utilization: {memory_allocated/total_memory*100:.2f}%")
+            sys.stdout.flush()
             
     except Exception as e:
         log_step(f"ERROR: Failed to load model: {str(e)}")
@@ -304,13 +336,25 @@ def load_model_and_tokenizer(model_name=DEFAULT_MODEL, use_4bit=DEFAULT_USE_4BIT
     
     # Prepare model for k-bit training if using quantization
     if use_4bit:
+        print(f"DEBUG: Beginning k-bit preparation at {time.strftime('%H:%M:%S')}")
+        sys.stdout.flush()
         log_step("Preparing model for 4-bit training...")
+        
+        kbit_start = time.time()
         model = prepare_model_for_kbit_training(model)
+        print(f"DEBUG: k-bit preparation completed in {time.time() - kbit_start:.2f} seconds")
+        sys.stdout.flush()
     
     # Configure LoRA if enabled
     if use_lora:
+        print(f"DEBUG: Beginning LoRA configuration at {time.strftime('%H:%M:%S')}")
+        sys.stdout.flush()
         log_step("Configuring LoRA for parameter-efficient fine-tuning")
         try:
+            lora_start = time.time()
+            print(f"DEBUG: Creating LoRA config at {time.strftime('%H:%M:%S')}")
+            sys.stdout.flush()
+            
             lora_config = LoraConfig(
                 r=16,  # Reduced rank for faster training
                 lora_alpha=32,
@@ -319,7 +363,12 @@ def load_model_and_tokenizer(model_name=DEFAULT_MODEL, use_4bit=DEFAULT_USE_4BIT
                 bias="none",
                 task_type="CAUSAL_LM"
             )
+            
+            print(f"DEBUG: Applying LoRA adapter to model")
+            sys.stdout.flush()
             model = get_peft_model(model, lora_config)
+            print(f"DEBUG: LoRA configuration completed in {time.time() - lora_start:.2f} seconds")
+            sys.stdout.flush()
             log_step("LoRA configuration applied successfully")
             model.print_trainable_parameters()
         except Exception as e:
@@ -327,14 +376,23 @@ def load_model_and_tokenizer(model_name=DEFAULT_MODEL, use_4bit=DEFAULT_USE_4BIT
             raise
     
     # Load tokenizer
+    print(f"DEBUG: Beginning tokenizer loading at {time.strftime('%H:%M:%S')}")
+    sys.stdout.flush()
     log_step("Loading tokenizer...")
     try:
+        tokenizer_start = time.time()
+        print(f"DEBUG: Calling tokenizer.from_pretrained()")
+        sys.stdout.flush()
+        
         tokenizer = AutoTokenizer.from_pretrained(
             model_name,
             padding_side="right",
             use_fast=True,  # Use fast tokenizer for better performance
             trust_remote_code=True,
         )
+        
+        print(f"DEBUG: Tokenizer loaded in {time.time() - tokenizer_start:.2f} seconds")
+        sys.stdout.flush()
         tokenizer.pad_token = tokenizer.eos_token  # Set pad token
         log_step(f"Tokenizer loaded with vocab size: {len(tokenizer):,}")
     except Exception as e:
@@ -342,8 +400,15 @@ def load_model_and_tokenizer(model_name=DEFAULT_MODEL, use_4bit=DEFAULT_USE_4BIT
         raise
     
     # Enable gradient checkpointing to save memory
+    print(f"DEBUG: Enabling gradient checkpointing at {time.strftime('%H:%M:%S')}")
+    sys.stdout.flush()
     log_step("Enabling gradient checkpointing...")
     model.gradient_checkpointing_enable()
+    
+    total_init_time = time.time() - model_start_time
+    print(f"DEBUG: Total model initialization completed in {total_init_time:.2f} seconds")
+    print(f"DEBUG: Final GPU memory: {torch.cuda.memory_allocated()/1024**2:.2f}MB / {torch.cuda.get_device_properties(0).total_memory/1024**2:.2f}MB")
+    sys.stdout.flush()
     
     log_step("Model and tokenizer loaded successfully")
     return model, tokenizer
