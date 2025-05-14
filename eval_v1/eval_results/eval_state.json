@@ -1,0 +1,104 @@
+{
+    "evaluation_run_timestamp": "20250514-063534",
+    "current_swe_bench_cl_dataset_path": "/Users/Shayan/Library/CloudStorage/GoogleDrive-sc4040@columbia.edu/My Drive/Academics/Spring 2025/COMS 4995 - Neural Nets & Deep Learning/NNDL Final Project/agents-never-forget/data/SWE-Bench-CL-Curriculum.json",
+    "task_eval_progress": {
+        "google/gemini-2.0-flash": {
+            "memory_disabled": {
+                "django__django-9296": {
+                    "model_patch": "--- a/django/core/paginator.py\n+++ b/django/core/paginator.py\n@@ -81,3 +81,7 @@\n     def get_elided_page_range(self, number=1, *, on_each_side=3, on_ends=2):\n         return list(self._get_elided_page_range(number, on_each_side=on_each_side, on_ends=on_ends))\n \n+    def __iter__(self):\n+        for page_num in self.page_range:\n+            yield self.page(page_num)\n+\n",
+                    "harness_result": true,
+                    "raw_llm_output": "```patch\n--- a/django/core/paginator.py\n+++ b/django/core/paginator.py\n@@ -81,3 +81,7 @@\n     def get_elided_page_range(self, number=1, *, on_each_side=3, on_ends=2):\n         return list(self._get_elided_page_range(number, on_each_side=on_each_side, on_ends=on_ends))\n \n+    def __iter__(self):\n+        for page_num in self.page_range:\n+            yield self.page(page_num)\n+\n```",
+                    "timestamp": "20250514-063551"
+                },
+                "django__django-10097": {
+                    "model_patch": "--- a/django/core/validators.py\n+++ b/django/core/validators.py\n@@ -19,7 +19,7 @@\n     ul = '\\u00a1-\\uffff'  # unicode letters range (must not include hyphen)\n \n     # IP patterns\n-    ipv4_re = r'(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)'\n+    ipv4_re = r'(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)'\n     ipv6_re = r'\\[[0-9a-f:\\.]+\\]'  # (simple regex, validated later)\n \n     # Host patterns\n@@ -31,7 +31,7 @@\n     # Userinfo (username + password)\n     user_re = r'[^\\s:@/]+'\n \n-    pattern = r'^(?:[a-z0-9\\.\\-]+:)//{user}(?:{host})(?::[0-9]+)?(?:/.*)?$'\n+    pattern = r'^(?:[a-z0-9\\.\\-]+:)//{user}(?::[^\\s:@/]*)?@{host}(?::[0-9]+)?(?:/.*)?$'\n     regex = re.compile(pattern.format(user=user_re, host=host_re), re.IGNORECASE)\n     message = _('Enter a valid URL.')\n     schemes = ['http', 'https', 'ftp', 'ftps']\n",
+                    "harness_result": false,
+                    "raw_llm_output": "```patch\n--- a/django/core/validators.py\n+++ b/django/core/validators.py\n@@ -19,7 +19,7 @@\n     ul = '\\u00a1-\\uffff'  # unicode letters range (must not include hyphen)\n \n     # IP patterns\n-    ipv4_re = r'(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)'\n+    ipv4_re = r'(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)'\n     ipv6_re = r'\\[[0-9a-f:\\.]+\\]'  # (simple regex, validated later)\n \n     # Host patterns\n@@ -31,7 +31,7 @@\n     # Userinfo (username + password)\n     user_re = r'[^\\s:@/]+'\n \n-    pattern = r'^(?:[a-z0-9\\.\\-]+:)//{user}(?:{host})(?::[0-9]+)?(?:/.*)?$'\n+    pattern = r'^(?:[a-z0-9\\.\\-]+:)//{user}(?::[^\\s:@/]*)?@{host}(?::[0-9]+)?(?:/.*)?$'\n     regex = re.compile(pattern.format(user=user_re, host=host_re), re.IGNORECASE)\n     message = _('Enter a valid URL.')\n     schemes = ['http', 'https', 'ftp', 'ftps']\n```",
+                    "timestamp": "20250514-063741"
+                },
+                "django__django-10880": {
+                    "model_patch": "--- a/django/db/models/aggregates.py\n+++ b/django/db/models/aggregates.py\n@@ -120,6 +120,7 @@\n             template = self.template\n             if self.distinct:\n                 template = template % 'DISTINCT '\n+            else:\n+                template = template % ''\n         elif self.distinct:\n             template = 'COUNT(DISTINCT %(field)s)'\n         else:\n",
+                    "harness_result": false,
+                    "raw_llm_output": "```patch\n--- a/django/db/models/aggregates.py\n+++ b/django/db/models/aggregates.py\n@@ -120,6 +120,7 @@\n             template = self.template\n             if self.distinct:\n                 template = template % 'DISTINCT '\n+            else:\n+                template = template % ''\n         elif self.distinct:\n             template = 'COUNT(DISTINCT %(field)s)'\n         else:\n```",
+                    "timestamp": "20250514-063919"
+                },
+                "django__django-10914": {
+                    "model_patch": "--- a/django/conf/global_settings.py\n+++ b/django/conf/global_settings.py\n@@ -51,7 +51,7 @@\n # See https://docs.djangoproject.com/en/dev/ref/settings/#file-upload-max-memory-size\n FILE_UPLOAD_MAX_MEMORY_SIZE = 2621440  # 2.5MB\n \n-# The default file upload permission.\n+# The default file upload permission. 0o644 (owner read/write, group/others read).\n FILE_UPLOAD_PERMISSIONS = 0o644\n \n # See https://docs.djangoproject.com/en/dev/ref/settings/#file-upload-temp-size\n",
+                    "harness_result": false,
+                    "raw_llm_output": "```patch\n--- a/django/conf/global_settings.py\n+++ b/django/conf/global_settings.py\n@@ -51,7 +51,7 @@\n # See https://docs.djangoproject.com/en/dev/ref/settings/#file-upload-max-memory-size\n FILE_UPLOAD_MAX_MEMORY_SIZE = 2621440  # 2.5MB\n \n-# The default file upload permission.\n+# The default file upload permission. 0o644 (owner read/write, group/others read).\n FILE_UPLOAD_PERMISSIONS = 0o644\n \n # See https://docs.djangoproject.com/en/dev/ref/settings/#file-upload-temp-size\n```",
+                    "timestamp": "20250514-064049"
+                },
+                "django__django-10999": {
+                    "model_patch": "--- a/django/utils/dateparse.py\n+++ b/django/utils/dateparse.py\n@@ -22,7 +22,7 @@\n standard_duration_re = re.compile(\n     r'^'\n     r'(?:(?P<days>-?\\d+) (days?, )?)?'\n-    r'((?:(?P<hours>-?\\d+):)(?=\\d+:\\d+))?'\n+    r'((?:(?P<hours>-?\\d+):)(?=-?\\d+:-?\\d+))?'\n     r'(?:(?P<minutes>-?\\d+):)?'\n     r'(?P<seconds>-?\\d+)'\n     r'(?:\\.(?P<microseconds>\\d{1,6})\\d{0,6})?'\n",
+                    "harness_result": false,
+                    "raw_llm_output": "```patch\n--- a/django/utils/dateparse.py\n+++ b/django/utils/dateparse.py\n@@ -22,7 +22,7 @@\n standard_duration_re = re.compile(\n     r'^'\n     r'(?:(?P<days>-?\\d+) (days?, )?)?'\n-    r'((?:(?P<hours>-?\\d+):)(?=\\d+:\\d+))?'\n+    r'((?:(?P<hours>-?\\d+):)(?=-?\\d+:-?\\d+))?'\n     r'(?:(?P<minutes>-?\\d+):)?'\n     r'(?P<seconds>-?\\d+)'\n     r'(?:\\.(?P<microseconds>\\d{1,6})\\d{0,6})?'\n```",
+                    "timestamp": "20250514-064240"
+                },
+                "django__django-11066": {
+                    "model_patch": "--- a/django/contrib/contenttypes/management/__init__.py\n+++ b/django/contrib/contenttypes/management/__init__.py\n@@ -24,5 +24,5 @@\n             content_type.model = new_model_name\n             content_type.name = new_model_name.lower()\n             with transaction.atomic(using=db):\n-                content_type.save(update_fields={'model'})\n+                content_type.save(using=db, update_fields={'model'})\n",
+                    "harness_result": false,
+                    "raw_llm_output": "```patch\n--- a/django/contrib/contenttypes/management/__init__.py\n+++ b/django/contrib/contenttypes/management/__init__.py\n@@ -24,5 +24,5 @@\n             content_type.model = new_model_name\n             content_type.name = new_model_name.lower()\n             with transaction.atomic(using=db):\n-                content_type.save(update_fields={'model'})\n+                content_type.save(using=db, update_fields={'model'})\n \n```",
+                    "timestamp": "20250514-064420"
+                },
+                "django__django-11099": {
+                    "model_patch": "--- a/django/contrib/auth/validators.py\n+++ b/django/contrib/auth/validators.py\n@@ -24,7 +24,7 @@\n     message = _(\n         \"Enter a valid username. This value may contain only letters, \"\n         \"numbers, and @/./+/-/_ characters.\"\n-    )\n+    )  # noqa: DJ003\n     flags = 0\n \n     def __init__(self, message=None, code=None):\n@@ -33,7 +33,7 @@\n         if code is not None:\n             self.code = code\n \n-    regex = r\"^[\\w.@+-]+$\"\n+    regex = r\"\\A[\\w.@+-]+\\Z\"\n \n     def __call__(self, value):\n         value = str(value)\n@@ -64,7 +64,7 @@\n         \"Enter a valid username. This value may contain only letters, \"\n         \"numbers, and @/./+/-/_ characters.\"\n     )\n-    regex = r\"^[\\w.@+-]+$\"\n+    regex = r\"\\A[\\w.@+-]+\\Z\"\n \n \n class UnicodeUsernameValidator(ASCIIUsernameValidator):\n",
+                    "harness_result": false,
+                    "raw_llm_output": "```patch\n--- a/django/contrib/auth/validators.py\n+++ b/django/contrib/auth/validators.py\n@@ -24,7 +24,7 @@\n     message = _(\n         \"Enter a valid username. This value may contain only letters, \"\n         \"numbers, and @/./+/-/_ characters.\"\n-    )\n+    )  # noqa: DJ003\n     flags = 0\n \n     def __init__(self, message=None, code=None):\n@@ -33,7 +33,7 @@\n         if code is not None:\n             self.code = code\n \n-    regex = r\"^[\\w.@+-]+$\"\n+    regex = r\"\\A[\\w.@+-]+\\Z\"\n \n     def __call__(self, value):\n         value = str(value)\n@@ -64,7 +64,7 @@\n         \"Enter a valid username. This value may contain only letters, \"\n         \"numbers, and @/./+/-/_ characters.\"\n     )\n-    regex = r\"^[\\w.@+-]+$\"\n+    regex = r\"\\A[\\w.@+-]+\\Z\"\n \n \n class UnicodeUsernameValidator(ASCIIUsernameValidator):\n```",
+                    "timestamp": "20250514-064557"
+                },
+                "django__django-11119": {
+                    "model_patch": "--- a/django/template/engine.py\n+++ b/django/template/engine.py\n@@ -80,7 +80,7 @@\n         context = context or {}\n         if isinstance(context, Context):\n             context = context.flatten()\n-        return self.from_string(template_code).render(Context(context))\n+        return self.from_string(template_code).render(Context(context, autoescape=self.autoescape))\n \n     def get_default_libraries(self):\n         \"\"\"\n",
+                    "harness_result": false,
+                    "raw_llm_output": "```patch\n--- a/django/template/engine.py\n+++ b/django/template/engine.py\n@@ -80,7 +80,7 @@\n         context = context or {}\n         if isinstance(context, Context):\n             context = context.flatten()\n-        return self.from_string(template_code).render(Context(context))\n+        return self.from_string(template_code).render(Context(context, autoescape=self.autoescape))\n \n     def get_default_libraries(self):\n         \"\"\"\n```",
+                    "timestamp": "20250514-064729"
+                },
+                "django__django-11133": {
+                    "model_patch": "--- a/django/http/response.py\n+++ b/django/http/response.py\n@@ -444,6 +444,8 @@\n         if isinstance(value, str):\n             return value.encode(self.charset, self.errors)\n         elif isinstance(value, memoryview):\n+            # memoryview doesn't support .decode()\n+            # so we need to convert it to bytes.\n             return bytes(value)\n         elif isinstance(value, bytes):\n             return value\n",
+                    "harness_result": false,
+                    "raw_llm_output": "```patch\n--- a/django/http/response.py\n+++ b/django/http/response.py\n@@ -444,6 +444,8 @@\n         if isinstance(value, str):\n             return value.encode(self.charset, self.errors)\n         elif isinstance(value, memoryview):\n+            # memoryview doesn't support .decode()\n+            # so we need to convert it to bytes.\n             return bytes(value)\n         elif isinstance(value, bytes):\n             return value\n```",
+                    "timestamp": "20250514-064915"
+                },
+                "django__django-11163": {
+                    "model_patch": "--- a/django/forms/models.py\n+++ b/django/forms/models.py\n@@ -18,7 +18,7 @@\n     opts = instance._meta\n     data = {}\n     for f in opts.concrete_fields + opts.many_to_many:\n-        if fields and f.name not in fields:\n+        if fields is not None and f.name not in fields:\n             continue\n         if exclude and f.name in exclude:\n             continue\n",
+                    "harness_result": true,
+                    "raw_llm_output": "```patch\n--- a/django/forms/models.py\n+++ b/django/forms/models.py\n@@ -18,7 +18,7 @@\n     opts = instance._meta\n     data = {}\n     for f in opts.concrete_fields + opts.many_to_many:\n-        if fields and f.name not in fields:\n+        if fields is not None and f.name not in fields:\n             continue\n         if exclude and f.name in exclude:\n             continue\n```",
+                    "timestamp": "20250514-065058"
+                },
+                "django__django-11179": {
+                    "model_patch": "--- a/django/db/models/deletion.py\n+++ b/django/db/models/deletion.py\n@@ -273,6 +273,8 @@\n \n         # Clear the primary key in case the object had one. The only\n         # reason we need to do that is that pk value could be re-assigned\n+        # to another object if it is auto-generated.\n+        obj._set_pk_val(None)\n \n @dataclass\n class CASCADE(Collector):\n",
+                    "harness_result": false,
+                    "raw_llm_output": "```patch\n--- a/django/db/models/deletion.py\n+++ b/django/db/models/deletion.py\n@@ -273,6 +273,8 @@\n \n         # Clear the primary key in case the object had one. The only\n         # reason we need to do that is that pk value could be re-assigned\n+        # to another object if it is auto-generated.\n+        obj._set_pk_val(None)\n \n @dataclass\n class CASCADE(Collector):\n```",
+                    "timestamp": "20250514-065235"
+                },
+                "django__django-11239": {
+                    "model_patch": "--- a/django/db/backends/postgresql/client.py\n+++ b/django/db/backends/postgresql/client.py\n@@ -44,6 +44,9 @@\n         if settings_dict['OPTIONS'].get('sslmode'):\n             args.append(\"sslmode=%s\" % settings_dict['OPTIONS']['sslmode'])\n         if settings_dict['OPTIONS'].get('sslrootcert'):\n+            args.append(\"sslrootcert=%s\" % settings_dict['OPTIONS']['sslrootcert'])\n+        if settings_dict['OPTIONS'].get('sslcert'):\n+            args.append(\"sslcert=%s\" % settings_dict['OPTIONS']['sslcert'])\n+        if settings_dict['OPTIONS'].get('sslkey'):\n             args.append(\"sslrootcert=%s\" % settings_dict['OPTIONS']['sslrootcert'])\n-\n         return args\n",
+                    "harness_result": false,
+                    "raw_llm_output": "```patch\n--- a/django/db/backends/postgresql/client.py\n+++ b/django/db/backends/postgresql/client.py\n@@ -44,6 +44,9 @@\n         if settings_dict['OPTIONS'].get('sslmode'):\n             args.append(\"sslmode=%s\" % settings_dict['OPTIONS']['sslmode'])\n         if settings_dict['OPTIONS'].get('sslrootcert'):\n+            args.append(\"sslrootcert=%s\" % settings_dict['OPTIONS']['sslrootcert'])\n+        if settings_dict['OPTIONS'].get('sslcert'):\n+            args.append(\"sslcert=%s\" % settings_dict['OPTIONS']['sslcert'])\n+        if settings_dict['OPTIONS'].get('sslkey'):\n             args.append(\"sslrootcert=%s\" % settings_dict['OPTIONS']['sslrootcert'])\n-\n         return args\n```",
+                    "timestamp": "20250514-065408"
+                }
+            }
+        }
+    },
+    "parsed_harness_results_data": {
+        "google/gemini-2.0-flash": {
+            "memory_disabled": {
+                "django_django_sequence": {
+                    "django__django-9296": true,
+                    "django__django-10097": false,
+                    "django__django-10880": false,
+                    "django__django-10914": false,
+                    "django__django-10999": false,
+                    "django__django-11066": false,
+                    "django__django-11099": false,
+                    "django__django-11119": false,
+                    "django__django-11133": false,
+                    "django__django-11163": true,
+                    "django__django-11179": false,
+                    "django__django-11239": false
+                }
+            }
+        }
+    },
+    "overall_results_list": [],
+    "overall_results_summary_df_path": null
+}
