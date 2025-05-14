@@ -114,15 +114,30 @@ def load_task_stream(task_stream_file, filter_repo=None):
         tasks = task_stream['tasks']
         task_ordering = task_stream['task_ordering']
     else:
-        # Flatten the structure into a list of all tasks
+        # Handle different data structures
         all_tasks = []
         task_ordering = []
+        
+        # If this is our preprocessed pickle file, it likely has a different structure
+        # than the original JSON file
         for task_name, task_examples in task_stream.items():
+            if task_name == 'metadata':
+                continue
+                
             task_ordering.append(task_name)
-            for example in task_examples:
-                # Add task name to example for reference
-                example['task_name'] = task_name
-                all_tasks.append(example)
+            
+            # Check if task_examples is a list of dictionaries
+            if isinstance(task_examples, list) and all(isinstance(ex, dict) for ex in task_examples):
+                for example in task_examples:
+                    # Only modify if it's a mutable dictionary
+                    if isinstance(example, dict):
+                        example_copy = example.copy()  # Work with a copy to avoid modifying originals
+                        if 'task_name' not in example_copy:
+                            example_copy['task_name'] = task_name
+                        all_tasks.append(example_copy)
+            else:
+                # Skip non-dictionary examples
+                print(f"Skipping non-dictionary examples for task {task_name}")
         
         # Group tasks by repository
         tasks = {}
