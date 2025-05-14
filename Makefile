@@ -354,27 +354,21 @@ log-experiment:
 # REQUIREMENTS.TXT GENERATION
 # ===================================================================
 
+.PHONY: venv
+venv:
+	@echo "Creating Python virtual environment..."
+	$(PYTHON) -m venv $(VENV_DIR)
+	$(PIP) install --upgrade pip
+	$(PIP) install -r $(REQS)
+
 .PHONY: generate-requirements
 generate-requirements:
-	@echo "Generating requirements.txt..."
-	@echo "# SWE-Bench-CL dependencies" > $(REQS)
-	@echo "# For Mac compatibility, we don't specify PyTorch version" >> $(REQS)
-	@echo "# Use 'pip install torch' to get the appropriate version for your system" >> $(REQS)
-	@echo "torch" >> $(REQS)
-	@echo "transformers>=4.30.0" >> $(REQS)
-	@echo "huggingface_hub>=0.16.4" >> $(REQS)
-	@echo "datasets>=2.14.0" >> $(REQS)
-	@echo "accelerate>=0.21.0" >> $(REQS)
-	@echo "sentencepiece>=0.1.99" >> $(REQS)
-	@echo "sentence-transformers>=2.2.2" >> $(REQS)
-	@echo "scikit-learn>=1.3.0" >> $(REQS)
-	@echo "matplotlib>=3.7.2" >> $(REQS)
-	@echo "seaborn>=0.13.0" >> $(REQS)
-	@echo "pandas>=2.0.3" >> $(REQS)
-	@echo "numpy>=1.24.3" >> $(REQS)
-	@echo "tqdm>=4.65.0" >> $(REQS)
-	@echo "pyyaml>=6.0" >> $(REQS)
-	@echo "✓ Requirements.txt generated"
+	@echo "The requirements.txt file is the source of truth for dependencies."
+	@echo "To add a dependency, edit requirements.txt directly."
+	@echo "Then run 'make venv' to update your environment."
+	@echo ""
+	@echo "Current requirements:"
+	@cat $(REQS)
 
 .PHONY: generate-test-requirements
 generate-test-requirements:
