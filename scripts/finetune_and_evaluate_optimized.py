@@ -369,54 +369,139 @@ def load_task_stream(task_stream_file, filter_repo=None):
     if not os.path.exists(task_stream_file):
         raise FileNotFoundError(f"Task stream file not found: {os.path.abspath(task_stream_file)}")
     
-    # Check for preprocessed version (pickle file)
-    pickle_file = os.path.splitext(task_stream_file)[0] + ".pkl"
-    
     # Determine which file to load
     file_to_load = task_stream_file
-    use_pickle = False
+    use_pickle = task_stream_file.endswith('.pkl')
     
-    # If pickle exists and is newer than the JSON, use it
-    if os.path.exists(pickle_file):
-        if task_stream_file.endswith('.json') and os.path.getmtime(pickle_file) > os.path.getmtime(task_stream_file):
-            file_to_load = pickle_file
-            use_pickle = True
-            log_step(f"Found newer preprocessed file: {os.path.basename(pickle_file)}")
-        elif task_stream_file.endswith('.pkl'):
-            use_pickle = True
+    # If JSON was specified but a pickle file exists and is newer, use that instead
+    if not use_pickle and task_stream_file.endswith('.json'):
+        pickle_file = os.path.splitext(task_stream_file)[0] + ".pkl"
+        if os.path.exists(pickle_file):
+            # Check modification time only if both files exist
+            if os.path.getmtime(pickle_file) > os.path.getmtime(task_stream_file):
+                file_to_load = pickle_file
+                use_pickle = True
+                log_step(f"Found newer preprocessed file: {os.path.basename(pickle_file)}")
+            else:
+                log_step(f"Found preprocessed file but it's older than JSON, using JSON")
     
     # Timer for performance measurement
     start_time = time.time()
+    print(f"DEBUG: Begin file loading at {time.strftime('%H:%M:%S')}, path: {file_to_load}")
+    print(f"DEBUG: File size: {os.path.getsize(file_to_load) / (1024 * 1024):.2f} MB")
+    sys.stdout.flush()
     
-    # Load the data
+    # Load the data with fine-grained debugging
     try:
         if use_pickle:
+            print(f"DEBUG: About to open pickle file at {time.strftime('%H:%M:%S')}")
+            sys.stdout.flush()
+            
+            # Try opening the file first to isolate file IO issues
+            try:
+                open_start = time.time()
+                with open(file_to_load, 'rb') as f:
+                    print(f"DEBUG: File opened successfully in {time.time() - open_start:.3f} seconds, now loading pickle data")
+                    sys.stdout.flush()
+                    
+                    # Try reading a small amount to check file validity
+                    try:
+                        f.seek(0)
+                        header = f.read(100)  # Read just a bit to check if file seems valid
+                        f.seek(0)  # Reset position
+                        print(f"DEBUG: Successfully read header bytes, file appears readable")
+                        sys.stdout.flush()
+                    except Exception as e:
+                        print(f"DEBUG: Error reading file header: {e}")
+                        sys.stdout.flush()
+                    
+                    # Now try the actual pickle load with timing
+                    try:
+                        pickle_start = time.time()
+                        print(f"DEBUG: Beginning pickle.load() at {time.strftime('%H:%M:%S')}")
+                        sys.stdout.flush()
+                        task_stream = pickle.load(f)
+                        print(f"DEBUG: pickle.load() completed in {time.time() - pickle_start:.3f} seconds")
+                        sys.stdout.flush()
+                    except Exception as e:
+                        print(f"DEBUG: Error during pickle.load(): {e}")
+                        sys.stdout.flush()
+                        raise
+            except Exception as e:
+                print(f"DEBUG: Error opening file: {e}")
+                sys.stdout.flush()
+                raise
+                
             log_step(f"Loading preprocessed data from {os.path.basename(file_to_load)}")
-            with open(file_to_load, 'rb') as f:
-                task_stream = pickle.load(f)
         else:
+            print(f"DEBUG: About to open JSON file at {time.strftime('%H:%M:%S')}")
+            sys.stdout.flush()
             log_step(f"Loading JSON data from {os.path.basename(file_to_load)}")
-            with open(file_to_load, 'r') as f:
-                task_stream = json.load(f)
+            
+            try:
+                json_start = time.time()
+                with open(file_to_load, 'r') as f:
+                    print(f"DEBUG: File opened, now parsing JSON")
+                    sys.stdout.flush()
+                    task_stream = json.load(f)
+                print(f"DEBUG: JSON parsing completed in {time.time() - json_start:.3f} seconds")
+                sys.stdout.flush()
+            except Exception as e:
+                print(f"DEBUG: Error reading/parsing JSON: {e}")
+                sys.stdout.flush()
+                raise
                 
         loading_time = time.time() - start_time
         log_step(f"Data loaded in {loading_time:.2f} seconds")
         
+        print(f"DEBUG: Data type received: {type(task_stream)}")
+        print(f"DEBUG: First-level keys or indices: {str(list(task_stream.keys())[:5]) if isinstance(task_stream, dict) else 'Not a dict'}")
+        sys.stdout.flush()
+        
         # Extract metadata if present
+        print(f"DEBUG: Extracting metadata at {time.strftime('%H:%M:%S')}")
+        sys.stdout.flush()
         metadata = task_stream.pop('metadata', {})
+        print(f"DEBUG: Metadata extracted, size: {len(metadata)}")
+        sys.stdout.flush()
+        
         if metadata:
             log_step(f"Found metadata: {len(metadata)} entries")
+            print(f"DEBUG: Metadata keys: {list(metadata.keys())}")
+            sys.stdout.flush()
+            
             if 'task_ordering' in metadata:
                 log_step(f"Using task ordering from metadata")
                 task_ordering = metadata['task_ordering']
+                print(f"DEBUG: Got task_ordering from metadata, length: {len(task_ordering)}")
+                sys.stdout.flush()
             else:
+                print(f"DEBUG: No task_ordering in metadata, sorting keys")
+                sys.stdout.flush()
                 task_ordering = sorted(task_stream.keys())
+                print(f"DEBUG: Created task_ordering by sorting, length: {len(task_ordering)}")
+                sys.stdout.flush()
         else:
+            print(f"DEBUG: No metadata found, sorting keys at {time.strftime('%H:%M:%S')}")
+            sys.stdout.flush()
+            sort_start = time.time()
             task_ordering = sorted(task_stream.keys())
+            print(f"DEBUG: Keys sorted in {time.time() - sort_start:.3f} seconds, length: {len(task_ordering)}")
+            sys.stdout.flush()
             
-        # Count total examples
-        total_examples = sum(len(examples) for examples in task_stream.values() 
-                           if isinstance(examples, list))
+        # Count total examples with timing
+        print(f"DEBUG: Counting total examples at {time.strftime('%H:%M:%S')}")
+        sys.stdout.flush()
+        count_start = time.time()
+        
+        try:
+            total_examples = sum(len(examples) for examples in task_stream.values() 
+                               if isinstance(examples, list))
+            print(f"DEBUG: Counted {total_examples} total examples in {time.time() - count_start:.3f} seconds")
+        except Exception as e:
+            print(f"DEBUG: Error counting examples: {e}")
+            print(f"DEBUG: Sample task_stream values: {str(list(task_stream.values())[:2])}")
+        sys.stdout.flush()
         
         log_step(f"Loaded {len(task_stream)} tasks with {total_examples} total examples")
         
@@ -444,29 +529,69 @@ def load_task_stream(task_stream_file, filter_repo=None):
     
     # Filter tasks by repository if specified - use multiprocessing for large datasets
     log_step(f"Filtering tasks for repository: {filter_repo}")
+    print(f"DEBUG: Starting repository filtering for {filter_repo} at {time.strftime('%H:%M:%S')}")
+    sys.stdout.flush()
+    
+    # Log structure of task stream to help debug potential issues
+    print(f"DEBUG: Task stream contains {len(task_stream)} keys, task_ordering has {len(task_ordering)} items")
+    print(f"DEBUG: First 3 keys in task_stream: {list(task_stream.keys())[:3]}")
+    print(f"DEBUG: First 3 task_ordering items: {task_ordering[:3]}")
+    sys.stdout.flush()
     
     # Determine if multiprocessing would be beneficial (for large datasets)
     use_multiprocessing = total_examples > 1000
+    print(f"DEBUG: total_examples = {total_examples}, using multiprocessing: {use_multiprocessing}")
+    sys.stdout.flush()
     
+    filter_start = time.time()
     if use_multiprocessing:
-        return _filter_tasks_parallel(task_stream, task_ordering, filter_repo)
+        print(f"DEBUG: Starting parallel filtering at {time.strftime('%H:%M:%S')}")
+        sys.stdout.flush()
+        result = _filter_tasks_parallel(task_stream, task_ordering, filter_repo)
     else:
-        return _filter_tasks_sequential(task_stream, task_ordering, filter_repo)
+        print(f"DEBUG: Starting sequential filtering at {time.strftime('%H:%M:%S')}")
+        sys.stdout.flush()
+        result = _filter_tasks_sequential(task_stream, task_ordering, filter_repo)
+    
+    print(f"DEBUG: Filtering completed in {time.time() - filter_start:.2f} seconds")
+    sys.stdout.flush()
+    return result
 
 
 def _filter_tasks_sequential(task_stream, task_ordering, filter_repo):
     """Filter tasks sequentially by repository."""
+    print(f"DEBUG: Inside _filter_tasks_sequential for repo: {filter_repo}")
+    sys.stdout.flush()
+    
     filtered_tasks = {}
     total_examples = 0
     skipped_tasks = 0
+    task_count = len(task_ordering)
     
-    for task_name in task_ordering:
+    # Print start time for benchmarking
+    start_time = time.time()
+    print(f"DEBUG: Sequential filtering start time: {time.strftime('%H:%M:%S')}")
+    sys.stdout.flush()
+    
+    for i, task_name in enumerate(task_ordering):
+        # Print progress every 20% or at least for the first few tasks
+        if i < 5 or i % max(1, int(task_count * 0.2)) == 0:
+            print(f"DEBUG: Processing task {i+1}/{task_count}: {task_name} at {time.strftime('%H:%M:%S')}")
+            sys.stdout.flush()
+            
         # Skip if task doesn't exist or examples is not a list
         if task_name not in task_stream or not isinstance(task_stream[task_name], list):
+            if i < 5:  # Only log details for first few tasks to avoid log spam
+                print(f"DEBUG: Skipping task {task_name}: exists={task_name in task_stream}, is_list={task_name in task_stream and isinstance(task_stream[task_name], list)}")
+                sys.stdout.flush()
             skipped_tasks += 1
             continue
             
         examples = task_stream[task_name]
+        if i < 5:  # Log details for first few tasks
+            print(f"DEBUG: Task {task_name} has {len(examples)} examples")
+            sys.stdout.flush()
+            
         filtered = []
         
         for ex in examples:
@@ -482,12 +607,22 @@ def _filter_tasks_sequential(task_stream, task_ordering, filter_repo):
         if filtered:
             filtered_tasks[task_name] = filtered
             total_examples += len(filtered)
+            if i < 5 or len(filtered) > 0:  # Log for first few tasks or if matches found
+                print(f"DEBUG: Found {len(filtered)} matching examples for task {task_name}")
+                sys.stdout.flush()
     
     # Log results
+    filtering_time = time.time() - start_time
+    print(f"DEBUG: Sequential filtering completed in {filtering_time:.2f} seconds")
+    print(f"DEBUG: Found {len(filtered_tasks)}/{task_count} tasks with {total_examples} examples, skipped {skipped_tasks} tasks")
+    sys.stdout.flush()
+    
     log_step(f"Filtering complete. Found {len(filtered_tasks)} tasks with {total_examples} examples matching '{filter_repo}'")
     
     # If no tasks were found, list available repositories
     if not filtered_tasks:
+        print(f"DEBUG: No matching tasks found for {filter_repo}, checking available repositories")
+        sys.stdout.flush()
         _log_available_repositories(task_stream)
     
     return {
@@ -500,6 +635,9 @@ def _filter_tasks_parallel(task_stream, task_ordering, filter_repo):
     """Filter tasks in parallel by repository."""
     import multiprocessing as mp
     from functools import partial
+    
+    print(f"DEBUG: Inside _filter_tasks_parallel for repo: {filter_repo} at {time.strftime('%H:%M:%S')}")
+    sys.stdout.flush()
     
     log_step(f"Using parallel processing for filtering large dataset")
     
