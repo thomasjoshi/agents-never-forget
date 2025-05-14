@@ -107,65 +107,143 @@ def get_memory_usage():
     }
 
 class SWEBenchDataset(Dataset):
-    """Dataset for SWE-Bench tasks."""
+    """Dataset for SWE-Bench tasks with optimized caching."""
+    
+    # Class-level cache for datasets to avoid redundant processing
+    _cached_datasets = {}
+    _cached_encodings = {}
+    
+    @classmethod
+    def from_cached(cls, examples, tokenizer, max_length=1024, use_memory=False, memory_examples=None):
+        """
+        Create a dataset, using cached version if available.
+        
+        Args:
+            examples: List of examples
+            tokenizer: Tokenizer to use
+            max_length: Maximum token length
+            use_memory: Whether to include memory examples
+            memory_examples: Examples from memory to include
+            
+        Returns:
+            SWEBenchDataset instance (cached if possible)
+        """
+        # Generate cache key based on inputs
+        cache_key = hash(f"{id(examples)}_{id(tokenizer)}_{max_length}_{use_memory}_{id(memory_examples)}")
+        
+        if cache_key in cls._cached_datasets:
+            log_step(f"Using cached dataset (key: {cache_key})")
+            return cls._cached_datasets[cache_key]
+        
+        # Create new dataset if not cached
+        dataset = cls(examples, tokenizer, max_length, use_memory, memory_examples)
+        cls._cached_datasets[cache_key] = dataset
+        return dataset
     
     def __init__(self, examples, tokenizer, max_length=1024, use_memory=False, memory_examples=None):
         """
         Initialize dataset.
         
         Args:
-            examples: List of examples from the task
-            tokenizer: Tokenizer to use for encoding
-            max_length: Maximum length of encoded sequences
-            use_memory: Whether to include memory in the training examples
-            memory_examples: List of memory examples to include (from previous tasks)
+            examples: List of examples
+            tokenizer: Tokenizer to use
+            max_length: Maximum token length
+            use_memory: Whether to include memory examples
+            memory_examples: Examples from memory to include
         """
         self.examples = examples
         self.tokenizer = tokenizer
         self.max_length = max_length
         self.use_memory = use_memory
-        self.memory_examples = memory_examples if memory_examples else []
+        self.memory_examples = memory_examples or []
+        
+        # Pre-tokenize all examples at once for efficiency
+        log_step(f"Preparing dataset with {len(examples)} examples")
+        self.encodings = self._prepare_encodings()
+        
+    def _prepare_encodings(self):
+        """Pre-tokenize all examples for better performance."""
+        start_time = time.time()
+        
+        # Format all examples
+        prompts = []
+        memory_text = ""
+        
+        # Prepare memory text once if needed
+        if self.use_memory and self.memory_examples:
+            memory_text = format_memory(self.memory_examples)
+        
+        # Process examples in small batches for memory efficiency
+        batch_size = 16  # Process 16 examples at a time
+        all_encodings = []
+        
+        for i in range(0, len(self.examples), batch_size):
+            batch = self.examples[i:i+batch_size]
+            batch_prompts = []
+            
+            for example in batch:
+                # Format example
+                prompt = format_example(example, self.tokenizer)
+                
+                # Add memory if needed
+                if self.use_memory and self.memory_examples:
+                    prompt = memory_text + "\n\n" + prompt
+                
+                batch_prompts.append(prompt)
+            
+            # Tokenize batch (more efficient than one-by-one)
+            batch_encodings = [tokenize_example(prompt, self.tokenizer, self.max_length) 
+                              for prompt in batch_prompts]
+            all_encodings.extend(batch_encodings)
+            
+            # Free memory
+            del batch_prompts
+        
+        log_step(f"Dataset preparation completed in {time.time() - start_time:.2f} seconds")
+        return all_encodings
     
     def __len__(self):
-        return len(self.examples)
+        return len(self.encodings)
     
     def __getitem__(self, idx):
-        example = self.examples[idx]
-        
-        # Format input text with instruction
-        input_text = f"Fix the following code:\n\n{example['patch']}"
-        
-        # Add memory if enabled
-        if self.use_memory and self.memory_examples:
-            memory_context = "\n\n".join(
-                [f"Remember:\n{mem['patch']}\n\nTest Case:\n{mem['test_patch']}" 
-                for mem in self.memory_examples]
-            )
-            input_text = f"{memory_context}\n\n{input_text}"
-        
-        # Tokenize input and labels
-        encoding = self.tokenizer(
-            input_text,
-            max_length=self.max_length,
-            padding="max_length",
-            truncation=True,
-            return_tensors="pt"
-        )
-        
-        # Use test_patch as the target for language modeling
-        labels = self.tokenizer(
-            example.get("test_patch", ""),  # Fallback to empty string if not present
-            max_length=self.max_length,
-            padding="max_length",
-            truncation=True,
-            return_tensors="pt"
-        )["input_ids"]
-        
-        return {
-            "input_ids": encoding["input_ids"].squeeze(),
-            "attention_mask": encoding["attention_mask"].squeeze(),
-            "labels": labels.squeeze()
-        }
+        return self.encodings[idx]
+
+def format_example(example, tokenizer):
+    """Format an example for the model."""
+    return f"Fix the following code:\n\n{example['patch']}"
+
+
+def format_memory(memory_examples):
+    """Format memory examples for the model."""
+    memory_items = []
+    for mem in memory_examples:
+        memory_items.append(f"Remember:\n{mem['patch']}\n\nTest Case:\n{mem.get('test_patch', '')}")
+    return "\n\n".join(memory_items)
+
+
+def tokenize_example(text, tokenizer, max_length):
+    """Tokenize an example for the model."""
+    encoding = tokenizer(
+        text,
+        max_length=max_length,
+        padding="max_length",
+        truncation=True,
+        return_tensors="pt"
+    )
+    
+    # Shift labels for causal language modeling
+    input_ids = encoding["input_ids"].squeeze()
+    labels = input_ids.clone()
+    
+    # Set padding tokens to -100 so they're ignored in the loss
+    labels[labels == tokenizer.pad_token_id] = -100
+    
+    return {
+        "input_ids": input_ids,
+        "attention_mask": encoding["attention_mask"].squeeze(),
+        "labels": labels
+    }
+
 
 def load_model_and_tokenizer(model_name=DEFAULT_MODEL, use_4bit=DEFAULT_USE_4BIT, use_lora=True, device="cuda"):
     """
@@ -272,10 +350,11 @@ def load_model_and_tokenizer(model_name=DEFAULT_MODEL, use_4bit=DEFAULT_USE_4BIT
 
 def load_task_stream(task_stream_file, filter_repo=None):
     """
-    Load the task stream from a JSON file and optionally filter for specific repo.
+    Load the task stream from a file and optionally filter for specific repo.
+    Supports both JSON and preprocessed pickle formats for faster loading.
     
     Args:
-        task_stream_file: Path to task stream JSON file
+        task_stream_file: Path to task stream file (JSON or pickle)
         filter_repo: Optional repository name to filter tasks (e.g., 'sympy/sympy')
     
     Returns:
@@ -290,60 +369,109 @@ def load_task_stream(task_stream_file, filter_repo=None):
     if not os.path.exists(task_stream_file):
         raise FileNotFoundError(f"Task stream file not found: {os.path.abspath(task_stream_file)}")
     
-    # Load the JSON file with error handling
-    try:
-        log_step(f"Loading JSON data from {os.path.basename(task_stream_file)}")
-        with open(task_stream_file, 'r') as f:
-            task_stream = json.load(f)
-        log_step(f"Successfully loaded JSON data, found {len(task_stream)} tasks")
-    except json.JSONDecodeError as e:
-        raise ValueError(f"Failed to parse JSON file {task_stream_file}: {str(e)}")
-    except Exception as e:
-        raise RuntimeError(f"Error reading file {task_stream_file}: {str(e)}")
+    # Check for preprocessed version (pickle file)
+    pickle_file = os.path.splitext(task_stream_file)[0] + ".pkl"
     
-    # The task stream is a dictionary where keys are task names (e.g., 'T_1', 'T_2', etc.)
-    # and values are lists of examples, where each example is a dictionary with a 'repo' field
+    # Determine which file to load
+    file_to_load = task_stream_file
+    use_pickle = False
+    
+    # If pickle exists and is newer than the JSON, use it
+    if os.path.exists(pickle_file):
+        if task_stream_file.endswith('.json') and os.path.getmtime(pickle_file) > os.path.getmtime(task_stream_file):
+            file_to_load = pickle_file
+            use_pickle = True
+            log_step(f"Found newer preprocessed file: {os.path.basename(pickle_file)}")
+        elif task_stream_file.endswith('.pkl'):
+            use_pickle = True
+    
+    # Timer for performance measurement
+    start_time = time.time()
+    
+    # Load the data
+    try:
+        if use_pickle:
+            log_step(f"Loading preprocessed data from {os.path.basename(file_to_load)}")
+            with open(file_to_load, 'rb') as f:
+                task_stream = pickle.load(f)
+        else:
+            log_step(f"Loading JSON data from {os.path.basename(file_to_load)}")
+            with open(file_to_load, 'r') as f:
+                task_stream = json.load(f)
+                
+        loading_time = time.time() - start_time
+        log_step(f"Data loaded in {loading_time:.2f} seconds")
+        
+        # Extract metadata if present
+        metadata = task_stream.pop('metadata', {})
+        if metadata:
+            log_step(f"Found metadata: {len(metadata)} entries")
+            if 'task_ordering' in metadata:
+                log_step(f"Using task ordering from metadata")
+                task_ordering = metadata['task_ordering']
+            else:
+                task_ordering = sorted(task_stream.keys())
+        else:
+            task_ordering = sorted(task_stream.keys())
+            
+        # Count total examples
+        total_examples = sum(len(examples) for examples in task_stream.values() 
+                           if isinstance(examples, list))
+        
+        log_step(f"Loaded {len(task_stream)} tasks with {total_examples} total examples")
+        
+    except (json.JSONDecodeError, pickle.UnpicklingError) as e:
+        raise ValueError(f"Failed to parse file {file_to_load}: {str(e)}")
+    except Exception as e:
+        raise RuntimeError(f"Error reading file {file_to_load}: {str(e)}")
     
     # If no filter is specified, return the entire task stream
     if not filter_repo:
-        task_ordering = sorted(task_stream.keys())
-        log_step(f"No repository filter applied, returning all {len(task_stream)} tasks")
-        log_step(f"Task distribution (total examples: {sum(len(examples) for examples in task_stream.values() if isinstance(examples, list))})")
+        log_step(f"No repository filter applied, returning all tasks")
         
-        for task in task_ordering:
-            examples = task_stream[task]
-            if isinstance(examples, list):
-                log_step(f"  {task}: {len(examples)} examples")
-            else:
-                log_step(f"  {task}: INVALID (not a list)")
+        # Brief task distribution logging
+        for task in task_ordering[:5]:  # Show first 5 tasks
+            if task in task_stream and isinstance(task_stream[task], list):
+                log_step(f"  {task}: {len(task_stream[task])} examples")
+        
+        if len(task_ordering) > 5:
+            log_step(f"  ... and {len(task_ordering) - 5} more tasks")
         
         return {
             "tasks": task_stream,
             "task_ordering": task_ordering
         }
     
-    # Filter tasks by repository if specified
+    # Filter tasks by repository if specified - use multiprocessing for large datasets
     log_step(f"Filtering tasks for repository: {filter_repo}")
+    
+    # Determine if multiprocessing would be beneficial (for large datasets)
+    use_multiprocessing = total_examples > 1000
+    
+    if use_multiprocessing:
+        return _filter_tasks_parallel(task_stream, task_ordering, filter_repo)
+    else:
+        return _filter_tasks_sequential(task_stream, task_ordering, filter_repo)
+
+
+def _filter_tasks_sequential(task_stream, task_ordering, filter_repo):
+    """Filter tasks sequentially by repository."""
     filtered_tasks = {}
     total_examples = 0
     skipped_tasks = 0
     
-    for task_name, examples in task_stream.items():
-        # Skip if examples is not a list
-        if not isinstance(examples, list):
-            log_step(f"  Warning: Task '{task_name}' does not contain a list of examples, skipping...")
+    for task_name in task_ordering:
+        # Skip if task doesn't exist or examples is not a list
+        if task_name not in task_stream or not isinstance(task_stream[task_name], list):
             skipped_tasks += 1
             continue
             
+        examples = task_stream[task_name]
         filtered = []
-        for i, ex in enumerate(examples, 1):
+        
+        for ex in examples:
             # Skip if the example is not a dictionary or doesn't have a 'repo' field
-            if not isinstance(ex, dict):
-                log_step(f"  Warning: Example {i} in task '{task_name}' is not a dictionary")
-                continue
-                
-            if 'repo' not in ex:
-                log_step(f"  Warning: Example {i} in task '{task_name}' is missing 'repo' field")
+            if not isinstance(ex, dict) or 'repo' not in ex:
                 continue
                 
             # Check if the repository matches the filter
@@ -355,39 +483,95 @@ def load_task_stream(task_stream_file, filter_repo=None):
             filtered_tasks[task_name] = filtered
             total_examples += len(filtered)
     
-    # Get task ordering (alphabetical by default)
-    task_ordering = sorted(filtered_tasks.keys())
+    # Log results
+    log_step(f"Filtering complete. Found {len(filtered_tasks)} tasks with {total_examples} examples matching '{filter_repo}'")
     
-    # Print task statistics
-    log_step(f"Filtering complete. Found {len(filtered_tasks)} tasks with {total_examples} total examples matching repository '{filter_repo}'")
-    log_step(f"Skipped {skipped_tasks} tasks due to invalid format")
-    
-    for task in task_ordering:
-        log_step(f"  {task}: {len(filtered_tasks[task])} examples")
-    
-    # If no tasks were found, print available repositories
+    # If no tasks were found, list available repositories
     if not filtered_tasks:
-        log_step("No tasks found for the specified repository. Searching for available repositories...")
-        all_repos = set()
-        for task_name, examples in task_stream.items():
-            if not isinstance(examples, list):
-                continue
-                
-            for ex in examples:
-                if isinstance(ex, dict) and 'repo' in ex:
-                    all_repos.add(ex['repo'])
-        
-        if all_repos:
-            log_step(f"Found {len(all_repos)} unique repositories in the dataset:")
-            for repo in sorted(all_repos):
-                log_step(f"  - {repo}")
-        else:
-            log_step("No valid repositories found in the dataset")
+        _log_available_repositories(task_stream)
     
     return {
         "tasks": filtered_tasks,
-        "task_ordering": task_ordering
+        "task_ordering": sorted(filtered_tasks.keys())
     }
+
+
+def _filter_tasks_parallel(task_stream, task_ordering, filter_repo):
+    """Filter tasks in parallel by repository."""
+    import multiprocessing as mp
+    from functools import partial
+    
+    log_step(f"Using parallel processing for filtering large dataset")
+    
+    def filter_task(task_data, repo):
+        task_name, examples = task_data
+        
+        # Skip if examples is not a list
+        if not isinstance(examples, list):
+            return (task_name, [])
+            
+        filtered = []
+        for ex in examples:
+            # Skip if the example is not a dictionary or doesn't have a 'repo' field
+            if not isinstance(ex, dict) or 'repo' not in ex:
+                continue
+                
+            # Check if the repository matches the filter
+            if ex['repo'] == repo:
+                filtered.append(ex)
+        
+        return (task_name, filtered)
+    
+    # Prepare data for parallel processing
+    tasks_to_process = [(name, task_stream[name]) for name in task_ordering if name in task_stream]
+    
+    # Determine number of processes (based on CPU cores, but limit to avoid excessive overhead)
+    num_processes = min(mp.cpu_count(), 8, len(tasks_to_process))
+    
+    # Process in parallel
+    start_time = time.time()
+    with mp.Pool(num_processes) as pool:
+        results = pool.map(partial(filter_task, repo=filter_repo), tasks_to_process)
+    
+    # Process results
+    filtered_tasks = {name: examples for name, examples in results if examples}
+    total_examples = sum(len(examples) for examples in filtered_tasks.values())
+    
+    # Log results
+    log_step(f"Parallel filtering complete in {time.time() - start_time:.2f}s. Found {len(filtered_tasks)} tasks with {total_examples} examples.")
+    
+    # If no tasks were found, list available repositories
+    if not filtered_tasks:
+        _log_available_repositories(task_stream)
+    
+    return {
+        "tasks": filtered_tasks,
+        "task_ordering": sorted(filtered_tasks.keys())
+    }
+
+
+def _log_available_repositories(task_stream):
+    """Log available repositories in the dataset."""
+    log_step("No tasks found for the specified repository. Searching for available repositories...")
+    all_repos = set()
+    
+    for examples in task_stream.values():
+        if not isinstance(examples, list):
+            continue
+            
+        for ex in examples:
+            if isinstance(ex, dict) and 'repo' in ex:
+                all_repos.add(ex['repo'])
+    
+    if all_repos:
+        log_step(f"Found {len(all_repos)} unique repositories in the dataset:")
+        for repo in sorted(list(all_repos)[:10]):  # Show first 10 repositories
+            log_step(f"  - {repo}")
+        
+        if len(all_repos) > 10:
+            log_step(f"  ... and {len(all_repos) - 10} more repositories")
+    else:
+        log_step("No valid repositories found in the dataset")
 
 def classify_error(pred_tokens: str, true_tokens: str) -> str:
     """
