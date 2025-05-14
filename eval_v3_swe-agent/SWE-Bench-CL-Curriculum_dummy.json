@@ -1,0 +1,106 @@
+{
+  "metadata": {
+    "name": "SWE-Bench-CL-Dummy",
+    "description": "A dummy dataset for SWE-Bench-CL testing.",
+    "version": "1.0.0",
+    "num_sequences": 1,
+    "total_tasks": 1,
+    "repositories": [
+      "local/dummy_math_project"
+    ],
+    "generation_date": "2024-07-27T10:00:00Z"
+  },
+  "evaluation_metrics": {
+    "successRate": {
+      "description": "Percentage of tasks successfully solved in a sequence",
+      "formula": "successCount / totalTasks"
+    },
+    "forgettingRate": {
+      "description": "Measures how much previously learned knowledge is forgotten",
+      "formula": "(recentSuccess - currentSuccess) / recentSuccess",
+      "details": "Calculated by periodically re-testing previously solved tasks. A value of 0 indicates no forgetting, while 1 indicates complete forgetting."
+    },
+    "forwardTransfer": {
+      "description": "Measures how learning on previous tasks improves performance on new tasks",
+      "formula": "performanceOnNewTasks(with_previous_training) - performanceOnNewTasks(without_previous_training)",
+      "details": "Positive values indicate positive transfer (previous learning helps with new tasks)."
+    },
+    "backwardTransfer": {
+      "description": "Measures how learning on new tasks affects performance on previous tasks",
+      "formula": "performanceOnPreviousTasks(after_new_training) - performanceOnPreviousTasks(before_new_training)",
+      "details": "Positive values indicate that learning new tasks improves performance on old tasks."
+    },
+    "toolUseEfficiency": {
+      "description": "Measures the efficiency of tool use during problem solving",
+      "formula": "successfulToolCalls / totalToolCalls",
+      "details": "Higher values indicate more efficient use of tools."
+    },
+    "toolUseAdaptation": {
+      "description": "Measures how the agent's tool use evolves over time",
+      "formula": "Qualitative analysis of tool use patterns across sequences",
+      "details": "Assesses whether the agent learns to use more appropriate tools or develops more efficient tool use strategies."
+    },
+    "learningCurve": {
+      "description": "Measures the rate of learning over the sequence",
+      "formula": "Success rate as a function of task number",
+      "details": "Steeper curves indicate faster learning."
+    },
+    "crossDomainTransfer": {
+      "description": "Measures how learning on one repository transfers to others",
+      "formula": "performanceOnRepo2(after_repo1) - performanceOnRepo2(without_repo1)",
+      "details": "Assesses how well the agent transfers knowledge between different codebases/domains."
+    },
+    "clScore": {
+      "description": "A comprehensive continual learning score",
+      "formula": "successRate * (1 - forgettingRate) * (1 + 0.5 * forwardTransfer + 0.5 * backwardTransfer) * toolUseEfficiency",
+      "details": "Combines success, forgetting, transfer, and tool use metrics into a single score."
+    }
+  },
+  "sequences": [
+    {
+      "id": "dummy_math_project_sequence",
+      "repo": "local/dummy_math_project",
+      "num_tasks": 1,
+      "statistics": {
+        "difficulty_distribution": {
+          "easy": 1
+        },
+        "tasks_with_dependencies": 0,
+        "dependency_rate": 0.0
+      },
+      "tasks": [
+        {
+          "metadata": {
+            "instance_id": "local__dummy_math_project_task_1",
+            "repo": "local/dummy_math_project",
+            "base_commit": "initial_state",
+            "created_at": "2024-01-01T12:00:00+00:00",
+            "difficulty": "<15 min fix"
+          },
+          "task": {
+            "problem_statement": "The function `add(a, b)` in `math_utils.py` currently returns `a - b`. It should return `a + b`.",
+            "hints_text": "Check the return statement in the add function. Basic arithmetic is needed."
+          },
+          "evaluation": {
+            "patch": "diff --git a/math_utils.py b/math_utils.py\n--- a/math_utils.py\n+++ b/math_utils.py\n@@ -1,2 +1,2 @@\n def add(a, b):\n-    return a - b\n+    return a + b",
+            "test_patch": "diff --git a/test_math_utils.py b/test_math_utils.py\n--- a/test_math_utils.py\n+++ b/test_math_utils.py\n@@ -1,5 +1,8 @@\n import unittest\n from math_utils import add\n+\n class TestMath(unittest.TestCase):\n-    def test_initial_behavior(self):\n-        self.assertEqual(add(2, 2), 0) # Current incorrect behavior\n+    def test_addition(self):\n+        # This test should fail initially and pass after the fix\n+        self.assertEqual(add(2, 2), 4)\n     def test_existing_behavior(self):\n         self.assertTrue(True)\n \n",
+            "FAIL_TO_PASS": [
+              "test_math_utils.TestMath.test_addition"
+            ],
+            "PASS_TO_PASS": [
+              "test_math_utils.TestMath.test_existing_behavior"
+            ]
+          },
+          "continual_learning": {
+            "sequence_position": 1,
+            "difficulty_score": 1,
+            "dependencies": [],
+            "modified_files": [
+              "math_utils.py"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
