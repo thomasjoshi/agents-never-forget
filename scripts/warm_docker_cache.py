@@ -8,6 +8,7 @@ to avoid 90-second cold builds during evaluation.
 
 import os
 import json
+import pickle
 import argparse
 import subprocess
 import tempfile
@@ -66,10 +67,10 @@ def cleanup_docker_resources():
 
 def load_task_stream(task_stream_file, filter_repo=None):
     """
-    Load the task stream from a JSON file and optionally filter for specific repo.
+    Load the task stream from a file (JSON or pickle) and optionally filter for specific repo.
     
     Args:
-        task_stream_file: Path to task stream JSON file
+        task_stream_file: Path to task stream file (either JSON or pickle)
         filter_repo: Optional repository name to filter tasks (e.g., 'sympy/sympy')
     
     Returns:
@@ -78,8 +79,15 @@ def load_task_stream(task_stream_file, filter_repo=None):
     print(f"Loading task stream from {task_stream_file}...")
     
     try:
-        with open(task_stream_file, 'r') as f:
-            task_stream = json.load(f)
+        # Determine file type based on extension
+        use_pickle = task_stream_file.endswith('.pkl')
+        
+        if use_pickle:
+            with open(task_stream_file, 'rb') as f:
+                task_stream = pickle.load(f)
+        else:
+            with open(task_stream_file, 'r') as f:
+                task_stream = json.load(f)
     except Exception as e:
         print(f"Error loading task stream: {e}")
         return None
