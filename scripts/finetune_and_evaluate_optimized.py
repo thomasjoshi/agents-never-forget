@@ -571,7 +571,8 @@ def finetune_model(model, tokenizer, task_examples, learning_rate, device,
                   batch_size=DEFAULT_BATCH_SIZE, 
                   gradient_accumulation_steps=DEFAULT_GRAD_ACCUM_STEPS, 
                   use_memory=False, memory_examples=None,
-                  max_steps=100):
+                  max_steps=100,
+                  use_4bit=DEFAULT_USE_4BIT):
     """
     Finetune model on a task with optimizations for faster training.
     
@@ -882,7 +883,8 @@ def main():
                 gradient_accumulation_steps=args.gradient_accumulation_steps,
                 use_memory=memory_enabled,
                 memory_examples=stored_memories,
-                max_steps=args.max_steps
+                max_steps=args.max_steps,
+                use_4bit=args.use_4bit
             )
             
             # Save model checkpoint
