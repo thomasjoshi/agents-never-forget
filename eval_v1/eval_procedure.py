@@ -155,8 +155,8 @@ EMBEDDING_MODEL_CONFIG = {
 
 # --- Experiment Configuration ---
 EXPERIMENT_CONDITIONS = {
-    "memory_disabled": {"memory_enabled": False},
     "memory_enabled": {"memory_enabled": True},
+    "memory_disabled": {"memory_enabled": False},
 }
 SEQUENCES_TO_RUN = None # Example: ["django_django_sequence"] or None for all
 TASKS_PER_SEQUENCE_LIMIT = None # Example: 2 or None for all
@@ -191,6 +191,10 @@ def load_or_initialize_state(force_fresh_start=False) -> Dict:
             if state.get('current_swe_bench_cl_dataset_path') != os.path.abspath(SWE_BENCH_CL_DATASET_PATH):
                 logger.warning("Dataset path in state file does not match current configuration. Forcing a fresh state.")
                 return load_or_initialize_state(force_fresh_start=True) # Recursive call for fresh start
+            
+            # Ensure backward compatibility for task_eval_progress structure if loading older states
+            # No explicit change needed here for adding a new key, as older entries just won't have it.
+            # Code reading from it should use .get("gold_patch") for safety.
             return state
         except Exception as e:
             logger.error(f"Error loading state file {STATE_FILE_PATH}: {e}. Initializing fresh state.")
@@ -202,7 +206,7 @@ def load_or_initialize_state(force_fresh_start=False) -> Dict:
     state = {
         "evaluation_run_timestamp": new_timestamp,
         "current_swe_bench_cl_dataset_path": os.path.abspath(SWE_BENCH_CL_DATASET_PATH),
-        "task_eval_progress": {}, # NEW: model_name -> condition_name -> {instance_id: {"model_patch": str, "harness_result": bool, "raw_llm_output": Optional[str]}}
+        "task_eval_progress": {}, # model_name -> condition_name -> {instance_id: {"model_patch": str, "harness_result": bool, "raw_llm_output": Optional[str], "gold_patch": Optional[str]}}
         "parsed_harness_results_data": {},# model -> condition -> {seq_id: {instance_id: pass_status}}
         "overall_results_list": [],      # List of dicts for final summary
         "overall_results_summary_df_path": None
@@ -932,6 +936,70 @@ if RUN_DEBUG_TEST:
     logger.info("="*20 + " Quick Test Finished " + "="*20 + "\n\n")
 
 # %% [markdown]
+#    ## Utility Cell: Backfill Gold Patches into Existing State
+#    This cell can be run once to update an existing `eval_state.json` file 
+#    to include the `gold_patch` for tasks that were processed before this field was added.
+#    Make sure `SWE_BENCH_CL_DATASET_PATH` and `STATE_FILE_PATH` are correctly defined above.
+
+# %%
+RUN_BACKFILL_GOLD_PATCHES = True # Set to True to run this utility
+
+if RUN_BACKFILL_GOLD_PATCHES:
+    logger.info("Starting utility to backfill gold patches into eval_state.json...")
+
+    # 1. Load the dataset to get gold patches
+    if not swe_bench_cl_full_data:
+        logger.error("SWE-Bench-CL dataset is not loaded. Cannot backfill gold patches.")
+    else:
+        gold_patch_map = {}
+        for seq in swe_bench_cl_full_data.get("sequences", []):
+            for task_detail in seq.get("tasks", []):
+                instance_id = task_detail.get("metadata", {}).get("instance_id")
+                gold_patch = task_detail.get("evaluation", {}).get("patch")
+                if instance_id and gold_patch is not None: # Ensure gold_patch exists, even if empty string
+                    gold_patch_map[instance_id] = gold_patch
+        
+        logger.info(f"Created gold patch map with {len(gold_patch_map)} entries.")
+
+        # 2. Load the current state (or re-load to be sure)
+        # current_evaluation_state is already loaded globally, but for safety, one might reload.
+        # For this utility, we'll assume the global current_evaluation_state is what we want to modify.
+        if not current_evaluation_state or not os.path.exists(STATE_FILE_PATH):
+            logger.error(f"Evaluation state not loaded or state file not found at {STATE_FILE_PATH}. Cannot backfill.")
+        else:
+            updated_count = 0
+            missing_in_map_count = 0
+            
+            task_eval_progress = current_evaluation_state.get("task_eval_progress", {})
+            
+            for model_name, conditions in task_eval_progress.items():
+                for condition_name, instances in conditions.items():
+                    # Typically, you'd be interested in "memory_enabled" and "memory_disabled"
+                    # if condition_name in ["memory_enabled", "memory_disabled"]: # Or iterate all
+                    for instance_id, task_data in instances.items():
+                        if isinstance(task_data, dict) and (task_data.get("gold_patch") is None or task_data.get("gold_patch") == ""): # Check if None or empty
+                            if instance_id in gold_patch_map:
+                                task_data["gold_patch"] = gold_patch_map[instance_id]
+                                updated_count += 1
+                                logger.debug(f"Added gold patch for {model_name}/{condition_name}/{instance_id}")
+                            else:
+                                logger.warning(f"Gold patch not found in map for {instance_id} (model: {model_name}, condition: {condition_name}). Skipping.")
+                                missing_in_map_count +=1
+            
+            if updated_count > 0 or missing_in_map_count > 0 : # Save only if changes were made or warnings occurred
+                logger.info(f"Backfill complete. Added/updated gold_patch for {updated_count} task entries.")
+                if missing_in_map_count > 0:
+                    logger.warning(f"Could not find gold patch in the dataset map for {missing_in_map_count} task entries in the state file.")
+                
+                logger.info("Saving updated state...")
+                save_state(current_evaluation_state)
+                logger.info("State saved successfully.")
+            else:
+                logger.info("No task entries in the state file needed gold_patch backfilling.")
+
+    logger.info("Gold patch backfill utility finished.")
+
+# %% [markdown]
 #    ## 9. Continual Learning Metrics Calculation Functions
 
 # %%
@@ -1101,18 +1169,18 @@ for model_name, llm_instance in tqdm(initialized_llms.items(), desc="Models"):
                 instance_id = task_meta.get("instance_id")
 
                 # --- Check if task already processed (prediction + evaluation) ---
-                if instance_id in current_evaluation_state["task_eval_progress"][model_name][condition_name]:
+                task_progress_entry = current_evaluation_state["task_eval_progress"][model_name][condition_name].get(instance_id)
+                if task_progress_entry: # Check if entry exists
                     logger.info(f"Skipping task {instance_id} in {sequence_id} ({model_name}/{condition_name}), already processed and evaluated.")
                     # Ensure its result is in parsed_harness_results_data if resuming after metrics
-                    task_eval_entry = current_evaluation_state["task_eval_progress"][model_name][condition_name][instance_id]
-                    current_evaluation_state["parsed_harness_results_data"][model_name][condition_name][sequence_id][instance_id] = task_eval_entry.get("harness_result", False)
+                    current_evaluation_state["parsed_harness_results_data"][model_name][condition_name][sequence_id][instance_id] = task_progress_entry.get("harness_result", False)
                     continue
                 
                 base_commit = task_meta.get("base_commit")
                 task_content = task_detail.get("task", {})
                 problem_statement = task_content.get("problem_statement")
                 hints_text = task_content.get("hints_text", "No hints provided.")
-                gold_patch_text = task_detail.get("evaluation", {}).get("patch", "") # For hints, not for eval here
+                gold_patch_text = task_detail.get("evaluation", {}).get("patch", "") # For hints AND NOW FOR STORING
 
                 if not all([instance_id, problem_statement, repo_name, base_commit]):
                     logger.warning(f"Skipping task in {sequence_id} ({instance_id or 'Unknown ID'}) due to missing critical data.")
@@ -1209,6 +1277,7 @@ for model_name, llm_instance in tqdm(initialized_llms.items(), desc="Models"):
                     "model_patch": generated_patch_text_cleaned,
                     "harness_result": task_pass_status,
                     "raw_llm_output": raw_llm_output_for_state, # Store the raw output
+                    "gold_patch": gold_patch_text, # Store the gold patch
                     "timestamp": time.strftime("%Y%m%d-%H%M%S")
                 }
                 current_evaluation_state["parsed_harness_results_data"][model_name][condition_name].setdefault(sequence_id, {})[instance_id] = task_pass_status
@@ -1350,5 +1419,3 @@ logger.info(f"State file is at: {STATE_FILE_PATH}")
 
 # %% [markdown]
 #    --- End of Notebook ---
-
-
