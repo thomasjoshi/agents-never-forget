@@ -10,11 +10,6 @@ import json
 import random
 import time
 import argparse
-import tempfile
-import subprocess
-import warnings
-import shutil
-from pathlib import Path
 from tqdm import tqdm
 import ast
 import re
@@ -23,7 +18,7 @@ import pandas as pd
 import torch
 from torch.utils.data import DataLoader, Dataset
 from collections import defaultdict, Counter
-from typing import Dict, List, Tuple, Optional, Any, Union, Callable
+from typing import Dict, List, Tuple, Optional, Any
 from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
@@ -52,21 +47,6 @@ DEFAULT_GRAD_ACCUM_STEPS = 1
 DEFAULT_LEARNING_RATE = 2e-4
 DEFAULT_NUM_EPOCHS = 3
 DEFAULT_USE_4BIT = True
-
-# Check if Docker is available for running SWE-Bench tests
-def check_docker_available() -> bool:
-    """Check if Docker is available for SWE-Bench test execution."""
-    try:
-        import docker
-        client = docker.from_env()
-        client.ping()
-        return True
-    except Exception as e:
-        warnings.warn(f"Docker not available: {e}. Functional tests will be skipped.")
-        return False
-
-# Global flag for Docker availability
-DOCKER_AVAILABLE = check_docker_available()
 
 def check_gpu_availability():
     """Check if CUDA is available and provide helpful guidance if not."""
@@ -408,144 +388,6 @@ def plot_error_analysis(error_analysis: Dict[str, Any], output_dir: str, task_na
                 target = ex['target'].replace('|', '\\|').replace('\n', ' ')[:100]
                 f.write(f"| {ex['error_type']} | `{pred}` | `{target}` |\n")
 
-
-def run_swebench_tests(issue: Dict[str, Any], patch_path: str, timeout: int = 12) -> bool:
-    """
-    Run SWE-Bench tests for the given issue using Docker.
-    
-    Args:
-        issue: Issue dictionary containing repo, FAIL_TO_PASS and PASS_TO_PASS tests
-        patch_path: Path to the generated patch file
-        timeout: Timeout in seconds for test execution
-    
-    Returns:
-        bool: True if all tests pass, False otherwise
-    """
-    if not DOCKER_AVAILABLE:
-        warnings.warn("Docker not available. Skipping test execution.")
-        return False
-    
-    try:
-        repo_name = issue.get('repo', '')
-        repo_path = Path(repo_name)
-        
-        # Check if we have the patch file
-        if not os.path.exists(patch_path):
-            warnings.warn(f"Patch file not found: {patch_path}")
-            return False
-        
-        # Docker command to build and run tests
-        docker_cmd = [
-            "docker", "run", "--rm",
-            "-v", f"{patch_path}:/patch.diff",
-            "-v", f"{repo_path}:/repo",
-            "swebench/tester:latest",
-            "--repo", repo_name,
-            "--patch", "/patch.diff",
-            "--timeout", str(timeout)
-        ]
-        
-        # Run Docker command with timeout
-        process = subprocess.run(
-            docker_cmd,
-            capture_output=True,
-            text=True,
-            timeout=timeout + 5  # Add buffer to Docker timeout
-        )
-        
-        # Check if all tests passed
-        output = process.stdout + process.stderr
-        f2p_passed = "FAIL_TO_PASS: PASS" in output
-        p2p_passed = "PASS_TO_PASS: PASS" in output
-        
-        return f2p_passed and p2p_passed
-    
-    except subprocess.TimeoutExpired:
-        warnings.warn(f"Test execution timed out after {timeout} seconds")
-        return False
-    except Exception as e:
-        warnings.warn(f"Error running tests: {e}")
-        return False
-
-
-def evaluate_success(model, dataset, batch_size=4):
-    """
-    Evaluate model success based on SWE-Bench test execution.
-    
-    Args:
-        model: The model to evaluate
-        dataset: List of issue examples to test
-        batch_size: Batch size for processing
-    
-    Returns:
-        success_rate: float - fraction of issues whose FAIL_TO_PASS tests
-                          now pass and whose original PASS_TO_PASS
-                          still pass.
-        successes: list[bool] - per-issue pass/fail flags.
-    
-    Notes:
-        * Pull tokenizer/model.device from the model itself (no extra args).
-        * Call helper `run_swebench_tests(issue, patch_path, timeout=12)`.
-        * Provide a stub that returns False and prints a warning if Docker
-          is unavailable, so CPU-only CI still runs.
-    """
-    # Get tokenizer and device from model
-    tokenizer = model.tokenizer if hasattr(model, 'tokenizer') else AutoTokenizer.from_pretrained(model.config._name_or_path)
-    device = next(model.parameters()).device
-    
-    successes = []
-    
-    # If Docker is not available, return dummy results with warning
-    if not DOCKER_AVAILABLE:
-        warnings.warn("Docker not available. Returning dummy success rate.")
-        return 0.0, [False] * len(dataset)
-    
-    for i in range(0, len(dataset), batch_size):
-        batch = dataset[i:i+batch_size]
-        
-        for issue in batch:
-            try:
-                # Format the prompt
-                prompt = issue.get("prompt", "")
-                
-                # Generate patch
-                with torch.no_grad():
-                    inputs = tokenizer(prompt, return_tensors="pt", truncation=True).to(device)
-                    outputs = model.generate(
-                        **inputs,
-                        max_length=1024,
-                        num_return_sequences=1,
-                        pad_token_id=tokenizer.eos_token_id
-                    )
-                    
-                generated_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
-                
-                # Extract the patch
-                # Assuming the model outputs a patch in diff format
-                patch_content = generated_text  # This should be refined to extract only diff
-                
-                # Write to temp file
-                with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.diff') as f:
-                    f.write(patch_content)
-                    patch_path = f.name
-                
-                # Run tests
-                success = run_swebench_tests(issue, patch_path, timeout=12)
-                successes.append(success)
-                
-                # Clean up temp file
-                os.unlink(patch_path)
-                
-            except Exception as e:
-                warnings.warn(f"Error evaluating issue: {e}")
-                successes.append(False)
-    
-    # Calculate success rate
-    success_rate = sum(successes) / len(successes) if successes else 0.0
-    
-    return success_rate, successes
-
-
 def evaluate_model(model, tokenizer, task_examples, device, batch_size=4, use_memory=False, memory_examples=None):
     """
     Evaluate model on a task with enhanced metrics and memory management.
@@ -724,6 +566,242 @@ def evaluate_model(model, tokenizer, task_examples, device, batch_size=4, use_me
             }
         }
 
+
+def evaluate_success(model, dataset, batch_size=4):
+    """
+    Evaluates model success based on test execution instead of token matching.
+    
+    Args:
+        model: The model to evaluate
+        dataset: List of examples from the task (each containing prompt, FAIL_TO_PASS and PASS_TO_PASS tests)
+        batch_size: Batch size for generation
+    
+    Returns:
+        success_rate : float  – fraction of issues whose FAIL_TO_PASS tests
+                                now pass and whose original PASS_TO_PASS
+                                still pass.
+        successes    : list[bool] – per-issue pass/fail flags.
+    
+    Notes:
+        * Pull tokenizer/model.device from the model itself (no extra args).
+        * Call helper `run_swebench_tests(issue, patch_path, timeout=12)`.
+        * Provide a stub that returns False and prints a warning if Docker
+          is unavailable, so CPU-only CI still runs.
+    """
+    import tempfile
+    import os
+    import subprocess
+    import shutil
+    
+    # Check if Docker is available
+    def is_docker_available():
+        try:
+            result = subprocess.run(["docker", "--version"], 
+                                   stdout=subprocess.PIPE, 
+                                   stderr=subprocess.PIPE, 
+                                   check=False)
+            return result.returncode == 0
+        except FileNotFoundError:
+            return False
+    
+    if not is_docker_available():
+        print("WARNING: Docker is not available. Test-based evaluation disabled.")
+        print("Returning dummy results for CI compatibility.")
+        return 0.0, [False] * len(dataset)
+    
+    # Extract tokenizer from model (may be wrapped in PEFT model)
+    if hasattr(model, 'base_model') and hasattr(model.base_model, 'tokenizer'):
+        tokenizer = model.base_model.tokenizer
+    elif hasattr(model, 'tokenizer'):
+        tokenizer = model.tokenizer
+    else:
+        # Fallback to loading tokenizer from model path
+        try:
+            from transformers import AutoTokenizer
+            model_name = model.config._name_or_path
+            tokenizer = AutoTokenizer.from_pretrained(model_name)
+        except Exception as e:
+            print(f"Could not determine tokenizer: {e}")
+            return 0.0, [False] * len(dataset)
+    
+    # Determine device
+    device = next(model.parameters()).device
+    
+    # Helper function to run tests for a single issue
+    def run_swebench_tests(issue, patch_path, timeout=12):
+        """
+        Run SWE-Bench tests for a single issue using the patch file.
+        
+        Args:
+            issue: Dictionary containing issue details including tests
+            patch_path: Path to the generated patch file
+            timeout: Timeout in seconds for test execution
+            
+        Returns:
+            Boolean indicating if all tests passed
+        """
+        try:
+            # Create a temporary directory for test execution
+            with tempfile.TemporaryDirectory() as temp_dir:
+                # Prepare repo and apply patch
+                repo_path = os.path.join(temp_dir, "repo")
+                os.makedirs(repo_path, exist_ok=True)
+                
+                # Initialize repository with base commit
+                base_commit = issue.get("base_commit")
+                repo_name = issue.get("repo")
+                if not base_commit or not repo_name:
+                    print(f"Missing base_commit or repo for issue {issue.get('instance_id')}")
+                    return False
+                
+                # Clone repository at specific commit
+                clone_cmd = [
+                    "git", "clone", 
+                    f"https://github.com/{repo_name}.git",
+                    repo_path
+                ]
+                subprocess.run(clone_cmd, 
+                              stdout=subprocess.PIPE, 
+                              stderr=subprocess.PIPE, 
+                              check=False)
+                
+                # Checkout base commit
+                checkout_cmd = ["git", "checkout", base_commit]
+                subprocess.run(checkout_cmd, 
+                              cwd=repo_path, 
+                              stdout=subprocess.PIPE, 
+                              stderr=subprocess.PIPE, 
+                              check=False)
+                
+                # Apply patch
+                with open(patch_path, "r") as f:
+                    patch_content = f.read()
+                
+                apply_cmd = ["git", "apply", "-"]
+                apply_proc = subprocess.Popen(apply_cmd, 
+                                            cwd=repo_path,
+                                            stdin=subprocess.PIPE,
+                                            stdout=subprocess.PIPE,
+                                            stderr=subprocess.PIPE)
+                apply_proc.communicate(input=patch_content.encode())
+                
+                # Run tests in Docker container
+                # Prepare test commands for FAIL_TO_PASS tests
+                f2p_tests = issue.get("FAIL_TO_PASS_list", [])
+                p2p_tests = issue.get("PASS_TO_PASS_list", [])
+                
+                # Build Docker image
+                docker_build_cmd = [
+                    "docker", "build", 
+                    "-t", f"swebench-{issue.get('instance_id')}", 
+                    "."
+                ]
+                build_result = subprocess.run(docker_build_cmd, 
+                                           cwd=repo_path,
+                                           stdout=subprocess.PIPE, 
+                                           stderr=subprocess.PIPE, 
+                                           timeout=60,
+                                           check=False)
+                if build_result.returncode != 0:
+                    print(f"Docker build failed for {issue.get('instance_id')}")
+                    return False
+                
+                # Run tests in container
+                all_tests_pass = True
+                
+                # Run FAIL_TO_PASS tests (should now pass)
+                for test in f2p_tests:
+                    test_cmd = [
+                        "docker", "run", 
+                        f"swebench-{issue.get('instance_id')}", 
+                        "pytest", test, "-v"
+                    ]
+                    test_result = subprocess.run(test_cmd, 
+                                              stdout=subprocess.PIPE, 
+                                              stderr=subprocess.PIPE, 
+                                              timeout=timeout,
+                                              check=False)
+                    if test_result.returncode != 0:
+                        all_tests_pass = False
+                        break
+                
+                # Run PASS_TO_PASS tests (should still pass)
+                if all_tests_pass:
+                    for test in p2p_tests:
+                        test_cmd = [
+                            "docker", "run", 
+                            f"swebench-{issue.get('instance_id')}", 
+                            "pytest", test, "-v"
+                        ]
+                        test_result = subprocess.run(test_cmd, 
+                                                  stdout=subprocess.PIPE, 
+                                                  stderr=subprocess.PIPE, 
+                                                  timeout=timeout,
+                                                  check=False)
+                        if test_result.returncode != 0:
+                            all_tests_pass = False
+                            break
+                
+                return all_tests_pass
+                
+        except Exception as e:
+            print(f"Error running tests: {e}")
+            return False
+    
+    # Process each example in the dataset
+    successes = []
+    model.eval()  # Set model to evaluation mode
+    
+    with torch.no_grad():
+        for i, issue in enumerate(dataset):
+            print(f"Evaluating issue {i+1}/{len(dataset)}: {issue.get('instance_id', 'unknown')}")
+            
+            # Generate patch with model
+            try:
+                # Prepare input for the model
+                prompt = issue.get("prompt") or f"Fix the following code:\n\n{issue.get('patch', '')}\n"
+                inputs = tokenizer(prompt, return_tensors="pt").to(device)
+                
+                # Generate the patch
+                generation_config = {
+                    "max_new_tokens": 1024,
+                    "do_sample": False,
+                    "pad_token_id": tokenizer.eos_token_id,
+                }
+                
+                # Handle different model types (PEFT vs regular)
+                outputs = model.generate(
+                    **inputs,
+                    **generation_config
+                )
+                
+                # Decode the generated patch
+                generated_patch = tokenizer.decode(outputs[0], skip_special_tokens=True)
+                # Extract just the part after the prompt
+                generated_patch = generated_patch[len(prompt):].strip()
+                
+                # Write the generated patch to a temp file
+                with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".patch") as patch_file:
+                    patch_file.write(generated_patch)
+                    patch_path = patch_file.name
+                
+                # Run tests with the generated patch
+                issue_success = run_swebench_tests(issue, patch_path, timeout=12)
+                successes.append(issue_success)
+                
+                # Clean up the temp file
+                os.unlink(patch_path)
+                
+            except Exception as e:
+                print(f"Error generating patch: {e}")
+                successes.append(False)
+    
+    # Calculate overall success rate
+    success_rate = sum(successes) / len(successes) if successes else 0.0
+    
+    print(f"Overall success rate: {success_rate:.4f} ({sum(successes)}/{len(successes)} issues resolved)")
+    return success_rate, successes
+
 def finetune_model(model, tokenizer, task_examples, learning_rate, device, 
                   num_epochs=DEFAULT_NUM_EPOCHS, 
                   batch_size=DEFAULT_BATCH_SIZE, 
@@ -843,175 +921,173 @@ def save_model_checkpoint(model, tokenizer, output_dir, task_name):
         print(f"Error saving model checkpoint: {e}")
         return None
 
-def plot_metrics(metrics_df, output_dir, log_token_metrics=False):
+def plot_metrics(metrics_df, output_dir, results=None, memory_enabled=False):
     """
-    Plot continual learning metrics with focus on functional success rates.
+    Plot continual learning metrics with enhanced visualization including heat-maps and stability-plasticity plots.
     
     Args:
         metrics_df: DataFrame containing metrics data
         output_dir: Directory to save plots
-        log_token_metrics: Whether to also plot token-level metrics
+        results: numpy array of success rates for each task combination (task_curr x task_seen)
+        memory_enabled: Whether memory was enabled for these results
     """
     os.makedirs(output_dir, exist_ok=True)
+    memory_suffix = "with_memory" if memory_enabled else "no_memory"
     
-    # Filter metrics for after-training evaluations
-    after_df = metrics_df[metrics_df['evaluation_type'] == 'after_training']
+    # Set style
+    sns.set_theme(style="whitegrid")
     
-    # Get unique tasks
-    tasks = sorted(metrics_df['task_name'].unique())
-    task_indices = sorted(metrics_df['task_idx'].unique())
-    task_indices = [idx for idx in task_indices if idx >= 0]
-    num_tasks = len(task_indices)
-    
-    if num_tasks == 0:
-        return
-    
-    # 1. Create heatmap of success rates
-    results_matrix = np.zeros((num_tasks, num_tasks))
-    
-    # Fill in results matrix from metrics
-    for i, curr_task_idx in enumerate(task_indices):
-        curr_task = tasks[curr_task_idx]
+    # Only generate token-based plots if requested and available
+    if 'token_accuracy' in metrics_df.columns:
+        # Create a 2x2 grid of plots for token metrics
+        plt.figure(figsize=(16, 12))
         
-        # For each task we've seen up to the current one
-        for j, eval_task_idx in enumerate(task_indices[:i+1]):
-            eval_task = tasks[eval_task_idx]
-            
-            # Get the success rate after training on curr_task for eval_task
-            task_rows = after_df[(after_df['task_name'] == eval_task) & 
-                                (after_df['current_task'] == curr_task)]
-            
-            if not task_rows.empty and 'success_rate' in task_rows.columns:
-                results_matrix[i, j] = task_rows['success_rate'].values[0]
+        # 1. Plot token accuracy over tasks
+        plt.subplot(2, 2, 1)
+        sns.lineplot(data=metrics_df, 
+                    x="task_id", y="token_accuracy", hue="seen_task", 
+                    markers=True, dashes=False)
+        plt.title("Token Accuracy by Task")
+        plt.xlabel("Current Task ID")
+        plt.ylabel("Token Accuracy")
+        plt.legend(title="Task Being Evaluated", bbox_to_anchor=(1.05, 1), loc='upper left')
+        
+        # 2. Plot exact match rate
+        if 'exact_match' in metrics_df.columns:
+            plt.subplot(2, 2, 2)
+            sns.lineplot(data=metrics_df, 
+                        x="task_id", y="exact_match", hue="seen_task", 
+                        markers=True, dashes=False)
+            plt.title("Exact Match Rate by Task")
+            plt.xlabel("Current Task ID")
+            plt.ylabel("Exact Match Rate")
+            plt.legend(title="Task Being Evaluated", bbox_to_anchor=(1.05, 1), loc='upper left')
+        
+        # 3. Plot F1 score
+        if 'f1_score' in metrics_df.columns:
+            plt.subplot(2, 2, 3)
+            sns.lineplot(data=metrics_df, 
+                        x="task_id", y="f1_score", hue="seen_task", 
+                        markers=True, dashes=False)
+            plt.title("F1 Score by Task")
+            plt.xlabel("Current Task ID")
+            plt.ylabel("F1 Score")
+            plt.legend(title="Task Being Evaluated", bbox_to_anchor=(1.05, 1), loc='upper left')
+        
+        plt.tight_layout()
+        plt.savefig(os.path.join(output_dir, f"token_metrics_{memory_suffix}.png"), dpi=300)
+        plt.close()
     
-    # Plot heatmap of results
-    plt.figure(figsize=(10, 8))
-    ax = sns.heatmap(results_matrix, annot=True, fmt='.2f', cmap='viridis',
-                    xticklabels=tasks, yticklabels=tasks)
-    plt.xlabel('Task Evaluated')
-    plt.ylabel('After Training on Task')
-    plt.title('Success Rate Matrix')
-    plt.tight_layout()
-    plt.savefig(os.path.join(output_dir, 'success_rate_heatmap.png'))
-    plt.close()
+    # Plot functional success metrics (main visualization)
     
-    # 2. Stability-Plasticity line plot
+    # 1. Heat-map of success rates
+    if results is not None and results.size > 0:
+        plt.figure(figsize=(10, 8))
+        
+        # Get number of tasks
+        num_tasks = results.shape[0]
+        
+        # Create task labels
+        task_labels = [f"T_{i}" for i in range(num_tasks)]
+        
+        # Create heatmap
+        sns.heatmap(results, annot=True, fmt=".2f", cmap="YlGnBu",
+                   xticklabels=task_labels, yticklabels=task_labels)
+        plt.title(f"Success Rate Heatmap ({memory_suffix})")
+        plt.xlabel("Task Evaluated")
+        plt.ylabel("After Training on Task")
+        plt.tight_layout()
+        plt.savefig(os.path.join(output_dir, f"heatmap_{memory_suffix}.png"), dpi=300)
+        plt.close()
+    
+    # 2. Stability-Plasticity Line Plot
     plt.figure(figsize=(12, 6))
     
-    # Plot success rate of each task over time
-    for j, eval_task_idx in enumerate(task_indices):
-        eval_task = tasks[eval_task_idx]
-        
-        # Get success rates for this task over time
-        success_rates = []
-        x_labels = []
-        
-        for i, curr_task_idx in enumerate(task_indices):
-            if i >= j:  # Only plot after the task has been introduced
-                curr_task = tasks[curr_task_idx]
-                task_rows = after_df[(after_df['task_name'] == eval_task) & 
-                                    (after_df['current_task'] == curr_task)]
-                
-                if not task_rows.empty and 'success_rate' in task_rows.columns:
-                    success_rates.append(task_rows['success_rate'].values[0])
-                    x_labels.append(curr_task)
-        
-        plt.plot(x_labels, success_rates, marker='o', label=f"Task {eval_task}")
+    # Filter data for success rate plotting
+    current_task_df = metrics_df[metrics_df['is_current'] == True].copy()
+    prev_task_df = metrics_df[metrics_df['is_current'] == False].copy()
     
-    plt.xlabel('After Training on Task')
-    plt.ylabel('Success Rate')
-    plt.title('Stability-Plasticity: Task Success Over Time')
-    plt.legend(loc='best')
-    plt.grid(True, alpha=0.3)
+    # Plot success on current tasks (plasticity)
+    ax = sns.lineplot(data=current_task_df, x='task_id', y='success_rate', 
+                     marker='o', markersize=10, label="Current Task (Plasticity)")
+    
+    # Plot average success on previous tasks (stability)
+    if not prev_task_df.empty:
+        stability_data = []
+        for task_id in sorted(prev_task_df['task_id'].unique()):
+            if task_id > 0:  # Skip initial evaluation
+                task_data = prev_task_df[prev_task_df['task_id'] == task_id]
+                avg_success = task_data['success_rate'].mean()
+                stability_data.append({'task_id': task_id, 'avg_success_rate': avg_success})
+        
+        if stability_data:
+            stability_df = pd.DataFrame(stability_data)
+            sns.lineplot(data=stability_df, x='task_id', y='avg_success_rate', 
+                        marker='s', markersize=10, label="Previous Tasks (Stability)")
+    
+    plt.title(f"Stability-Plasticity Trade-off ({memory_suffix})")
+    plt.xlabel("Current Task ID")
+    plt.ylabel("Success Rate")
+    plt.ylim(0, 1.0)
+    plt.legend()
+    plt.grid(True)
     plt.tight_layout()
-    plt.savefig(os.path.join(output_dir, 'stability_plasticity.png'))
+    plt.savefig(os.path.join(output_dir, f"stability_plasticity_{memory_suffix}.png"), dpi=300)
     plt.close()
     
-    # 3. Plot forward transfer (FWT)
-    fwt_values = []
-    for i, task_idx in enumerate(task_indices[1:], 1):  # Skip first task
-        task = tasks[task_idx]
-        task_rows = after_df[(after_df['task_name'] == task) & 
-                           (after_df['is_current_task'] == True)]
-        
-        if not task_rows.empty and 'fwt' in task_rows.columns:
-            fwt_values.append({
-                'task': task,
-                'fwt': task_rows['fwt'].values[0]
-            })
+    # 3. Individual metrics plots
+    plt.figure(figsize=(15, 5))
     
-    if fwt_values:
-        fwt_df = pd.DataFrame(fwt_values)
-        plt.figure(figsize=(10, 6))
-        bars = plt.bar(fwt_df['task'], fwt_df['fwt'], color='skyblue')
+    # Plot forgetting
+    non_current_df = metrics_df[metrics_df['is_current'] == False]
+    if 'forgetting' in non_current_df.columns and not non_current_df.empty:
+        plt.subplot(1, 3, 1)
+        task_forgetting = []
+        for task_id in sorted(non_current_df['task_id'].unique()):
+            if task_id > 0:  # Skip initial task
+                task_data = non_current_df[non_current_df['task_id'] == task_id]
+                avg_forgetting = task_data['forgetting'].mean()
+                task_forgetting.append({'task_id': task_id, 'avg_forgetting': avg_forgetting})
         
-        # Add value labels on bars
-        for bar in bars:
-            height = bar.get_height()
-            plt.text(bar.get_x() + bar.get_width()/2., height,
-                    f'{height:.3f}',
-                    ha='center', va='bottom', rotation=0)
-        
-        plt.axhline(y=0, color='r', linestyle='-', alpha=0.3)
-        plt.xlabel('Task')
-        plt.ylabel('Forward Transfer (FWT)')
-        plt.title('Forward Transfer by Task')
-        plt.grid(True, alpha=0.3)
-        plt.tight_layout()
-        plt.savefig(os.path.join(output_dir, 'forward_transfer.png'))
-        plt.close()
+        if task_forgetting:
+            forgetting_df = pd.DataFrame(task_forgetting)
+            sns.lineplot(data=forgetting_df, x='task_id', y='avg_forgetting', marker='o')
+            plt.title("Mean Forgetting")
+            plt.xlabel("Current Task ID")
+            plt.ylabel("Forgetting")
     
-    # 4. Plot backward transfer (BWT)
-    bwt_values = []
-    for task_idx in task_indices[:-1]:  # Exclude the last task
-        task = tasks[task_idx]
-        task_rows = after_df[(after_df['task_name'] == task) & 
-                           (after_df['current_task'] == tasks[-1])]
-        
-        if not task_rows.empty and 'bwt' in task_rows.columns:
-            bwt_values.append({
-                'task': task,
-                'bwt': task_rows['bwt'].values[0]
-            })
+    # Plot forward transfer
+    if 'fwt' in metrics_df.columns:
+        plt.subplot(1, 3, 2)
+        fwt_df = metrics_df[(metrics_df['is_current'] == True) & (metrics_df['fwt'].notna())]
+        if not fwt_df.empty:
+            sns.lineplot(data=fwt_df, x='task_id', y='fwt', marker='o')
+            plt.title("Forward Transfer")
+            plt.xlabel("Task ID")
+            plt.ylabel("Forward Transfer")
     
-    if bwt_values:
-        bwt_df = pd.DataFrame(bwt_values)
-        plt.figure(figsize=(10, 6))
-        bars = plt.bar(bwt_df['task'], bwt_df['bwt'], color='lightgreen')
-        
-        # Add value labels on bars
-        for bar in bars:
-            height = bar.get_height()
-            plt.text(bar.get_x() + bar.get_width()/2., height,
-                    f'{height:.3f}',
-                    ha='center', va='bottom', rotation=0)
-        
-        plt.axhline(y=0, color='r', linestyle='-', alpha=0.3)
-        plt.xlabel('Task')
-        plt.ylabel('Backward Transfer (BWT)')
-        plt.title('Backward Transfer by Task')
-        plt.grid(True, alpha=0.3)
-        plt.tight_layout()
-        plt.savefig(os.path.join(output_dir, 'backward_transfer.png'))
-        plt.close()
+    # Plot backward transfer
+    if 'bwt' in metrics_df.columns:
+        plt.subplot(1, 3, 3)
+        bwt_df = metrics_df[(metrics_df['is_current'] == False) & (metrics_df['bwt'].notna())]
+        if not bwt_df.empty:
+            task_bwt = []
+            for task_id in sorted(bwt_df['task_id'].unique()):
+                if task_id > 0:  # Skip initial task
+                    task_data = bwt_df[bwt_df['task_id'] == task_id]
+                    avg_bwt = task_data['bwt'].mean()
+                    task_bwt.append({'task_id': task_id, 'avg_bwt': avg_bwt})
+            
+            if task_bwt:
+                bwt_summary = pd.DataFrame(task_bwt)
+                sns.lineplot(data=bwt_summary, x='task_id', y='avg_bwt', marker='o')
+                plt.title("Backward Transfer")
+                plt.xlabel("Current Task ID")
+                plt.ylabel("Backward Transfer")
     
-    # 5. Token-level metrics (only if enabled)
-    if log_token_metrics:
-        # Plot token accuracy over time
-        plt.figure(figsize=(12, 6))
-        for task in tasks:
-            task_df = after_df[after_df['task_name'] == task]
-            if 'token_accuracy' in task_df.columns:
-                plt.plot(task_df['current_task'], task_df['token_accuracy'], marker='o', label=f"Task {task}")
-        
-        plt.xlabel('Current Training Task')
-        plt.ylabel('Token Accuracy')
-        plt.title('Token Accuracy Over Task Sequence')
-        plt.legend(loc='best')
-        plt.grid(True, alpha=0.3)
-        plt.tight_layout()
-        plt.savefig(os.path.join(output_dir, 'token_accuracy_over_time.png'))
-        plt.close()
+    plt.tight_layout()
+    plt.savefig(os.path.join(output_dir, f"cl_metrics_{memory_suffix}.png"), dpi=300)
+    plt.close()
 
 def main():
     parser = argparse.ArgumentParser(description="Finetune and evaluate a model on a continual learning task stream")
@@ -1041,11 +1117,7 @@ def main():
     parser.add_argument("--log_token_metrics", action="store_true", default=False,
                         help="Log token-level metrics in addition to functional success metrics")
     parser.add_argument("--skip_cache_warmup", action="store_true", default=False,
-                        help="Skip Docker cache warmup for SWE-Bench tests")
-    parser.add_argument("--test_timeout", type=int, default=12,
-                        help="Timeout in seconds for SWE-Bench test execution (default: 12)")
-    parser.add_argument("--functional_eval", action="store_true", default=True,
-                        help="Use functional evaluation (unit test passes) instead of token metrics for evaluation")
+                        help="Skip Docker cache warmup before evaluation (slower first evaluation)")
     
     args = parser.parse_args()
     
@@ -1068,13 +1140,13 @@ def main():
     # Initialize metrics storage
     metrics = []
     
-    # Run experiments with and without memory if memory_enabled is True
-    for memory_enabled in [False, True] if args.memory_enabled else [False]:
-        print("\n" + "=" * 80)
+    # Run experiments with and without memory
+    for memory_enabled in [False, True]:
+        print(f"\n{'='*80}")
         print(f"Running experiment with memory {'enabled' if memory_enabled else 'disabled'}")
-        print("=" * 80)
-
-        # Initialize model and tokenizer
+        print(f"{'='*80}")
+        
+        # Load model and tokenizer with optimized settings
         model, tokenizer = load_model_and_tokenizer(
             model_name=args.model_name,
             use_4bit=args.use_4bit,
@@ -1082,66 +1154,74 @@ def main():
             device=args.device
         )
         
-        # Metrics tracking
-        metrics = []
-        task_accuracies = defaultdict(list)  # For tracking forgetting
-        initial_accuracies = {}  # For initial task performances
-        stored_memories = []  # For memory mechanism
+        # Initialize memory storage if enabled
+        stored_memories = []
         
-        # CL metrics tracking
+        # Track task accuracies for transfer analysis
+        task_accuracies = {task_name: [] for task_name in task_ordering}
+        initial_accuracies = {task_name: None for task_name in task_ordering}
+        
+        # Initialize CL metric tracking
         num_tasks = len(task_ordering)
-        results = np.zeros((num_tasks, num_tasks))  # Matrix to store success rates [task_after, task_evaluated]
-        peak = defaultdict(float)  # Track peak performance per task
+        results = np.zeros((num_tasks, num_tasks))  # Task x Task matrix for success rates
+        peak = defaultdict(float)  # Track peak performance on each task
         
-        # Determine evaluation function based on args
-        def evaluate_task(model, task_examples):
-            if args.functional_eval:
-                # Use functional success evaluation
-                success_rate, successes = evaluate_success(model, task_examples, batch_size=args.batch_size)
-                return {"accuracy": success_rate, "successes": successes}
-            else:
-                # Use token-level evaluation
-                return evaluate_model(
+        # Initial evaluation on all tasks to measure forward transfer potential
+        print("\nInitial evaluation on all tasks (forward transfer baseline)...")
+        for task_idx, task_name in enumerate(task_ordering):
+            task_examples = task_stream.get(task_name, [])
+            if not task_examples:
+                continue
+                
+            print(f"Evaluating {task_name} (initial)...")
+            
+            # Always get functional test success metrics
+            success_rate, successes = evaluate_success(
+                model=model,
+                dataset=task_examples,
+                batch_size=args.batch_size
+            )
+            
+            # Store the initial success rate in results matrix (row 0)
+            results[0, task_idx] = success_rate
+            
+            # Optionally get token-level metrics if requested
+            token_metrics = None
+            if args.log_token_metrics:
+                token_metrics = evaluate_model(
                     model=model,
-                    tokenizer=tokenizer, 
+                    tokenizer=tokenizer,
                     task_examples=task_examples,
                     device=args.device,
                     batch_size=args.batch_size,
                     use_memory=memory_enabled,
                     memory_examples=stored_memories
                 )
-
-        # Initial evaluation on all tasks (for forward transfer baseline)
-        print("\nInitial evaluation on all tasks (forward transfer baseline)...")
-        for task_name, task_examples in task_stream.items():
-            if not task_examples:
-                continue
-                
-            print(f"Evaluating {task_name} (initial)...")
-            initial_accuracy = evaluate_task(model, task_examples)
             
-            # Store metrics
-            initial_accuracies[task_name] = initial_accuracy
-            task_idx = task_ordering.index(task_name) if task_name in task_ordering else -1
+            # Track initial performance for both metrics types
+            initial_accuracies[task_name] = {
+                "success_rate": success_rate,
+                "token_metrics": token_metrics
+            }
             
-            # Update results matrix with initial scores (time step 0)
-            if task_idx >= 0:
-                results[0, task_idx] = initial_accuracy["accuracy"]
-            
-            # Record metrics
-            metrics.append({
+            # Add to metrics tracking
+            metrics_entry = {
+                "task_id": 0,  # Initial evaluation
+                "seen_task": task_idx,
+                "success_rate": success_rate,
+                "is_current": False,
                 "task_name": task_name,
-                "task_idx": task_idx,
-                "current_task": "initial",
-                "success_rate": initial_accuracy["accuracy"],
                 "evaluation_type": "before_training",
-                "memory_enabled": memory_enabled,
-                "is_current_task": False
-            })
+                "memory_enabled": memory_enabled
+            }
             
-            # Log token metrics if requested
-            if args.log_token_metrics and not args.functional_eval:
-                metrics[-1]["token_accuracy"] = initial_accuracy["accuracy"]
+            # Add token metrics if available
+            if token_metrics:
+                metrics_entry["token_accuracy"] = token_metrics.get("accuracy", 0.0)
+                metrics_entry["exact_match"] = token_metrics.get("exact_match", 0.0)
+                metrics_entry["f1_score"] = token_metrics.get("f1", 0.0)
+            
+            metrics.append(metrics_entry)
         
         # Train on each task sequentially
         for task_idx, task_name in enumerate(tqdm(task_ordering, desc="Training on tasks")):
@@ -1154,11 +1234,34 @@ def main():
             print(f"Task {task_idx}: {task_name} ({len(task_examples)} examples)")
             print(f"{'='*80}")
             
-            # First, evaluate on current task (before training)
+            # Evaluate on current task before update using functional test success
             print("Evaluating on current task (before update)...")
-            before_accuracy = evaluate_task(model, task_examples)
+            before_success_rate, before_successes = evaluate_success(
+                model=model,
+                dataset=task_examples,
+                batch_size=args.batch_size
+            )
             
-            # Finetune the model on the current task
+            # Optionally evaluate with token-level metrics if requested
+            before_token_metrics = None
+            if args.log_token_metrics:
+                before_token_metrics = evaluate_model(
+                    model=model,
+                    tokenizer=tokenizer,
+                    task_examples=task_examples,
+                    device=args.device,
+                    batch_size=args.batch_size,
+                    use_memory=memory_enabled,
+                    memory_examples=stored_memories
+                )
+            
+            # Limit examples for faster training if specified
+            if args.max_examples and len(task_examples) > args.max_examples:
+                task_examples = random.sample(task_examples, args.max_examples)
+                print(f"Limiting to {args.max_examples} examples for training")
+            
+            # Fine-tune model on current task
+            print(f"Finetuning model on {len(task_examples)} examples...")
             model = finetune_model(
                 model=model,
                 tokenizer=tokenizer,
@@ -1168,34 +1271,68 @@ def main():
                 num_epochs=args.num_epochs,
                 batch_size=args.batch_size,
                 gradient_accumulation_steps=args.gradient_accumulation_steps,
-                max_steps=args.max_steps,
                 use_memory=memory_enabled,
                 memory_examples=stored_memories,
+                max_steps=args.max_steps,
                 use_4bit=args.use_4bit
             )
             
-            # Save checkpoint
+            # Save model checkpoint
             checkpoint_dir = save_model_checkpoint(
                 model, tokenizer, args.output_dir, 
                 f"{'with_memory' if memory_enabled else 'no_memory'}_{task_name}"
             )
             
-            # Evaluate model on current task (after update)
+            # Evaluate model on current task (after update) using functional test success
             print("Evaluating on current task (after update)...")
-            after_accuracy = evaluate_task(model, task_examples)
+            after_success_rate, after_successes = evaluate_success(
+                model=model,
+                dataset=task_examples,
+                batch_size=args.batch_size
+            )
             
-            # Update results matrix for current task
-            current_acc = after_accuracy["accuracy"]
-            results[task_idx+1, task_idx] = current_acc  # Current task after training
+            # Store results for current task
+            results[task_idx, task_idx] = after_success_rate
+            peak[task_idx] = max(peak[task_idx], after_success_rate)  # Update peak performance
             
-            # Update peak performance for current task
-            peak[task_idx] = max(peak[task_idx], current_acc)
+            # Optionally evaluate with token-level metrics if requested
+            after_token_metrics = None
+            if args.log_token_metrics:
+                after_token_metrics = evaluate_model(
+                    model=model,
+                    tokenizer=tokenizer,
+                    task_examples=task_examples,
+                    device=args.device,
+                    batch_size=args.batch_size,
+                    use_memory=memory_enabled,
+                    memory_examples=stored_memories
+                )
             
             # Calculate forward transfer for current task
-            initial_acc = results[0, task_idx]  # Initial performance
-            forward_transfer = current_acc - initial_acc
-                        
-            # Evaluate on all previous tasks to measure forgetting
+            forward_transfer = None
+            if task_idx > 0:  # Only calculate for tasks after the first one
+                forward_transfer = results[task_idx-1, task_idx] - results[0, task_idx]
+            
+            # Add metrics for current task
+            metrics_entry = {
+                "task_id": task_idx,
+                "seen_task": task_idx,
+                "success_rate": after_success_rate,
+                "is_current": True,
+                "task_name": task_name,
+                "memory_enabled": memory_enabled,
+                "forward_transfer": forward_transfer
+            }
+            
+            if args.log_token_metrics and after_token_metrics:
+                metrics_entry["token_accuracy"] = after_token_metrics.get("accuracy", 0.0)
+                metrics_entry["exact_match"] = after_token_metrics.get("exact_match", 0.0)
+                metrics_entry["f1_score"] = after_token_metrics.get("f1", 0.0)
+            
+            # Store metrics
+            metrics.append(metrics_entry)
+            
+            # Evaluate on all previous tasks to measure forgetting and backward transfer
             for prev_task_idx in range(task_idx):
                 prev_task_name = task_ordering[prev_task_idx]
                 prev_task_examples = task_stream.get(prev_task_name, [])
@@ -1203,125 +1340,140 @@ def main():
                     continue
                     
                 print(f"Evaluating on previous task {prev_task_name}...")
-                prev_accuracy = evaluate_task(model, prev_task_examples)
                 
-                # Update results matrix for previous task
-                prev_acc = prev_accuracy["accuracy"]
-                results[task_idx+1, prev_task_idx] = prev_acc
+                # Evaluate using functional test success
+                prev_success_rate, prev_successes = evaluate_success(
+                    model=model,
+                    dataset=prev_task_examples,
+                    batch_size=args.batch_size
+                )
                 
-                # Update peak performance for previous task
-                peak[prev_task_idx] = max(peak[prev_task_idx], prev_acc)
+                # Store in results matrix
+                results[task_idx, prev_task_idx] = prev_success_rate
                 
-                # Calculate forgetting (drop from peak)
-                highest_prev = max([results[t+1, prev_task_idx] for t in range(task_idx)])
-                forgetting = max(0, highest_prev - prev_acc)  # Don't allow negative forgetting
+                # Calculate metrics
+                forgetting = peak[prev_task_idx] - prev_success_rate
+                backward_transfer = prev_success_rate - results[prev_task_idx, prev_task_idx]
                 
-                # Calculate backward transfer (compared to initial accuracy)
-                initial_prev_acc = results[0, prev_task_idx]
-                backward_transfer = prev_acc - initial_prev_acc
+                # Optionally get token-level metrics
+                prev_token_metrics = None
+                if args.log_token_metrics:
+                    prev_token_metrics = evaluate_model(
+                        model=model,
+                        tokenizer=tokenizer,
+                        task_examples=prev_task_examples,
+                        device=args.device,
+                        batch_size=args.batch_size,
+                        use_memory=memory_enabled,
+                        memory_examples=stored_memories
+                    )
                 
                 # Store metrics
-                metrics.append({
+                metrics_entry = {
+                    "task_id": task_idx,
+                    "seen_task": prev_task_idx,
+                    "success_rate": prev_success_rate,
+                    "is_current": False,
                     "task_name": prev_task_name,
-                    "task_idx": prev_task_idx,
-                    "current_task": task_name,
-                    "success_rate": prev_acc,
-                    "forgetting": forgetting,
-                    "bwt": backward_transfer,
-                    "evaluation_type": "after_training",
                     "memory_enabled": memory_enabled,
-                    "is_current_task": False
-                })
+                    "forgetting": max(0, forgetting),  # Don't allow negative forgetting
+                    "backward_transfer": backward_transfer
+                }
                 
-                # Add token metrics if enabled
-                if args.log_token_metrics and not args.functional_eval:
-                    metrics[-1]["token_accuracy"] = prev_accuracy["accuracy"]
-            
-            # Store metrics for current task
-            metrics.append({
-                "task_name": task_name,
-                "task_idx": task_idx,
-                "current_task": task_name,
-                "success_rate": current_acc,
-                "forgetting": 0.0,  # No forgetting for current task
-                "fwt": forward_transfer,
-                "evaluation_type": "after_training",
-                "memory_enabled": memory_enabled,
-                "is_current_task": True
-            })
-            
-            # Add token-based metrics if requested
-            if args.log_token_metrics and not args.functional_eval:
-                metrics[-1]["token_accuracy"] = after_accuracy["accuracy"]
-                metrics[-1]["error_distribution"] = after_accuracy.get('error_analysis', {}).get('error_distribution', {})
-                metrics[-1]["total_errors"] = after_accuracy.get('error_analysis', {}).get('total_errors', 0)
-            
+                if args.log_token_metrics and prev_token_metrics:
+                    metrics_entry["token_accuracy"] = prev_token_metrics.get("accuracy", 0.0)
+                    metrics_entry["exact_match"] = prev_token_metrics.get("exact_match", 0.0)
+                    metrics_entry["f1_score"] = prev_token_metrics.get("f1", 0.0)
+                
+                metrics.append(metrics_entry)
+                
             # Store memory examples (if enabled)
             if memory_enabled:
                 # Store a subset of examples for memory
                 memory_size = min(10, len(task_examples) // 2)  # Store up to 10 examples
                 stored_memories.extend(random.sample(task_examples, min(memory_size, len(task_examples))))
-                print(f"Added {memory_size} examples to memory")
+                print(f"Added {min(memory_size, len(task_examples))} examples to memory (total: {len(stored_memories)})")
         
-        # Calculate overall CL metrics after all tasks are complete
-        T = len(task_ordering)
-        if T > 0:
-            # Average Accuracy (AA): Mean final success over all tasks
-            # Take the last row of the results matrix (after all tasks trained)
-            AA = np.mean(results[T-1]) if T > 0 else 0.0
+        # After all tasks, compute the continual learning metrics
+        num_tasks = len(task_ordering)
+        if num_tasks > 0:
+            # 1. Average Accuracy: Mean final success over all tasks
+            avg_accuracy = np.mean([results[num_tasks-1, i] for i in range(num_tasks)])
             
-            # Forgetting (F): Avg. drop from peak success
-            forgetting_values = []
-            for i in range(T-1):  # Exclude the last task
-                forgetting_values.append(peak[i] - results[T-1, i])
-            F = np.mean(forgetting_values) if forgetting_values else 0.0
+            # 2. Mean Forgetting: Avg. drop from peak success
+            forgetting_values = [peak[i] - results[num_tasks-1, i] for i in range(num_tasks-1)]
+            mean_forgetting = np.mean(forgetting_values) if forgetting_values else 0.0
             
-            # Forward Transfer (FWT): Benefit for unseen task after preceding tasks
-            fwt_values = []
-            for i in range(1, T):  # Start from the second task
-                fwt_values.append(results[i-1, i] - results[0, i])
-            FWT = np.mean(fwt_values) if fwt_values else 0.0
+            # 3. Forward Transfer: Benefit for unseen task after preceding tasks
+            forward_values = [results[i-1, i] - results[0, i] for i in range(1, num_tasks)]
+            forward_transfer = np.mean(forward_values) if forward_values else 0.0
             
-            # Backward Transfer (BWT): Effect of later learning on earlier tasks
-            bwt_values = []
-            for i in range(T-1):  # Exclude the last task
-                bwt_values.append(results[T-1, i] - results[i, i])
-            BWT = np.mean(bwt_values) if bwt_values else 0.0
+            # 4. Backward Transfer: Effect of later learning on earlier tasks
+            backward_values = [results[num_tasks-1, i] - results[i, i] for i in range(num_tasks-1)]
+            backward_transfer = np.mean(backward_values) if backward_values else 0.0
             
-            # Create summary dictionary
+            # Calculate wall clock and GPU time
+            wall_clock_minutes = 0  # TODO: Track actual time
+            gpu_hours = 0  # TODO: Track GPU usage
+            
+            # Create summary metrics
             summary = {
-                "AA": float(AA),
-                "F": float(F),
-                "FWT": float(FWT),
-                "BWT": float(BWT),
-                "wall_clock_minutes": float((time.time() - start_time) / 60),
+                "Average Accuracy": float(avg_accuracy),
+                "Mean Forgetting": float(mean_forgetting),
+                "Forward Transfer": float(forward_transfer),
+                "Backward Transfer": float(backward_transfer),
+                "wall_clock_minutes": wall_clock_minutes,
+                "gpu_hours": gpu_hours,
                 "memory_enabled": memory_enabled
             }
-            
-            # Add GPU information if available
-            if torch.cuda.is_available():
-                gpu_hours = (time.time() - start_time) / 3600
-                summary["gpu_hours"] = float(gpu_hours)
             
             # Save summary to JSON
             summary_file = os.path.join(args.output_dir, f"summary_{'with_memory' if memory_enabled else 'no_memory'}.json")
             with open(summary_file, 'w') as f:
                 json.dump(summary, f, indent=2)
-            print(f"\nContinual Learning Metrics:")
-            print(f"Average Accuracy (AA): {AA:.4f}")
-            print(f"Forgetting (F): {F:.4f}")
-            print(f"Forward Transfer (FWT): {FWT:.4f}")
-            print(f"Backward Transfer (BWT): {BWT:.4f}")
-            print(f"\nSaved summary to {summary_file}")
+            print(f"Saved summary metrics to {summary_file}")
+            
+            # Print summary
+            print("\nContinual Learning Summary:")
+            print(f"Average Accuracy: {avg_accuracy:.4f}")
+            print(f"Mean Forgetting: {mean_forgetting:.4f}")
+            print(f"Forward Transfer: {forward_transfer:.4f}")
+            print(f"Backward Transfer: {backward_transfer:.4f}")
         
-        # Save metrics to CSV with the new format
-        metrics_df = pd.DataFrame(metrics)
+        # Save metrics to CSV in the required format
+        # Format: task_id,seen_task,success_rate,is_current,forgetting,bwt,fwt
+        metrics_rows = []
+        for entry in metrics:
+            # Create a clean row with only the required fields
+            row = {
+                'task_id': entry.get('task_id', 0),
+                'seen_task': entry.get('seen_task', 0),
+                'success_rate': entry.get('success_rate', 0.0),
+                'is_current': entry.get('is_current', False),
+                'forgetting': entry.get('forgetting', ''),  # Empty if not defined
+                'bwt': entry.get('backward_transfer', ''),  # Empty if not defined
+                'fwt': entry.get('forward_transfer', '')    # Empty if not defined
+            }
+            
+            # Add token metrics if available and requested
+            if args.log_token_metrics:
+                if 'token_accuracy' in entry:
+                    row['token_accuracy'] = entry['token_accuracy']
+                if 'exact_match' in entry:
+                    row['exact_match'] = entry['exact_match']
+                if 'f1_score' in entry:
+                    row['f1_score'] = entry['f1_score']
+            
+            metrics_rows.append(row)
+        
+        # Create DataFrame and save to CSV
+        metrics_df = pd.DataFrame(metrics_rows)
         metrics_file = os.path.join(args.output_dir, f"metrics_{'with_memory' if memory_enabled else 'no_memory'}.csv")
         metrics_df.to_csv(metrics_file, index=False)
         print(f"\nSaved metrics to {metrics_file}")
         
         # Plot metrics
-        plot_metrics(metrics_df, args.output_dir, args.log_token_metrics)
+        plot_metrics(metrics_df, args.output_dir, results=results, memory_enabled=memory_enabled)
 
 if __name__ == "__main__":
     main()

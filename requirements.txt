@@ -18,4 +18,3 @@ pyyaml>=6.0
 
 # For 4-bit quantization
 bitsandbytes>=0.41.0
-docker>=6.1.3
