@@ -10,6 +10,11 @@ import json
 import random
 import time
 import argparse
+import tempfile
+import subprocess
+import warnings
+import shutil
+from pathlib import Path
 from tqdm import tqdm
 import ast
 import re
@@ -18,7 +23,7 @@ import pandas as pd
 import torch
 from torch.utils.data import DataLoader, Dataset
 from collections import defaultdict, Counter
-from typing import Dict, List, Tuple, Optional, Any
+from typing import Dict, List, Tuple, Optional, Any, Union, Callable
 from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
@@ -47,6 +52,21 @@ DEFAULT_GRAD_ACCUM_STEPS = 1
 DEFAULT_LEARNING_RATE = 2e-4
 DEFAULT_NUM_EPOCHS = 3
 DEFAULT_USE_4BIT = True
+
+# Check if Docker is available for running SWE-Bench tests
+def check_docker_available() -> bool:
+    """Check if Docker is available for SWE-Bench test execution."""
+    try:
+        import docker
+        client = docker.from_env()
+        client.ping()
+        return True
+    except Exception as e:
+        warnings.warn(f"Docker not available: {e}. Functional tests will be skipped.")
+        return False
+
+# Global flag for Docker availability
+DOCKER_AVAILABLE = check_docker_available()
 
 def check_gpu_availability():
     """Check if CUDA is available and provide helpful guidance if not."""
@@ -387,6 +407,144 @@ def plot_error_analysis(error_analysis: Dict[str, Any], output_dir: str, task_na
                 pred = ex['prediction'].replace('|', '\\|').replace('\n', ' ')[:100]
                 target = ex['target'].replace('|', '\\|').replace('\n', ' ')[:100]
                 f.write(f"| {ex['error_type']} | `{pred}` | `{target}` |\n")
+
+
+def run_swebench_tests(issue: Dict[str, Any], patch_path: str, timeout: int = 12) -> bool:
+    """
+    Run SWE-Bench tests for the given issue using Docker.
+    
+    Args:
+        issue: Issue dictionary containing repo, FAIL_TO_PASS and PASS_TO_PASS tests
+        patch_path: Path to the generated patch file
+        timeout: Timeout in seconds for test execution
+    
+    Returns:
+        bool: True if all tests pass, False otherwise
+    """
+    if not DOCKER_AVAILABLE:
+        warnings.warn("Docker not available. Skipping test execution.")
+        return False
+    
+    try:
+        repo_name = issue.get('repo', '')
+        repo_path = Path(repo_name)
+        
+        # Check if we have the patch file
+        if not os.path.exists(patch_path):
+            warnings.warn(f"Patch file not found: {patch_path}")
+            return False
+        
+        # Docker command to build and run tests
+        docker_cmd = [
+            "docker", "run", "--rm",
+            "-v", f"{patch_path}:/patch.diff",
+            "-v", f"{repo_path}:/repo",
+            "swebench/tester:latest",
+            "--repo", repo_name,
+            "--patch", "/patch.diff",
+            "--timeout", str(timeout)
+        ]
+        
+        # Run Docker command with timeout
+        process = subprocess.run(
+            docker_cmd,
+            capture_output=True,
+            text=True,
+            timeout=timeout + 5  # Add buffer to Docker timeout
+        )
+        
+        # Check if all tests passed
+        output = process.stdout + process.stderr
+        f2p_passed = "FAIL_TO_PASS: PASS" in output
+        p2p_passed = "PASS_TO_PASS: PASS" in output
+        
+        return f2p_passed and p2p_passed
+    
+    except subprocess.TimeoutExpired:
+        warnings.warn(f"Test execution timed out after {timeout} seconds")
+        return False
+    except Exception as e:
+        warnings.warn(f"Error running tests: {e}")
+        return False
+
+
+def evaluate_success(model, dataset, batch_size=4):
+    """
+    Evaluate model success based on SWE-Bench test execution.
+    
+    Args:
+        model: The model to evaluate
+        dataset: List of issue examples to test
+        batch_size: Batch size for processing
+    
+    Returns:
+        success_rate: float - fraction of issues whose FAIL_TO_PASS tests
+                          now pass and whose original PASS_TO_PASS
+                          still pass.
+        successes: list[bool] - per-issue pass/fail flags.
+    
+    Notes:
+        * Pull tokenizer/model.device from the model itself (no extra args).
+        * Call helper `run_swebench_tests(issue, patch_path, timeout=12)`.
+        * Provide a stub that returns False and prints a warning if Docker
+          is unavailable, so CPU-only CI still runs.
+    """
+    # Get tokenizer and device from model
+    tokenizer = model.tokenizer if hasattr(model, 'tokenizer') else AutoTokenizer.from_pretrained(model.config._name_or_path)
+    device = next(model.parameters()).device
+    
+    successes = []
+    
+    # If Docker is not available, return dummy results with warning
+    if not DOCKER_AVAILABLE:
+        warnings.warn("Docker not available. Returning dummy success rate.")
+        return 0.0, [False] * len(dataset)
+    
+    for i in range(0, len(dataset), batch_size):
+        batch = dataset[i:i+batch_size]
+        
+        for issue in batch:
+            try:
+                # Format the prompt
+                prompt = issue.get("prompt", "")
+                
+                # Generate patch
+                with torch.no_grad():
+                    inputs = tokenizer(prompt, return_tensors="pt", truncation=True).to(device)
+                    outputs = model.generate(
+                        **inputs,
+                        max_length=1024,
+                        num_return_sequences=1,
+                        pad_token_id=tokenizer.eos_token_id
+                    )
+                    
+                generated_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
+                
+                # Extract the patch
+                # Assuming the model outputs a patch in diff format
+                patch_content = generated_text  # This should be refined to extract only diff
+                
+                # Write to temp file
+                with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.diff') as f:
+                    f.write(patch_content)
+                    patch_path = f.name
+                
+                # Run tests
+                success = run_swebench_tests(issue, patch_path, timeout=12)
+                successes.append(success)
+                
+                # Clean up temp file
+                os.unlink(patch_path)
+                
+            except Exception as e:
+                warnings.warn(f"Error evaluating issue: {e}")
+                successes.append(False)
+    
+    # Calculate success rate
+    success_rate = sum(successes) / len(successes) if successes else 0.0
+    
+    return success_rate, successes
+
 
 def evaluate_model(model, tokenizer, task_examples, device, batch_size=4, use_memory=False, memory_examples=None):
     """
@@ -776,6 +934,14 @@ def main():
                         help="Device to run on (cuda or cpu)")
     parser.add_argument("--max_examples", type=int, default=200,
                         help="Maximum number of examples per task (for faster training)")
+    parser.add_argument("--log_token_metrics", action="store_true", default=False,
+                        help="Log token-level metrics in addition to functional success metrics")
+    parser.add_argument("--skip_cache_warmup", action="store_true", default=False,
+                        help="Skip Docker cache warmup for SWE-Bench tests")
+    parser.add_argument("--test_timeout", type=int, default=12,
+                        help="Timeout in seconds for SWE-Bench test execution (default: 12)")
+    parser.add_argument("--functional_eval", action="store_true", default=True,
+                        help="Use functional evaluation (unit test passes) instead of token metrics for evaluation")
     
     args = parser.parse_args()
     
@@ -798,13 +964,13 @@ def main():
     # Initialize metrics storage
     metrics = []
     
-    # Run experiments with and without memory
-    for memory_enabled in [False, True]:
-        print(f"\n{'='*80}")
+    # Run experiments with and without memory if memory_enabled is True
+    for memory_enabled in [False, True] if args.memory_enabled else [False]:
+        print("\n" + "=" * 80)
         print(f"Running experiment with memory {'enabled' if memory_enabled else 'disabled'}")
-        print(f"{'='*80}")
-        
-        # Load model and tokenizer with optimized settings
+        print("=" * 80)
+
+        # Initialize model and tokenizer
         model, tokenizer = load_model_and_tokenizer(
             model_name=args.model_name,
             use_4bit=args.use_4bit,
@@ -812,41 +978,66 @@ def main():
             device=args.device
         )
         
-        # Initialize memory storage if enabled
-        stored_memories = []
+        # Metrics tracking
+        metrics = []
+        task_accuracies = defaultdict(list)  # For tracking forgetting
+        initial_accuracies = {}  # For initial task performances
+        stored_memories = []  # For memory mechanism
         
-        # Track task accuracies for transfer analysis
-        task_accuracies = {task_name: [] for task_name in task_ordering}
-        initial_accuracies = {task_name: None for task_name in task_ordering}
+        # CL metrics tracking
+        num_tasks = len(task_ordering)
+        results = np.zeros((num_tasks, num_tasks))  # Matrix to store success rates [task_after, task_evaluated]
+        peak = defaultdict(float)  # Track peak performance per task
         
-        # Initial evaluation on all tasks to measure forward transfer potential
+        # Determine evaluation function based on args
+        def evaluate_task(model, task_examples):
+            if args.functional_eval:
+                # Use functional success evaluation
+                success_rate, successes = evaluate_success(model, task_examples, batch_size=args.batch_size)
+                return {"accuracy": success_rate, "successes": successes}
+            else:
+                # Use token-level evaluation
+                return evaluate_model(
+                    model=model,
+                    tokenizer=tokenizer, 
+                    task_examples=task_examples,
+                    device=args.device,
+                    batch_size=args.batch_size,
+                    use_memory=memory_enabled,
+                    memory_examples=stored_memories
+                )
+
+        # Initial evaluation on all tasks (for forward transfer baseline)
         print("\nInitial evaluation on all tasks (forward transfer baseline)...")
-        for task_idx, task_name in enumerate(task_ordering):
-            task_examples = task_stream.get(task_name, [])
+        for task_name, task_examples in task_stream.items():
             if not task_examples:
                 continue
                 
             print(f"Evaluating {task_name} (initial)...")
-            initial_accuracy = evaluate_model(
-                model=model,
-                tokenizer=tokenizer,
-                task_examples=task_examples,
-                device=args.device,
-                batch_size=args.batch_size,
-                use_memory=memory_enabled,
-                memory_examples=stored_memories
-            )
+            initial_accuracy = evaluate_task(model, task_examples)
             
+            # Store metrics
             initial_accuracies[task_name] = initial_accuracy
+            task_idx = task_ordering.index(task_name) if task_name in task_ordering else -1
+            
+            # Update results matrix with initial scores (time step 0)
+            if task_idx >= 0:
+                results[0, task_idx] = initial_accuracy["accuracy"]
+            
+            # Record metrics
             metrics.append({
                 "task_name": task_name,
                 "task_idx": task_idx,
                 "current_task": "initial",
-                "accuracy": initial_accuracy,
+                "success_rate": initial_accuracy["accuracy"],
                 "evaluation_type": "before_training",
                 "memory_enabled": memory_enabled,
                 "is_current_task": False
             })
+            
+            # Log token metrics if requested
+            if args.log_token_metrics and not args.functional_eval:
+                metrics[-1]["token_accuracy"] = initial_accuracy["accuracy"]
         
         # Train on each task sequentially
         for task_idx, task_name in enumerate(tqdm(task_ordering, desc="Training on tasks")):
@@ -945,7 +1136,9 @@ def main():
             
             # Calculate forward transfer (improvement over initial accuracy)
             initial_acc = initial_accuracies.get(task_name, {}).get('accuracy', 0)
-            forward_transfer = after_accuracy - initial_acc if initial_acc is not None else 0
+            # Extract accuracy from after_accuracy dictionary
+            current_acc = after_accuracy.get('accuracy', 0)
+            forward_transfer = current_acc - initial_acc if initial_acc is not None else 0
             
             # Store metrics for current task
             task_accuracies[task_name].append(after_accuracy)
