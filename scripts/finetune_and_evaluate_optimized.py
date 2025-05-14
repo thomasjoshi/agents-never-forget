@@ -534,7 +534,10 @@ def evaluate_model(model, tokenizer, task_examples, device, batch_size=4, use_me
         # Save error analysis
         if error_analysis['total_errors'] > 0:
             task_name = task_examples[0].get('task_name', 'unknown') if task_examples else 'unknown'
-            plot_error_analysis(error_analysis, os.path.dirname(args.output_dir), task_name)
+            # Use a default output directory since args is not available here
+            output_dir = "./error_analysis"
+            os.makedirs(output_dir, exist_ok=True)
+            plot_error_analysis(error_analysis, output_dir, task_name)
         
         print(f"  Evaluation metrics:")
         print(f"  - Token Accuracy: {accuracy:.4f}")
@@ -606,6 +609,11 @@ def finetune_model(model, tokenizer, task_examples, learning_rate, device,
     warmup_steps = max(1, int(total_steps * 0.1))
     
     # Optimized training arguments
+    # Choose precision based on hardware and use_4bit flag
+    # Only one of fp16 or bf16 can be True
+    use_fp16 = not use_4bit and not torch.cuda.is_bf16_supported()
+    use_bf16 = not use_4bit and torch.cuda.is_bf16_supported()
+    
     training_args = TrainingArguments(
         output_dir="./results",
         num_train_epochs=num_epochs,
@@ -618,8 +626,8 @@ def finetune_model(model, tokenizer, task_examples, learning_rate, device,
         lr_scheduler_type="cosine",
         logging_steps=5,  # More frequent logging
         save_strategy="no",  # Disable checkpointing
-        fp16=True,  # Mixed precision training
-        bf16=torch.cuda.is_bf16_supported(),  # Use bfloat16 if available
+        fp16=use_fp16,  # Mixed precision training if not using 4-bit or bf16
+        bf16=use_bf16,  # Use bfloat16 if supported and not using 4-bit
         remove_unused_columns=True,  # Saves memory
         optim="adamw_torch_fused",  # Fused optimizer
         report_to="none",  # Disable external logging
