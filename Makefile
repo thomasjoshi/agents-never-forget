@@ -82,6 +82,7 @@ help:
 	@echo "  setup                Setup complete environment (venv + deps)"
 	@echo "  venv                 Create virtual environment"
 	@echo "  deps                 Install Python dependencies"
+	@echo "  install-docker       Install Docker on Debian system (required for evaluation)"
 	@echo "  generate-requirements Generate requirements.txt file"
 	@echo "  generate-test-requirements Generate test-requirements.txt file"
 	@echo "  check-model          Verify model is properly set up"
@@ -138,6 +139,25 @@ help:
 setup: venv deps check-model
 	@echo "✓ Setup complete! Use 'source $(VENV_DIR)/bin/activate' to activate the environment."
 
+.PHONY: install-docker
+install-docker:
+	@echo "Installing Docker on Debian system..."
+	@echo "This requires sudo privileges. You may be prompted for your password."
+	@sudo apt-get update
+	@sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release
+	@sudo install -m 0755 -d /etc/apt/keyrings
+	@curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+	@sudo chmod a+r /etc/apt/keyrings/docker.gpg
+	@echo "deb [arch=$$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian $$(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+	@sudo apt-get update
+	@sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+	@sudo groupadd -f docker
+	@sudo usermod -aG docker $$USER
+	@echo "✓ Docker installed successfully!"
+	@echo "NOTE: You may need to log out and back in for group changes to take effect."
+	@echo "      Alternatively, run 'newgrp docker' to apply changes in the current session."
+	@echo "      To verify installation, run 'docker --version' and 'docker run hello-world'"
+
 .PHONY: venv
 venv:
 	@echo "Creating virtual environment..."
@@ -168,6 +188,20 @@ check-model:
 	fi
 	@echo "✓ Model found at $(MODEL_PATH)"
 
+.PHONY: check-docker
+check-docker:
+	@echo "Checking if Docker is installed and running..."
+	@if ! command -v docker &> /dev/null; then \
+		echo "ERROR: Docker is not installed. Run 'make install-docker' first."; \
+		exit 1; \
+	fi
+	@if ! docker info &> /dev/null; then \
+		echo "ERROR: Docker daemon is not running or you don't have permission."; \
+		echo "Try running 'sudo systemctl start docker' or 'newgrp docker'."; \
+		exit 1; \
+	fi
+	@echo "✓ Docker is installed and running."
+
 # ===================================================================
 # DATA PROCESSING TARGETS
 # ===================================================================
@@ -193,7 +227,7 @@ generate-embed: deps process-data
 # ===================================================================
 
 .PHONY: eval-zero-shot
-eval-zero-shot: deps check-model process-data
+eval-zero-shot: deps check-model process-data check-docker
 	@echo "Running zero-shot evaluation with model from $(MODEL_PATH)..."
 	$(VENV_DIR)/bin/python $(SCRIPTS_DIR)/evaluate_zero_shot.py \
 		--input $(DATA_DIR)/processed_tasks.json \
@@ -208,7 +242,7 @@ eval-zero-shot: deps check-model process-data
 	@echo "✓ Zero-shot evaluation complete. Results saved to $(RESULTS_DIR)/zero_shot_results.json"
 
 .PHONY: quick-eval
-quick-eval: deps check-model
+quick-eval: deps check-model check-docker
 	@echo "Running quick evaluation with model from $(MODEL_PATH)..."
 	$(VENV_DIR)/bin/python $(SCRIPTS_DIR)/finetune_and_evaluate.py \
 		--model_path $(MODEL_PATH) \
@@ -221,7 +255,7 @@ quick-eval: deps check-model
 	@echo "✓ Quick evaluation complete. Results saved to $(RESULTS_DIR)/quick_eval_*/"
 
 .PHONY: full-eval
-full-eval: deps check-model
+full-eval: deps check-model check-docker
 	@echo "Running full evaluation with model from $(MODEL_PATH)..."
 	$(VENV_DIR)/bin/python $(SCRIPTS_DIR)/finetune_and_evaluate.py \
 		--model_path $(MODEL_PATH) \
@@ -234,7 +268,7 @@ full-eval: deps check-model
 	@echo "✓ Full evaluation complete. Results saved to $(RESULTS_DIR)/full_eval_*/"
 
 .PHONY: eval-context-aug
-eval-context-aug: deps check-model process-data generate-embed
+eval-context-aug: deps check-model process-data generate-embed check-docker
 	@echo "Running evaluation with context augmentation using model from $(MODEL_PATH)..."
 	$(VENV_DIR)/bin/python $(SCRIPTS_DIR)/evaluate_context_aug.py \
 		--input $(DATA_DIR)/processed_tasks.json \
@@ -251,7 +285,7 @@ eval-context-aug: deps check-model process-data generate-embed
 	@echo "✓ Context augmentation evaluation complete. Results saved to $(RESULTS_DIR)/context_aug_results.json"
 
 .PHONY: eval-memory
-eval-memory: deps check-model process-data generate-embed
+eval-memory: deps check-model process-data generate-embed check-docker
 	@echo "Running evaluation with memory mechanism using model from $(MODEL_PATH)..."
 	$(VENV_DIR)/bin/python $(SCRIPTS_DIR)/evaluate_memory.py \
 		--input $(DATA_DIR)/processed_tasks.json \

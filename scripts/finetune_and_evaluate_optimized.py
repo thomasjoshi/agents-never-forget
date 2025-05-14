@@ -154,56 +154,94 @@ def load_model_and_tokenizer(model_name=DEFAULT_MODEL, use_4bit=DEFAULT_USE_4BIT
     Returns:
         Tuple of (model, tokenizer)
     """
-    print(f"Loading model {model_name} with 4-bit: {use_4bit}, LoRA: {use_lora}")
+    log_step(f"Initializing model: {model_name}")
+    log_step(f"Configuration: 4-bit={use_4bit}, LoRA={use_lora}, device={device}")
     
     # Configure quantization if enabled
     bnb_config = None
     if use_4bit:
+        log_step("Configuring 4-bit quantization")
+        compute_dtype = torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16
+        log_step(f"Using compute dtype: {compute_dtype}")
+        
         bnb_config = BitsAndBytesConfig(
             load_in_4bit=True,
             bnb_4bit_quant_type="nf4",
-            bnb_4bit_compute_dtype=torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16,
+            bnb_4bit_compute_dtype=compute_dtype,
             bnb_4bit_use_double_quant=True,
         )
     
     # Load model with optimizations
-    model = AutoModelForCausalLM.from_pretrained(
-        model_name,
-        quantization_config=bnb_config,
-        device_map="auto",
-        trust_remote_code=True,
-        use_cache=False,  # Disable cache for faster training
-    )
+    log_step("Loading model weights...")
+    try:
+        model = AutoModelForCausalLM.from_pretrained(
+            model_name,
+            quantization_config=bnb_config,
+            device_map="auto",
+            trust_remote_code=True,
+            use_cache=False,  # Disable cache for faster training
+        )
+        log_step(f"Model loaded successfully on device: {model.device}")
+        
+        # Log model size and memory usage
+        param_count = sum(p.numel() for p in model.parameters())
+        trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+        log_step(f"Model parameters: {param_count:,} total, {trainable_params:,} trainable")
+        
+        if torch.cuda.is_available():
+            log_step(f"GPU Memory allocated: {torch.cuda.memory_allocated()/1024**2:.2f} MB")
+            log_step(f"GPU Memory reserved: {torch.cuda.memory_reserved()/1024**2:.2f} MB")
+            
+    except Exception as e:
+        log_step(f"ERROR: Failed to load model: {str(e)}")
+        if "out of memory" in str(e).lower():
+            log_step("Out of memory error! Try reducing batch size or using a smaller model.")
+        raise
     
     # Prepare model for k-bit training if using quantization
     if use_4bit:
+        log_step("Preparing model for 4-bit training...")
         model = prepare_model_for_kbit_training(model)
     
     # Configure LoRA if enabled
     if use_lora:
-        lora_config = LoraConfig(
-            r=16,  # Reduced rank for faster training
-            lora_alpha=32,
-            target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
-            lora_dropout=0.05,
-            bias="none",
-            task_type="CAUSAL_LM"
-        )
-        model = get_peft_model(model, lora_config)
-        model.print_trainable_parameters()
+        log_step("Configuring LoRA for parameter-efficient fine-tuning")
+        try:
+            lora_config = LoraConfig(
+                r=16,  # Reduced rank for faster training
+                lora_alpha=32,
+                target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
+                lora_dropout=0.05,
+                bias="none",
+                task_type="CAUSAL_LM"
+            )
+            model = get_peft_model(model, lora_config)
+            log_step("LoRA configuration applied successfully")
+            model.print_trainable_parameters()
+        except Exception as e:
+            log_step(f"ERROR: Failed to apply LoRA: {str(e)}")
+            raise
     
     # Load tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(
-        model_name,
-        padding_side="right",
-        use_fast=True,  # Use fast tokenizer for better performance
-        trust_remote_code=True,
-    )
-    tokenizer.pad_token = tokenizer.eos_token  # Set pad token
+    log_step("Loading tokenizer...")
+    try:
+        tokenizer = AutoTokenizer.from_pretrained(
+            model_name,
+            padding_side="right",
+            use_fast=True,  # Use fast tokenizer for better performance
+            trust_remote_code=True,
+        )
+        tokenizer.pad_token = tokenizer.eos_token  # Set pad token
+        log_step(f"Tokenizer loaded with vocab size: {len(tokenizer):,}")
+    except Exception as e:
+        log_step(f"ERROR: Failed to load tokenizer: {str(e)}")
+        raise
     
     # Enable gradient checkpointing to save memory
+    log_step("Enabling gradient checkpointing...")
     model.gradient_checkpointing_enable()
     
+    log_step("Model and tokenizer loaded successfully")
     return model, tokenizer
 
 def load_task_stream(task_stream_file, filter_repo=None):
@@ -217,10 +255,22 @@ def load_task_stream(task_stream_file, filter_repo=None):
     Returns:
         Dictionary containing task stream data and task ordering
     """
-    print(f"Loading task stream from {task_stream_file}...")
+    log_step(f"Attempting to load task stream from: {os.path.abspath(task_stream_file)}")
     
-    with open(task_stream_file, 'r') as f:
-        task_stream = json.load(f)
+    # Check if file exists
+    if not os.path.exists(task_stream_file):
+        raise FileNotFoundError(f"Task stream file not found: {os.path.abspath(task_stream_file)}")
+    
+    # Load the JSON file with error handling
+    try:
+        log_step(f"Loading JSON data from {os.path.basename(task_stream_file)}")
+        with open(task_stream_file, 'r') as f:
+            task_stream = json.load(f)
+        log_step(f"Successfully loaded JSON data, found {len(task_stream)} tasks")
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Failed to parse JSON file {task_stream_file}: {str(e)}")
+    except Exception as e:
+        raise RuntimeError(f"Error reading file {task_stream_file}: {str(e)}")
     
     # The task stream is a dictionary where keys are task names (e.g., 'T_1', 'T_2', etc.)
     # and values are lists of examples, where each example is a dictionary with a 'repo' field
@@ -228,9 +278,15 @@ def load_task_stream(task_stream_file, filter_repo=None):
     # If no filter is specified, return the entire task stream
     if not filter_repo:
         task_ordering = sorted(task_stream.keys())
-        print(f"\nLoaded {len(task_stream)} tasks with the following distribution:")
+        log_step(f"No repository filter applied, returning all {len(task_stream)} tasks")
+        log_step(f"Task distribution (total examples: {sum(len(examples) for examples in task_stream.values() if isinstance(examples, list))})")
+        
         for task in task_ordering:
-            print(f"  {task}: {len(task_stream[task])} examples")
+            examples = task_stream[task]
+            if isinstance(examples, list):
+                log_step(f"  {task}: {len(examples)} examples")
+            else:
+                log_step(f"  {task}: INVALID (not a list)")
         
         return {
             "tasks": task_stream,
@@ -238,20 +294,27 @@ def load_task_stream(task_stream_file, filter_repo=None):
         }
     
     # Filter tasks by repository if specified
-    print(f"Filtering tasks for repository: {filter_repo}")
+    log_step(f"Filtering tasks for repository: {filter_repo}")
     filtered_tasks = {}
+    total_examples = 0
+    skipped_tasks = 0
     
     for task_name, examples in task_stream.items():
         # Skip if examples is not a list
         if not isinstance(examples, list):
-            print(f"Warning: Task '{task_name}' does not contain a list of examples, skipping...")
+            log_step(f"  Warning: Task '{task_name}' does not contain a list of examples, skipping...")
+            skipped_tasks += 1
             continue
             
         filtered = []
-        for ex in examples:
+        for i, ex in enumerate(examples, 1):
             # Skip if the example is not a dictionary or doesn't have a 'repo' field
-            if not isinstance(ex, dict) or 'repo' not in ex:
-                print(f"Warning: Skipping malformed example in task '{task_name}' - not a dictionary or missing 'repo' field")
+            if not isinstance(ex, dict):
+                log_step(f"  Warning: Example {i} in task '{task_name}' is not a dictionary")
+                continue
+                
+            if 'repo' not in ex:
+                log_step(f"  Warning: Example {i} in task '{task_name}' is missing 'repo' field")
                 continue
                 
             # Check if the repository matches the filter
@@ -261,26 +324,36 @@ def load_task_stream(task_stream_file, filter_repo=None):
         # Only add the task if we found matching examples
         if filtered:
             filtered_tasks[task_name] = filtered
+            total_examples += len(filtered)
     
     # Get task ordering (alphabetical by default)
     task_ordering = sorted(filtered_tasks.keys())
     
     # Print task statistics
-    print(f"\nLoaded {len(filtered_tasks)} tasks with the following distribution:")
+    log_step(f"Filtering complete. Found {len(filtered_tasks)} tasks with {total_examples} total examples matching repository '{filter_repo}'")
+    log_step(f"Skipped {skipped_tasks} tasks due to invalid format")
+    
     for task in task_ordering:
-        print(f"  {task}: {len(filtered_tasks[task])} examples")
+        log_step(f"  {task}: {len(filtered_tasks[task])} examples")
     
     # If no tasks were found, print available repositories
     if not filtered_tasks:
-        print("\nNo tasks found for the specified repository. Available repositories:")
+        log_step("No tasks found for the specified repository. Searching for available repositories...")
         all_repos = set()
-        for examples in task_stream.values():
-            if isinstance(examples, list):
-                for ex in examples:
-                    if isinstance(ex, dict) and 'repo' in ex:
-                        all_repos.add(ex['repo'])
-        for repo in sorted(all_repos):
-            print(f"  - {repo}")
+        for task_name, examples in task_stream.items():
+            if not isinstance(examples, list):
+                continue
+                
+            for ex in examples:
+                if isinstance(ex, dict) and 'repo' in ex:
+                    all_repos.add(ex['repo'])
+        
+        if all_repos:
+            log_step(f"Found {len(all_repos)} unique repositories in the dataset:")
+            for repo in sorted(all_repos):
+                log_step(f"  - {repo}")
+        else:
+            log_step("No valid repositories found in the dataset")
     
     return {
         "tasks": filtered_tasks,
@@ -606,9 +679,9 @@ def evaluate_success(model, dataset, batch_size=4):
             return False
     
     if not is_docker_available():
-        print("WARNING: Docker is not available. Test-based evaluation disabled.")
-        print("Returning dummy results for CI compatibility.")
-        return 0.0, [False] * len(dataset)
+        print("ERROR: Docker is not available. Test-based evaluation cannot proceed.")
+        print("Docker is required for SWE-Bench test execution. Please install Docker and try again.")
+        raise RuntimeError("Docker is not available but required for evaluation.")
     
     # Extract tokenizer from model (may be wrapped in PEFT model)
     if hasattr(model, 'base_model') and hasattr(model.base_model, 'tokenizer'):
@@ -936,71 +1009,157 @@ def finetune_model(model, tokenizer, task_examples, learning_rate, device,
     Returns:
         Finetuned model
     """
-    print(f"Finetuning model on {len(task_examples)} examples...")
+    log_step(f"Starting model fine-tuning on {len(task_examples)} examples")
+    log_step(f"Training parameters: batch_size={batch_size}, lr={learning_rate}, "
+            f"epochs={num_epochs}, grad_accum_steps={gradient_accumulation_steps}")
+    
+    # Log model architecture and trainable parameters
+    total_params = sum(p.numel() for p in model.parameters())
+    trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    log_step(f"Model parameters: {total_params:,} total, {trainable_params:,} trainable "
+            f"({trainable_params/total_params*100:.2f}%)")
+    
+    # Log memory usage before training
+    memory_usage = get_memory_usage()
+    log_step(f"Memory before training - GPU: {memory_usage['gpu']['allocated']:.2f} GB "
+            f"(reserved: {memory_usage['gpu']['reserved']:.2f} GB)")
     
     # Create dataset
-    dataset = SWEBenchDataset(
-        task_examples, 
-        tokenizer, 
-        use_memory=use_memory,
-        memory_examples=memory_examples
-    )
+    log_step("Preparing training dataset...")
+    try:
+        dataset = SWEBenchDataset(
+            task_examples, 
+            tokenizer, 
+            use_memory=use_memory,
+            memory_examples=memory_examples
+        )
+        log_step(f"Created dataset with {len(dataset)} examples")
+    except Exception as e:
+        log_step(f"ERROR: Failed to create dataset: {str(e)}")
+        raise
     
-    # Calculate warmup steps (10% of total steps)
-    total_steps = min(
-        (len(dataset) * num_epochs) // (batch_size * gradient_accumulation_steps),
-        max_steps
-    )
+    # Calculate training steps
+    steps_per_epoch = len(dataset) // (batch_size * gradient_accumulation_steps)
+    total_steps = min(steps_per_epoch * num_epochs, max_steps)
     warmup_steps = max(1, int(total_steps * 0.1))
     
-    # Optimized training arguments
-    # Choose precision based on hardware and use_4bit flag
-    # Only one of fp16 or bf16 can be True
+    log_step(f"Training configuration: {total_steps} total steps, "
+            f"{warmup_steps} warmup steps, "
+            f"{steps_per_epoch} steps/epoch")
+    
+    # Configure training precision
     use_fp16 = not use_4bit and not torch.cuda.is_bf16_supported()
     use_bf16 = not use_4bit and torch.cuda.is_bf16_supported()
     
+    log_step(f"Precision settings - 4-bit: {use_4bit}, FP16: {use_fp16}, BF16: {use_bf16}")
+    
+    # Configure training arguments
     training_args = TrainingArguments(
         output_dir="./results",
         num_train_epochs=num_epochs,
-        max_steps=max_steps,  # Safety limit
+        max_steps=max_steps,
         per_device_train_batch_size=batch_size,
         gradient_accumulation_steps=gradient_accumulation_steps,
         learning_rate=learning_rate,
         weight_decay=0.01,
         warmup_steps=warmup_steps,
         lr_scheduler_type="cosine",
-        logging_steps=5,  # More frequent logging
-        save_strategy="no",  # Disable checkpointing
-        fp16=use_fp16,  # Mixed precision training if not using 4-bit or bf16
-        bf16=use_bf16,  # Use bfloat16 if supported and not using 4-bit
-        remove_unused_columns=True,  # Saves memory
-        optim="adamw_torch_fused",  # Fused optimizer
-        report_to="none",  # Disable external logging
-        gradient_checkpointing=True,  # Save memory
-        dataloader_num_workers=2,  # Parallel data loading
-        dataloader_pin_memory=True,  # Faster data transfer
+        logging_steps=5,
+        save_strategy="no",
+        fp16=use_fp16,
+        bf16=use_bf16,
+        remove_unused_columns=True,
+        optim="adamw_torch_fused",
+        report_to="none",
+        gradient_checkpointing=True,
+        dataloader_num_workers=2,
+        dataloader_pin_memory=True,
+        logging_dir="./logs",
+        log_level="info",
     )
+    
+    # Custom progress callback
+    class TrainingProgressCallback(TrainerCallback):
+        def __init__(self):
+            self.start_time = time.time()
+            self.current_epoch = 0
+            self.current_step = 0
+            self.total_steps = total_steps
+            self.steps_per_epoch = steps_per_epoch
+            
+        def on_epoch_begin(self, args, state, control, **kwargs):
+            self.current_epoch = state.epoch
+            log_step(f"Starting epoch {int(self.current_epoch)}/{num_epochs}")
+            
+        def on_step_end(self, args, state, control, **kwargs):
+            self.current_step = state.global_step
+            if state.log_history:
+                logs = state.log_history[-1]
+                if 'loss' in logs:
+                    step = logs.get('step', self.current_step)
+                    loss = logs.get('loss', 0)
+                    learning_rate = logs.get('learning_rate', 0)
+                    
+                    # Log progress every 10% of an epoch
+                    if step % max(1, self.steps_per_epoch // 10) == 0:
+                        epoch_progress = (step % self.steps_per_epoch) / self.steps_per_epoch
+                        total_progress = step / self.total_steps
+                        eta = (time.time() - self.start_time) * (1/total_progress - 1) if total_progress > 0 else 0
+                        
+                        log_step(f"Step {step}/{self.total_steps} "
+                               f"(Epoch {int(self.current_epoch)}.{int(epoch_progress*100):02d}%) - "
+                               f"Loss: {loss:.4f}, LR: {learning_rate:.2e}, "
+                               f"ETA: {eta/60:.1f} min")
+                        
+                        # Log memory usage periodically
+                        if step % (self.steps_per_epoch // 5) == 0:  # 5 times per epoch
+                            memory_usage = get_memory_usage()
+                            log_step(f"Memory usage - GPU: {memory_usage['gpu']['allocated']:.2f} GB, "
+                                   f"CPU: {memory_usage['cpu_percent']:.1f}%")
     
     # Initialize trainer with optimizations
-    trainer = Trainer(
-        model=model,
-        args=training_args,
-        train_dataset=dataset,
-        data_collator=default_data_collator,
-    )
-    
-    # Train model with timing
-    start_time = time.time()
-    trainer.train()
-    training_time = (time.time() - start_time) / 60  # in minutes
-    print(f"Training completed in {training_time:.1f} minutes")
-    
-    # Report final memory usage
-    memory_usage = get_memory_usage()
-    print(f"Memory after training - GPU: {memory_usage['gpu']['allocated']:.2f} GB")
-    
-    # Return the fine-tuned model
-    return model
+    log_step("Initializing trainer...")
+    try:
+        trainer = Trainer(
+            model=model,
+            args=training_args,
+            train_dataset=dataset,
+            data_collator=default_data_collator,
+            callbacks=[TrainingProgressCallback()],
+        )
+        
+        # Train model with timing
+        log_step("Starting training...")
+        start_time = time.time()
+        
+        try:
+            trainer.train()
+        except Exception as e:
+            log_step(f"ERROR during training: {str(e)}")
+            log_step(f"Current step: {trainer.state.global_step}/{total_steps}")
+            raise
+            
+        training_time = (time.time() - start_time) / 60  # in minutes
+        log_step(f"Training completed in {training_time:.1f} minutes")
+        
+        # Log final metrics
+        if trainer.state.log_history:
+            final_metrics = trainer.state.log_history[-1]
+            log_step("Final training metrics: " + 
+                    ", ".join(f"{k}: {v:.4f}" for k, v in final_metrics.items() 
+                              if isinstance(v, (int, float))))
+        
+        # Report final memory usage
+        memory_usage = get_memory_usage()
+        log_step(f"Memory after training - GPU: {memory_usage['gpu']['allocated']:.2f} GB "
+                f"(reserved: {memory_usage['gpu']['reserved']:.2f} GB), "
+                f"CPU: {memory_usage['cpu_percent']:.1f}%")
+        
+        return model
+        
+    except Exception as e:
+        log_step(f"ERROR: Failed to initialize or run trainer: {str(e)}")
+        raise
 
 def save_model_checkpoint(model, tokenizer, output_dir, task_name):
     """
@@ -1197,7 +1356,16 @@ def plot_metrics(metrics_df, output_dir, results=None, memory_enabled=False):
     plt.savefig(os.path.join(output_dir, f"cl_metrics_{memory_suffix}.png"), dpi=300)
     plt.close()
 
+def get_timestamp():
+    return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+
+def log_step(step_name):
+    print(f"\n[{get_timestamp()}] {step_name}...")
+
 def main():
+    start_time = time.time()
+    print(f"\n[{get_timestamp()}] Starting script with PID: {os.getpid()}")
+    log_step("Initializing argument parser")
     parser = argparse.ArgumentParser(description="Finetune and evaluate a model on a continual learning task stream")
     parser.add_argument("--model_name", default=DEFAULT_MODEL, help=f"HuggingFace model name or path (default: {DEFAULT_MODEL})")
     parser.add_argument("--task_stream_file", required=True, help="Path to task stream JSON file")
@@ -1230,20 +1398,38 @@ def main():
     args = parser.parse_args()
     
     # Set random seed for reproducibility
+    log_step(f"Setting random seed to {args.seed}")
     set_seed(args.seed)
     
     # Check GPU availability
-    if args.device == "cuda" and not torch.cuda.is_available():
-        print("WARNING: CUDA is not available. Falling back to CPU.")
-        args.device = "cpu"
+    log_step("Checking GPU availability")
+    if args.device == "cuda":
+        if torch.cuda.is_available():
+            gpu_name = torch.cuda.get_device_name(0) if torch.cuda.device_count() > 0 else "No GPU found"
+            log_step(f"Using GPU: {gpu_name}")
+            log_step(f"CUDA version: {torch.version.cuda if hasattr(torch.version, 'cuda') else 'N/A'}")
+            log_step(f"PyTorch version: {torch.__version__}")
+        else:
+            log_step("WARNING: CUDA is not available. Falling back to CPU.")
+            args.device = "cpu"
+    else:
+        log_step("Using CPU for computation")
     
     # Create output directory
+    log_step(f"Creating output directory: {os.path.abspath(args.output_dir)}")
     os.makedirs(args.output_dir, exist_ok=True)
     
     # Load task stream
-    task_data = load_task_stream(args.task_stream_file, args.filter_repo)
-    task_stream = task_data["tasks"]
-    task_ordering = task_data["task_ordering"]
+    log_step(f"Loading task stream from {args.task_stream_file}")
+    log_step(f"Filtering repository: {args.filter_repo}")
+    try:
+        task_data = load_task_stream(args.task_stream_file, args.filter_repo)
+        task_stream = task_data["tasks"]
+        task_ordering = task_data["task_ordering"]
+        log_step(f"Loaded {len(task_stream)} tasks with {len(task_ordering)} task orderings")
+    except Exception as e:
+        log_step(f"ERROR: Failed to load task stream: {str(e)}")
+        raise
     
     # Initialize metrics storage
     metrics = []
