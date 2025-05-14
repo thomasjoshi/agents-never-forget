@@ -5,26 +5,16 @@ This script loads TinyLlama-1.1B-Chat with 4-bit quantization, finetunes it sequ
 and evaluates catastrophic forgetting and forward transfer.
 """
 
-# IMMEDIATE STARTUP LOGGING
-# This will print even before imports to confirm script execution has started
 import sys
 import os
 import time
-
-print(f"\n{'='*80}")
-print(f"SCRIPT STARTING: {os.path.basename(__file__)}")
-print(f"Time: {time.strftime('%Y-%m-%d %H:%M:%S')}")
-print(f"PID: {os.getpid()}")
-print(f"Python: {sys.version.split()[0]}")
-print(f"Working directory: {os.getcwd()}")
-sys.stdout.flush()  # Force output buffer to flush
-print(f"{'='*80}\n")
 
 import os
 import json
 import random
 import time
 import argparse
+import pickle
 from tqdm import tqdm
 import ast
 import re
@@ -62,6 +52,16 @@ DEFAULT_GRAD_ACCUM_STEPS = 1
 DEFAULT_LEARNING_RATE = 2e-4
 DEFAULT_NUM_EPOCHS = 3
 DEFAULT_USE_4BIT = True
+
+
+print(f"\n{'='*80}")
+print(f"SCRIPT STARTING: {os.path.basename(__file__)}")
+print(f"Time: {time.strftime('%Y-%m-%d %H:%M:%S')}")
+print(f"PID: {os.getpid()}")
+print(f"Python: {sys.version.split()[0]}")
+print(f"Working directory: {os.getcwd()}")
+sys.stdout.flush()  # Force output buffer to flush
+print(f"{'='*80}\n")
 
 def check_gpu_availability():
     """Check if CUDA is available and provide helpful guidance if not."""
