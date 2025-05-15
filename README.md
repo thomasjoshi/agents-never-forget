@@ -56,40 +56,6 @@ We employed several strategies for how we sequenced the tasks within each reposi
 | pydata/xarray | 22 | 5 | 15 | 1 | 1 | 13 (59%) |
 | pytest-dev/pytest | 19 | 8 | 8 | 3 | 0 | 7 (37%) |
 
-## Evaluation Metrics (TODO: just some ideas for now!!)
-We introduce specialized metrics for evaluating continual learning performance:
-### Success Rate
-- **Description**: Percentage of tasks successfully solved in a sequence
-- **Formula**: `successCount / totalTasks`
-### Forgetting Rate
-- **Description**: Measures how much previously learned knowledge is forgotten
-- **Formula**: `(recentSuccess - currentSuccess) / recentSuccess`
-- **Details**: Calculated by periodically re-testing previously solved tasks. A value of 0 indicates no forgetting, while 1 indicates complete forgetting.
-### Forward Transfer
-- **Description**: Measures how learning on previous tasks improves performance on new tasks
-- **Formula**: `performanceOnNewTasks(with_previous_training) - performanceOnNewTasks(without_previous_training)`
-- **Details**: Positive values indicate positive transfer (previous learning helps with new tasks).
-### Backward Transfer
-- **Description**: Measures how learning on new tasks affects performance on previous tasks
-- **Formula**: `performanceOnPreviousTasks(after_new_training) - performanceOnPreviousTasks(before_new_training)`
-- **Details**: Positive values indicate that learning new tasks improves performance on old tasks.
-### Tool Use Efficiency
-- **Description**: Measures the efficiency of tool use during problem solving
-- **Formula**: `successfulToolCalls / totalToolCalls`
-- **Details**: Higher values indicate more efficient use of tools.
-### Tool Use Adaptation
-- **Description**: Measures how the agent's tool use evolves over time
-- **Formula**: Qualitative analysis of tool use patterns across sequences
-- **Details**: Assesses whether the agent learns to use more appropriate tools or develops more efficient tool use strategies.
-### Learning Curve
-- **Description**: Measures the rate of learning over the sequence
-- **Formula**: Success rate as a function of task number
-- **Details**: Steeper curves indicate faster learning.
-### CL-Score (Comprehensive Metric)
-- **Description**: A comprehensive continual learning score
-- **Formula**: `successRate * (1 - forgettingRate) * (1 + 0.5 * forwardTransfer + 0.5 * backwardTransfer) * toolUseEfficiency`
-- **Details**: Combines success, forgetting, transfer, and tool use metrics into a single score.
-
 ## Evaluation Procedure
 1. **Sequential Learning**:
    - Train/evaluate the agent on each sequence in order
