@@ -79,3 +79,6 @@ google-credentials.json
 
 # Environment variables
 .env
+
+# Research papers
+research_papers/
