@@ -510,64 +510,6 @@ def finetune_model(model, tokenizer, task_examples, learning_rate, device,
     print(f"Training completed in {training_time:.1f} minutes")
     
     return model
-                # Move batch to device
-                batch = {k: v.to(device) for k, v in batch.items()}
-                
-                # Forward pass
-                outputs = model(**batch)
-                loss = outputs.loss / gradient_accumulation_steps  # Scale loss for accumulation
-                accumulated_loss += loss.item()
-                
-                # Backward pass
-                loss.backward()
-                
-                # Track epoch stats
-                epoch_loss += loss.item() * gradient_accumulation_steps
-                epoch_steps += 1
-                
-                # Check if we should update weights
-                if (batch_idx + 1) % gradient_accumulation_steps == 0 or batch_idx == len(dataloader) - 1:
-                    optimizer.step()
-                    scheduler.step()
-                    optimizer.zero_grad()
-                    
-                    # Update progress bar
-                    step += 1
-                    progress_bar.update(1)
-                    progress_bar.set_postfix({"loss": accumulated_loss})
-                    accumulated_loss = 0.0
-                    
-                    # Print memory usage every 10 steps
-                    if step % 10 == 0:
-                        memory_usage = get_memory_usage()
-                        print(f"\nStep {step}/{num_training_steps}:")
-                        print(f"  GPU memory: {memory_usage['gpu']['allocated']:.2f} GB allocated, {memory_usage['gpu']['cached']:.2f} GB cached")
-                        print(f"  Current learning rate: {scheduler.get_last_lr()[0]:.6f}")
-            
-            except RuntimeError as e:
-                if "out of memory" in str(e).lower():
-                    print(f"\nWARNING: GPU OOM in batch {batch_idx+1}. Skipping to next batch and clearing cache...")
-                    torch.cuda.empty_cache()
-                    optimizer.zero_grad()
-                    # Try reducing batch size for next epoch
-                    if batch_size > 1 and epoch < num_epochs - 1:
-                        batch_size = max(1, batch_size // 2)
-                        print(f"Reducing batch size to {batch_size} for next epoch")
-                else:
-                    print(f"Error during training: {e}")
-        
-        # Print epoch stats
-        if epoch_steps > 0:
-            avg_epoch_loss = epoch_loss / epoch_steps
-            print(f"\nEpoch {epoch+1}/{num_epochs} completed:")
-            print(f"  Average loss: {avg_epoch_loss:.4f}")
-    
-    # Report final memory usage
-    memory_usage = get_memory_usage()
-    print(f"Memory after training - GPU: {memory_usage['gpu']['allocated']:.2f} GB")
-    
-    # Return the fine-tuned model
-    return model
 
 
 def save_model_checkpoint(model, tokenizer, output_dir, task_name):

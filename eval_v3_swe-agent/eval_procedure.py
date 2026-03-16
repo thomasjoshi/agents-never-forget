@@ -331,7 +331,7 @@ if USE_DUMMY_DATA and dummy_swe_bench_cl:
 # %%
 # Load API keys from .env file
 from dotenv import load_dotenv
-load_dotenv('/Users/Shayan/Library/CloudStorage/GoogleDrive-sc4040@columbia.edu/My Drive/Academics/Spring 2025/COMS 4995 - Neural Nets & Deep Learning/NNDL Final Project/agents-never-forget/.env')
+load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
 # Model configuration
 ### IMPORTANT: Naming format for models is `provider/model_name`
@@ -2800,5 +2800,4 @@ else:
 # 
 # 
 #  **Acknowledgments:** Based on the original `eval_procedure.py` structure provided by the user. Incorporates ideas and methodologies from the SWE-agent paper.
-
 
